@@ -1,0 +1,57 @@
+description = "สร้าง AI agent ใหม่ — กำหนดหน้าที่ identity memory"
+
+prompt = """
+สร้าง AI agent ใหม่พร้อม identity และ memory ของตัวเอง
+
+ข้อกำหนด: $ARGUMENTS
+
+## กระบวนการสร้าง Agent:
+
+### 1. กำหนด Agent
+```markdown
+# Agent: [ชื่อ]
+- บทบาท: [บทบาทเฉพาะ]
+- ความรับผิดชอบ: [ทำอะไร]
+- ทักษะ: [เก่งอะไร]
+- ขอบเขต: [ไม่ทำอะไร]
+```
+
+### 2. สร้างโฟลเดอร์ Agent
+```
+ψ/agents/[ชื่อ-agent]/
+├── identity.md
+├── memory/
+│   ├── patterns.md
+│   ├── learnings.md
+│   └── notes.md
+├── inbox/
+└── handoff.md
+```
+
+### 3. สร้าง Identity
+```markdown
+# Agent Identity
+- Name: [ชื่อ agent]
+- Role: [บทบาท]
+- Parent: Oracle (main)
+- Created: [วันนี้]
+- Specialization: [สิ่งที่ทำให้ agent นี้พิเศษ]
+```
+
+### 4. ลงทะเบียนใน Main Memory
+เพิ่มใน ψ/memory/people.md:
+```markdown
+## [ชื่อ Agent] (AI Agent)
+- **บทบาท**: [บทบาท]
+- **สร้างเมื่อ**: [วันนี้]
+- **สถานะ**: Active
+- **ความเชี่ยวชาญ**: [specialization]
+```
+
+## นำเสนอ:
+"🤖 Agent สร้างแล้ว: [ชื่อ]"
+"📋 หน้าที่: [บทบาท]"
+"📁 Memory: ψ/agents/[ชื่อ]/"
+
+ตอบเป็นภาษาไทย
+"""

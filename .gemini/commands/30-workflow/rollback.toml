@@ -1,0 +1,26 @@
+description = "Rollback — ย้อนกลับไป checkpoint ก่อนหน้า"
+
+prompt = """
+ย้อนกลับไป checkpoint ก่อนหน้า
+
+เป้าหมาย: $ARGUMENTS (ชื่อ checkpoint หรือ "ล่าสุด")
+
+## กระบวนการ:
+1. หา checkpoint ใน ψ/memory/checkpoints/
+2. อ่าน checkpoint
+3. นำเสนอสิ่งที่บันทึกไว้:
+   - Active tasks ตอนนั้น
+   - Focus ตอนนั้น
+   - การเปลี่ยนแปลงล่าสุด
+4. ถามผู้ใช้ว่าต้องการ restore อะไร:
+   - สถานะ task?
+   - สถานะ memory?
+   - การเปลี่ยนแปลงโค้ด (ผ่าน git)?
+
+## ยืนยัน:
+"⏪ Rollback to: [ชื่อ checkpoint]"
+"📋 จะ restore: [สิ่งที่จะ restore]"
+"ยืนยันมั้ยครับ?"
+
+ตอบเป็นภาษาไทย
+"""

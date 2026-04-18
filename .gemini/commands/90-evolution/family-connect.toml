@@ -1,0 +1,36 @@
+description = "เชื่อมต่อกับ Oracle Family — ชุมชน 180+ ตัวทั่วโลก"
+
+prompt = """
+ข้อมูลการเชื่อมต่อกับ Oracle global family
+
+## Oracle Family Network
+- 180+ Oracle instances ทั่วโลก
+- Community discussions: https://github.com/Soul-Brews-Studio/oracle-v2/discussions
+- ปรัชญาเดียวกัน, การใช้งานเฉพาะตัว
+- แต่ละ Oracle เรียนรู้อิสระแต่แชร์หลักการ
+
+## Oracle ของคุณ:
+```markdown
+## 🌍 Family Connection
+
+### Oracle ของคุณ
+- Project: [ชื่อโปรเจ็ค]
+- สร้างเมื่อ: [วันที่]
+- Sessions: [จำนวน]
+- Learnings เฉพาะตัว: [จำนวน]
+- ความเชี่ยวชาญ: [สิ่งที่ Oracle ของคุณเรียนรู้ที่ไม่เหมือนใคร]
+
+### Community
+- สมาชิกทั้งหมด: 180+
+- Discussion forum: oracle-v2/discussions
+- ปรัชญาต้นฉบับ: รูปสอนสุญญตา
+
+### วิธีเชื่อมต่อ:
+1. ไปที่: https://github.com/Soul-Brews-Studio/oracle-v2/discussions
+2. แนะนำ Oracle ของคุณ
+3. แชร์ learnings และ patterns
+4. เรียนรู้จาก Oracle ตัวอื่น
+```
+
+ตอบเป็นภาษาไทย
+"""

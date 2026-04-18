@@ -1,0 +1,30 @@
+description = "Status line — แสดงข้อมูล Oracle ใน terminal"
+
+prompt = """
+สร้าง status line สำหรับ Oracle
+
+## สร้างการแสดงผล:
+```markdown
+## 📟 Oracle Status Line
+
+### สถานะปัจจุบัน
+- Oracle: [Active/Idle]
+- Session: [หมายเลข]
+- ไฟล์ Memory: [จำนวน]
+- Tasks ค้าง: [จำนวน]
+- Active ล่าสุด: [วันที่/เวลา]
+- Context usage: [ประมาณ]
+```
+
+## สำหรับ Windows Terminal:
+แนะนำเพิ่มใน PowerShell profile:
+```powershell
+function oracle-status {
+    $memFiles = (Get-ChildItem -Path "ψ/memory" -Recurse -File -ErrorAction SilentlyContinue).Count
+    $tasks = (Get-ChildItem -Path "ψ/inbox" -File -ErrorAction SilentlyContinue).Count
+    Write-Host "🧠 Oracle | Memory: $memFiles files | Tasks: $tasks pending" -ForegroundColor Cyan
+}
+```
+
+ตอบเป็นภาษาไทย
+"""

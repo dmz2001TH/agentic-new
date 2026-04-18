@@ -1,0 +1,70 @@
+description = "ตั้งค่า VPS — ให้ Oracle ทำงาน 24 ชั่วโมง (อนาคต)"
+
+prompt = """
+คู่มือตั้งค่า VPS สำหรับรัน Oracle 24/7
+
+## สิ่งที่ต้องมี (จากเนื้อหาอ้างอิง):
+- Ubuntu 22.04+
+- Node.js 18+
+- Bun runtime
+- git
+- tmux
+- Gemini CLI ที่ login แล้ว
+
+## Setup Script:
+```bash
+#!/bin/bash
+# Oracle VPS Setup for Gemini CLI
+
+# อัพเดทระบบ
+sudo apt update && sudo apt upgrade -y
+
+# ติดตั้ง dependencies
+sudo apt install -y git tmux curl
+
+# ติดตั้ง Node.js 18
+curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash -
+sudo apt install -y nodejs
+
+# ติดตั้ง Bun
+curl -fsSL https://bun.sh/install | bash
+
+# ติดตั้ง Gemini CLI
+npm install -g @google/gemini-cli
+
+# Login ด้วย Google
+gemini auth  # ทำตามขั้นตอนใน browser
+
+# Clone โปรเจ็ค
+git clone [your-repo-url]
+cd [project-dir]
+
+# GEMINI.md และ .gemini/ ควรมีอยู่ใน repo แล้ว
+# ถ้ายังไม่มี คัดลอกด้วยตัวเอง
+
+# สร้าง tmux session สำหรับ 24/7
+tmux new-session -d -s oracle
+
+# เริ่ม Gemini ใน tmux
+tmux send-keys -t oracle "gemini" Enter
+
+echo "✅ Oracle running 24/7 in tmux session 'oracle'"
+echo "📱 Attach: tmux attach -t oracle"
+echo "📱 Detach: Ctrl+B, D"
+```
+
+## VPS Spec (จากเนื้อหาอ้างอิง):
+- ขั้นต่ำ: 2 CPU, 4GB RAM, 40GB SSD (3-5 agents)
+- แนะนำ: 4 CPU, 8GB RAM (10 agents)
+- ค่าใช้จ่าย: ~200-500 บาท/เดือน
+
+## Providers:
+- Vultr, DigitalOcean, Linode, Hetzner
+- ไทย: CS Loxinfo
+
+## หลังตั้งค่า:
+"🖥️ VPS พร้อม — Oracle รัน 24/7"
+"📱 เข้าถึงจากที่ไหนก็ได้ผ่าน tmux"
+
+ตอบเป็นภาษาไทย
+"""

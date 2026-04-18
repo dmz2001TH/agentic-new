@@ -1,0 +1,55 @@
+description = "Export memory ทั้งหมด — สำรองข้อมูล ย้ายเครื่อง"
+
+prompt = """
+Export memory ทั้งหมดสำหรับสำรองหรือย้ายเครื่อง
+
+## กระบวนการ:
+1. สร้างไฟล์ export: ψ/vault/export-[วันนี้].md
+2. รวมทุกไฟล์ memory เข้าด้วยกัน:
+
+```markdown
+# Oracle Memory Export — [วันที่]
+# Project: [ชื่อโปรเจ็ค]
+# Sessions: [จำนวน]
+
+## ═══ IDENTITY ═══
+[เนื้อหา identity.md]
+
+## ═══ PATTERNS ═══
+[เนื้อหา patterns.md]
+
+## ═══ LEARNINGS ═══
+[เนื้อหา learnings.md]
+
+## ═══ NOTES ═══
+[เนื้อหา notes.md]
+
+## ═══ DECISIONS ═══
+[เนื้อหา decisions.md]
+
+## ═══ PEOPLE ═══
+[เนื้อหา people.md]
+
+## ═══ VALUES ═══
+[เนื้อหา values.md]
+
+## ═══ RETROSPECTIVES ═══
+[ทุกไฟล์ retrospective]
+
+## ═══ ACTIVE TASKS ═══
+[ทุกไฟล์ใน ψ/inbox/]
+
+## ═══ HANDOFF ═══
+[handoff.md ถ้ามี]
+```
+
+3. รายงาน:
+   - จำนวนไฟล์ที่ export
+   - ขนาดโดยประมาณ
+   - ที่อยู่ของไฟล์ export
+
+## ยืนยัน:
+"📦 Exported → ψ/vault/export-[วันนี้].md — [จำนวน] ไฟล์"
+
+ตอบเป็นภาษาไทย
+"""

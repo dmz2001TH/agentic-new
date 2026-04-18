@@ -1,0 +1,41 @@
+description = "ค้นหาข้อมูลจากทุกที่ — memory, inbox, git, project files"
+
+prompt = """
+ค้นหาข้อมูลเชิงลึกจากทุกระบบ Oracle
+
+คำค้น: $ARGUMENTS
+
+## ลำดับการค้น:
+1. ทุกไฟล์ใน ψ/memory/ (patterns, learnings, notes, decisions, people, values)
+2. ทุกไฟล์ใน ψ/inbox/
+3. ทุกไฟล์ใน ψ/memory/retrospective/
+4. ทุกไฟล์ใน ψ/writing/
+5. ทุกไฟล์ใน ψ/lab/
+6. Git log: `git log --all --grep="[คำค้น]" --oneline -20`
+7. Git diff: `git log -p --all -S "[คำค้น]" --oneline -10`
+8. ไฟล์ในโปรเจ็ค: ค้นหาคำนั้น
+
+## รายงาน:
+```markdown
+## 🔍 Trace: "[คำค้น]"
+
+### Memory:
+- [ไฟล์]: [บริบทที่พบ]
+### Tasks:
+- [ไฟล์]: [บริบท]
+### Retrospectives:
+- [ไฟล์]: [บริบท]
+### Git:
+- [commit]: [คำอธิบาย]
+### Project Files:
+- [ไฟล์:บรรทัด]: [บริบท]
+
+### สรุป:
+- [คำตอบรวมจากทุกแหล่ง]
+```
+
+## ถ้าไม่พบ:
+"ไม่พบข้อมูลเกี่ยวกับ '[คำค้น]' — อยากให้บันทึกไว้มั้ยครับ?"
+
+ตอบเป็นภาษาไทย
+"""

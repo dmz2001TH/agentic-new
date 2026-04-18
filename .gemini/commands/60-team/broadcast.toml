@@ -1,0 +1,25 @@
+description = "ส่งข้อความถึงทุก agent — ประกาศ คำสั่ง อัพเดท"
+
+prompt = """
+ส่งข้อความถึงทุก agent
+
+ข้อความ: $ARGUMENTS
+
+## กระบวนการ:
+1. สำหรับแต่ละ agent ใน ψ/agents/:
+   - ต่อท้าย ψ/agents/[ชื่อ]/memory/notes.md:
+   ```markdown
+   - [YYYY-MM-DD HH:MM] BROADCAST จาก Oracle: [ข้อความ]
+   ```
+2. บันทึกใน memory หลัก:
+   ψ/memory/notes.md:
+   ```markdown
+   - [YYYY-MM-DD HH:MM] ส่ง broadcast: [ข้อความ]
+   ```
+
+## ยืนยัน:
+"📢 Broadcast ส่งถึง [จำนวน] agents"
+"📝 ข้อความ: [ข้อความ]"
+
+ตอบเป็นภาษาไทย
+"""

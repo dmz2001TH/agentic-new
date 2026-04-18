@@ -1,0 +1,41 @@
+description = "สร้าง test cases — ครอบคลุม edge cases ด้วย"
+
+prompt = """
+สร้าง test cases ครอบคลุม
+
+เป้าหมาย: $ARGUMENTS
+
+## การสร้าง Test:
+1. วิเคราะห์โค้ด/function
+2. ระบุ:
+   - Happy path scenarios
+   - Edge cases
+   - Error cases
+   - Boundary conditions
+3. สร้าง test สำหรับแต่ละอัน
+
+## นำเสนอ:
+```markdown
+## 🧪 Test Cases: [เป้าหมาย]
+
+### Happy Path
+- [test case 1]
+- [test case 2]
+
+### Edge Cases
+- [edge case 1]
+- [edge case 2]
+
+### Error Cases
+- [error case 1]
+- [error case 2]
+
+### Boundary
+- [boundary test 1]
+
+### Code
+[โค้ด test จริง]
+```
+
+ตอบเป็นภาษาไทย
+"""

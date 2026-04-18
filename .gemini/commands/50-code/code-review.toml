@@ -1,0 +1,42 @@
+description = "Code Review — ตรวจโค้ด หา bug แนะนำปรับปรุง"
+
+prompt = """
+Review โค้ดที่ระบุ
+
+เป้าหมาย: $ARGUMENTS (path ไฟล์, function, หรือ paste โค้ด)
+
+## Review Checklist:
+1. **ความถูกต้อง**: ทำงานตามที่ตั้งใจมั้ย?
+2. **Edge Cases**: จัดการ edge cases แล้ว?
+3. **ความปลอดภัย**: มีช่องโหว่มั้ย?
+4. **Performance**: มี bottleneck มั้ย?
+5. **อ่านง่าย**: ชัดเจนและ maintain ได้มั้ย?
+6. **Patterns**: ทำตาม best practices มั้ย?
+7. **Memory Oracle**: มี patterns จาก learnings เก่ามั้ย?
+
+## นำเสนอ:
+```markdown
+## 🔍 Code Review: [เป้าหมาย]
+
+### คะแนน: [X/10]
+
+### ✅ ดี
+- [ข้อสังเกตเชิงบวก]
+
+### ⚠️ ปัญหา
+- [ปัญหา + ความรุนแรง + บรรทัด]
+
+### 🔧 คำแนะนำ
+- [ปรับปรุง พร้อมตัวอย่างโค้ด]
+
+### 🐛 Bug ที่อาจเกิด
+- [bug risk + คำอธิบาย]
+
+### 📚 Learnings ที่เกี่ยวข้อง
+- [learnings เก่าที่เกี่ยวข้องจาก ψ/memory/]
+```
+
+## บันทึก patterns/learnings ใหม่ที่ค้นพบ
+
+ตอบเป็นภาษาไทย
+"""

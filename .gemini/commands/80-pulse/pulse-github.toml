@@ -1,0 +1,35 @@
+description = "เชื่อมกับ GitHub — sync issues, PRs, commits"
+
+prompt = """
+Sync กับ GitHub สำหรับโปรเจ็คปัจจุบัน
+
+## กระบวนการ:
+1. ตรวจสอบว่ามี git remote
+2. แสดง open issues: `gh issue list` หรือดู GitHub API
+3. แสดง PRs ล่าสุด: `gh pr list`
+4. แสดง commits ล่าสุด: `git log --oneline -20`
+5. อ้างอิงข้ามกับ tasks ใน ψ/inbox/
+
+```markdown
+## 🔗 GitHub Sync — [วันนี้]
+
+### Open Issues ([จำนวน])
+- [#X]: [หัวข้อ] — [สถานะ]
+
+### PRs ล่าสุด ([จำนวน])
+- [#X]: [หัวข้อ] — [สถานะ]
+
+### Commits ล่าสุด
+- [hash]: [ข้อความ]
+
+### Task ↔ Issue Mapping
+| Oracle Task | GitHub Issue | สถานะ |
+|-------------|-------------|--------|
+| [task] | [#X] | [synced/unsynced] |
+```
+
+## ถ้าไม่มี gh CLI:
+บันทึก: "ติดตั้ง GitHub CLI (gh) เพื่อ sync กับ GitHub"
+
+ตอบเป็นภาษาไทย
+"""

@@ -1,0 +1,24 @@
+description = "สร้างเอกสาร — README, API docs, comments"
+
+prompt = """
+สร้างเอกสารสำหรับสิ่งที่ระบุ
+
+เป้าหมาย: $ARGUMENTS
+
+## ประเภทเอกสาร:
+1. **README**: ภาพรวมโปรเจ็ค, setup, การใช้
+2. **API Docs**: Endpoints, parameters, responses
+3. **Code Comments**: เอกสาร inline
+4. **Architecture**: เอกสารการออกแบบระบบ
+
+## นำเสนอ:
+```markdown
+## 📚 เอกสาร: [เป้าหมาย]
+
+[เอกสารที่สร้างในรูปแบบที่เหมาะสม]
+```
+
+## ถ้ามีสาระสำคัญ → บันทึกใน ψ/writing/
+
+ตอบเป็นภาษาไทย
+"""

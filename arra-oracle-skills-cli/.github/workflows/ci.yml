@@ -1,0 +1,68 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+      - run: bun install
+      - run: bun run compile
+      - run: bun test
+
+  smoke:
+    name: Smoke (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [macos-latest, windows-latest]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+      - run: bun install
+      - run: bun test __tests__/smoke.test.ts
+        env:
+          SKIP_CAL: ${{ runner.os == 'Windows' && '1' || '' }}
+
+  cli:
+    name: CLI
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+      - run: bun install
+      - run: bun run src/cli/index.ts --help
+      - run: bun run src/cli/index.ts agents
+      - run: bun run src/cli/index.ts --list
+        timeout-minutes: 2
+
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    needs: [test, smoke, cli]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+      - run: bun install
+      - run: bun run build
+      - run: test -f dist/index.js
+
+  compile:
+    name: Compile (skills)
+    runs-on: ubuntu-latest
+    needs: [test]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+      - run: bun install
+      - name: Compile skills to commands
+        run: bun run compile
+      - name: Verify compiled commands exist
+        run: ls src/commands/*.md | wc -l

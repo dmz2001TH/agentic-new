@@ -1,0 +1,170 @@
+ 🏗️ Oracle Master System: The Architect's Installation Bible
+  (สำหรับ Windows 11 + WSL 2 (Ubuntu 24.04) + Gemini CLI)
+
+  🟦 PHASE 1: การเตรียมฐานราก (Environment Hardening)
+
+  ใน Windows เราจะใช้ PowerShell (Admin) และใน Linux เราจะใช้ Ubuntu Terminal
+
+  1.1 ตั้งค่าทรัพยากร WSL (.wslconfig)
+  เพื่อป้องกัน Agent กินแรมเครื่องจนค้าง ให้สร้างไฟล์นี้ใน C:\Users\YourUser\.wslconfig:
+
+   1 [wsl2]
+   2 memory=8GB   # ปรับตามแรมเครื่อง
+   3 processors=4
+
+  1.2 ติดตั้งหัวใจของระบบ (The Runtimes)
+  ใน WSL (Ubuntu):
+
+   1 # อัปเกรดระบบ
+   2 sudo apt update && sudo apt upgrade -y
+   3 # ติดตั้ง Tooling หลัก
+   4 sudo apt install -y tmux git unzip curl build-essential
+   5 # ติดตั้ง Bun (หัวใจในการรัน Agent)
+   6 curl -fsSL https://bun.sh/install | bash
+   7 source ~/.bashrc
+   8 # ตรวจสอบเวอร์ชัน (ต้อง v1.1 ขึ้นไป)
+   9 bun --version
+
+  ---
+
+  🟩 PHASE 2: โครงสร้างหน่วยความจำ (Data & File Architecture)
+
+  ระบบ Oracle ใช้สัญลักษณ์ ψ (Psi) เป็นตัวแทนของจิตสำนึกถาวร
+
+  2.1 สร้าง Workspace (Windows Side)
+  ใน PowerShell:
+
+   1 mkdir C:\Agentic
+   2 cd C:\Agentic
+   3
+   4 # สร้างโฟลเดอร์หน่วยความจำถาวร (The Memory Core)
+   5 mkdir ψ\inbox, ψ\memory\retrospective, ψ\memory\checkpoints, ψ\memory\archive, ψ\writing, ψ\lab, ψ\vault, ψ\agents, ψ\resonance
+   6
+   7 # สร้างโฟลเดอร์สำหรับโครงสร้างจักรวาล (PSI Universe)
+   8 mkdir psi\resonance, psi\rooms, psi\agents
+
+  2.2 เชื่อมต่อโลก (WSL Symlink)
+  เพื่อให้ Agent ใน Linux เห็นไฟล์ใน Windows ได้รวดเร็ว:
+  ใน WSL:
+
+   1 ln -s /mnt/c/Agentic ~/Agentic
+   2 cd ~/Agentic
+
+  ---
+
+  🟨 PHASE 3: การประกอบร่าง (Core Repositories Setup)
+
+  เราจะใช้ bun install เท่านั้นเพื่อความเร็วและเข้ากันได้กับ maw-js
+
+  3.1 Clone & Install (รันทีละตัว)
+  ใน WSL หรือ PowerShell:
+
+    1 # 1. ระบบควบคุมทีม (Maw)
+    2 git clone https://github.com/Soul-Brews-Studio/maw-js
+    3 cd maw-js && bun install && cd ..
+    4
+    5 # 2. หน้าจอ Dashboard (UI)
+    6 git clone https://github.com/Soul-Brews-Studio/maw-ui
+    7 cd maw-ui && bun install && cd ..
+    8
+    9 # 3. ระบบความจำ (Oracle v3)
+   10 git clone https://github.com/Soul-Brews-Studio/arra-oracle-v3
+   11 cd arra-oracle-v3 && bun install && cd ..
+   12
+   13 # 4. ชุดคำสั่ง (Skills)
+   14 git clone https://github.com/Soul-Brews-Studio/arra-oracle-skills-cli
+   15 cd arra-oracle-skills-cli && bun install && cd ..
+
+  ---
+
+  🟧 PHASE 4: การลงวิชา (Intelligence & Skills Installation)
+
+  นี่คือขั้นตอนที่ทำให้ Agent "ฉลาด" และรู้จัก Dashboard
+
+  4.1 ติดตั้งทักษะเข้าสู่ Gemini CLI
+  ใน PowerShell:
+
+   1 cd C:\Agentic\arra-oracle-skills-cli
+   2 # รันตัวติดตั้งทักษะ (7 Skills หลักจะถูกติดตั้ง)
+   3 bun run src/cli/index.ts install
+
+  4.2 สร้างคำสั่งเริ่มต้น (Initial Awakening)
+  รัน gemini แล้วพิมพ์คำสั่งแรก:
+   1 /awaken
+  (คำสั่งนี้จะสร้างไฟล์ identity.md และ hydrate ความจำครั้งแรก)
+
+  ---
+
+  🟥 PHASE 5: การตั้งค่าพิกัดพอร์ต (The Trinity Configuration)
+
+  5.1 ตั้งค่า maw.config.json (ใน maw-js/)
+
+    1 {
+    2   "host": "localhost",
+    3   "port": 3456,
+    4   "psiRoot": "C:/Agentic/psi",
+    5   "project": {
+    6     "name": "oracle-project",
+    7     "path": "C:/Agentic",
+    8     "memoryPath": "C:/Agentic/ψ"
+    9   },
+   10   "agents": [
+   11     { "name": "Neo-Architect", "role": "Builder", "path": "C:/Agentic/oracle-v2" },
+   12     { "name": "AgenticS-Mirror", "role": "Mirror", "path": "C:/Agentic/maw-js" }
+   13   ]
+   14 }
+
+  5.2 ตั้งค่า .env (ใน arra-oracle-v3/)
+
+   1 PORT=47778
+   2 ORACLE_DATA_DIR=C:/Agentic/ψ/vault
+   3 OLLAMA_BASE_URL=http://localhost:11434
+   4 CORS_ORIGIN=*
+
+  ---
+
+  🟪 PHASE 6: พิธีปลุกระบบ (The Trinity Awakening Sequence)
+
+  ต้องรันตามลำดับนี้เพื่อให้ข้อมูลไม่หลุด (Sequence Matters):
+
+  Terminal 1: ปลุกความจำ (API 47778)
+  ใน arra-oracle-v3/:
+
+   1 bun run server
+
+  Terminal 2: ปลุกตัวคุมทีม (Backend 3456)
+  ใน maw-js/ (รันใน WSL เท่านั้น!):
+
+   1 bun run src/cli.ts serve 3456
+
+  Terminal 3: ปลุกหน้าจอ (UI 5173)
+  ใน maw-ui/:
+
+จากที่ผมวิเคราะห์ "พิมพ์เขียว" และ "ระบบ" ในเครื่องคุณ สิ่งที่เราใช้รัน Agent ทั้งหมดมี 5 องค์ประกอบหลัก (The Five Pillars) ดังนี้ครับ:        
+
+  1. 🌍 WSL (Ubuntu 24.04) — "บ้านของ Agent"
+   - ทำหน้าที่: เป็นระบบปฏิบัติการหลักที่ Agent อาศัยอยู่จริง
+   - เหตุผลที่ต้องมี: เพื่อความเสถียรของ tmux (Native Linux) ซึ่ง Dashboard maw-js ออกแบบมาให้สื่อสารผ่านระบบนี้ได้แม่นยำที่สุด
+
+  2. 🛋️ Tmux (Terminal Multiplexer) — "ร่างของ Agent"
+   - ทำหน้าที่: เป็นเซสชันเทอร์มินัลที่ Agent รันอยู่
+   - เหตุผลที่ต้องมี: ทำให้ Agent สามารถทำงานค้างไว้ได้ใน Background แม้เราจะปิดหน้าต่างไป และเป็นตัวส่ง "ภาพหน้าจอ" (Screen Buffer) ไปแสดงผลที่ Dashboard
+
+
+  3. ⚡ Bun (The Fast Runtime) — "พลังงานของ Agent"
+   - ทำหน้าที่: เป็นตัวรันโค้ด TypeScript/JavaScript ทั้งหมดในโปรเจ็ค
+   - เหตุผลที่ต้องมี: ใช้รันทั้ง maw-js, oracle-v2 และสคริปต์ใน scripts/ ด้วยความเร็วสูงและรองรับระบบไฟล์ที่ทันสมัย
+
+  4. 🧠 Oracle Master System (Trinity Ports) — "สมองและดวงตา"
+   - 3456 (Maw Server): ตัวคุมทีม (Orchestrator) จัดการ Fleet และ Broker
+   - 47778 (Oracle API): ตัวจัดการความจำถาวร (Memory) และความรู้ (Knowledge Base)
+   - 5173 (Maw UI/Vite): แดชบอร์ดที่เป็น "ดวงตา" ให้เรามองเห็นสิ่งที่ Agent กำลังทำ
+
+  5. 🛠️ arra-oracle-skills-cli — "ทักษะของ Agent"
+   - ทำหน้าที่: ติดตั้งชุดคำสั่ง (Skills) เช่น /awaken, /recap, /rrr
+   - เหตุผลที่ต้องมี: เปรียบเสมือนการ "โหลดวิชา" ให้ Agent รู้ว่าต้องสื่อสารกับความจำถาวร (ψ/) และรายงานตัวเข้า Dashboard อย่างไร
+
+  สรุปสั้นๆ: เราใช้ WSL เป็นฐาน, Tmux เป็นร่าง, Bun เป็นแรงขับเคลื่อน, Maw/Oracle เป็นสมอง, และ Skills CLI เป็นวิชาความรู้ครับ
+
+  วันนี้คุณอยากให้ผมเริ่มทดสอบ "ร่าง" (Tmux) หรือ "สมอง" (Oracle API) ส่วนไหนก่อนดีครับ?
+

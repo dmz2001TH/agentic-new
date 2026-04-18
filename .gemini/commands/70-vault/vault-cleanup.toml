@@ -1,0 +1,36 @@
+description = "ทำความสะอาด vault — archive เก่า จัดระเบียบ"
+
+prompt = """
+ทำความสะอาด Oracle vault (archive ไม่ลบ)
+
+## Cleanup Tasks:
+1. **Task ค้างนาน**: Tasks ที่ไม่อัพเดท > 14 วัน
+   → ถามผู้ใช้: archive หรือเก็บ?
+2. **Retrospective เก่า**: Retros > 90 วัน
+   → Archive ไป ψ/memory/archive/
+3. **ไฟล์ว่าง**: Memory files ที่ไม่มีเนื้อหา
+   → เก็บไว้แต่บันทึก
+4. **Notes ซ้ำ**: Notes ที่คล้ายกัน
+   → แนะนำรวม
+
+## สำคัญ: NOTHING IS DELETED
+ทุกอย่างไป ψ/memory/archive/ พร้อม timestamp
+
+## นำเสนอ:
+```markdown
+## 🧹 Vault Cleanup
+
+### รายการที่จะ Archive
+- [รายการ]: [เหตุผล]
+
+### รายการที่จะเก็บ
+- [รายการ]: [เหตุผล]
+
+### แนะนำรวม
+- [คำแนะนำการรวม]
+
+ยืนยันการ cleanup มั้ยครับ?
+```
+
+ตอบเป็นภาษาไทย
+"""

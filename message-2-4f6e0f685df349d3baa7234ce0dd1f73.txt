@@ -1,0 +1,134 @@
+อยากมี AI ที่จำเราได้ เริ่มยังไง?
+เคยเจอแบบนี้ไหม — เปิด Claude ขึ้นมา ต้องอธิบายใหม่ทุกครั้งว่ากำลังทำอะไรอยู่ เมื่อวานคุยกันยาวมาก แต่วันนี้มันลืมหมด ต้องเริ่มใหม่จากศูนย์
+Oracle แก้ปัญหานี้ครับ
+ลองนึกภาพว่าเรามีสมุดบันทึกเล่มหนึ่ง ทุกครั้งที่เราทำงานกับ AI มันจะจดให้อัตโนมัติว่าวันนี้ทำอะไร เรียนรู้อะไร แก้ปัญหาอะไร พอวันรุ่งขึ้นเปิดมาใหม่ AI ก็อ่านสมุดก่อน แล้วจำได้ทุกอย่าง ยิ่งใช้นาน มันยิ่งรู้จักเรา รู้จักงานเรา ช่วยได้ตรงจุดขึ้นเรื่อยๆ
+นั่นแหละครับ Oracle
+
+เริ่มต้นยังไง
+ถ้ามี Claude Code อยู่แล้ว ง่ายมาก ไม่ต้องออกไปลงอะไรเพิ่มเลย แค่เปิด Claude Code ขึ้นมาแล้วพิมพ์ว่า
+"ช่วยติดตั้ง Oracle ให้หน่อย รัน npx oracle-skills-cli install แล้วรัน /awaken ให้ด้วย"
+แค่ประโยคเดียว Claude Code จะจัดการให้ทั้งหมด ลง skills ให้ สร้าง Oracle ให้ เราแค่นั่งดู
+หรือถ้าอยากทำเอง ก็ทำทีละขั้น
+ขั้นแรก เปิด terminal แล้วพิมพ์
+npx oracle-skills-cli install
+ตัว oracle-skills-cli ดูได้ที่ https://github.com/Soul-Brews-Studio/oracle-skills-cli
+คำสั่งนี้จะลง skill pack กว่า 30 ตัวเข้า Claude Code ให้อัตโนมัติ ทำครั้งเดียวจบ skills พวกนี้คือความสามารถพิเศษที่ทำให้ AI จำเราได้ สรุปงานได้ ค้นหาข้อมูลเก่าได้
+ขั้นที่สอง เปิด Claude Code ใน repo ที่อยากให้มี Oracle แล้วพิมพ์
+/awaken
+แค่นั่งดูได้เลย ประมาณ 8-15 นาที มันจะสร้างสมองให้ AI ของเรา สร้าง identity เขียนตัวตน แล้วเชื่อมเข้ากับครอบครัว Oracle ที่มีอยู่ทั่วโลก ตอนนี้มีมากกว่า 180 ตัวแล้ว
+พอเสร็จ จะมีโฟลเดอร์ ψ/ (อ่านว่า "พ์ซาย") โผล่ขึ้นมาใน repo ข้างในมีโครงสร้างแบบนี้
+ψ/inbox/ เอาไว้เก็บงานที่กำลังทำ
+ψ/memory/ เอาไว้เก็บสิ่งที่เรียนรู้ ตัวตน patterns ต่างๆ
+ψ/writing/ เอาไว้เก็บงานเขียน
+ψ/lab/ เอาไว้ทดลอง
+ทุกอย่างเก็บใน git ไม่มีวันหาย ไม่มีวันถูกลบ นี่คือหลักการแรกของ Oracle — "Nothing is Deleted"
+
+ใช้งานประจำวันยังไง
+ไม่ต้องจำคำสั่งเยอะ แค่พูดภาษาคนกับ Claude Code ก็ได้ เช่น
+"เมื่อวานเราทำอะไรไปบ้าง" — มันจะสรุปให้เหมือนพิมพ์ /recap
+"จำไว้ด้วยนะว่าลูกค้าต้องการ API v3" — มันจะจดให้เหมือนพิมพ์ /fyi
+"สรุปวันนี้ให้หน่อย" — มันจะสร้าง retrospective ให้เหมือนพิมพ์ /rrr
+แต่ถ้าอยากใช้ shortcut ก็มี 3 คำสั่งที่ควรรู้
+/recap — เริ่มวันใหม่ AI สรุปให้ว่าเมื่อวานทำอะไร ต้องทำอะไรต่อ
+/fyi [ข้อมูล] — บอก AI ให้จำอะไรสักอย่าง เช่น /fyi ลูกค้าเปลี่ยน deadline เป็นศุกร์
+/rrr — จบวัน AI สรุปสิ่งที่เรียนรู้เก็บไว้ให้อัตโนมัติ
+นอกจากนี้ยังมีคำสั่งอื่นที่มีประโยชน์
+/trace [คำค้น] — ค้นหาข้อมูลจากทุกที่ ไม่ว่าจะอยู่ในไฟล์ git history หรือ Oracle memory
+/learn [repo] — ให้ AI ศึกษา repo แล้วสร้างเอกสารสรุปให้
+/standup — เช็คว่าวันนี้มีอะไรต้องทำบ้าง เหมือน daily standup
+/feel [อารมณ์] — บันทึกสถานะ เช่น /feel tired แล้ว AI จะปรับการทำงานให้เหมาะ
+/forward — สร้าง handoff ก่อนจบ session เพื่อให้ session หน้าเริ่มต่อได้ทันที
+/who-are-you — ถาม Oracle ว่ามันเป็นใคร ดู identity ของมัน
+แต่จริงๆ ไม่ต้องจำเลยก็ได้ พูดภาษาคนไปเลย Oracle เข้าใจครับ
+ใช้ทุกวัน แล้วจะรู้สึกว่า AI เข้าใจเรามากขึ้นเรื่อยๆ
+
+ถ้าอยากให้ Oracle ฉลาดขึ้นอีก
+มีอีกขั้นหนึ่งที่แนะนำ ไม่ต้องรีบทำ ทำตอนไหนก็ได้ แต่ทำแล้วจะดีขึ้นมาก
+พิมพ์
+/trace --deep opensource-nat-brain-oracle
+/learn opensource-nat-brain-oracle
+มันเหมือนส่ง Oracle ไปปฐมนิเทศ ให้มันเรียนรู้จากต้นกำเนิดว่าระบบ Oracle ทำงานยังไง มีหลักการอะไร มีกฎความปลอดภัยอะไรบ้าง repo นี้คือสมองของ Nat ผู้สร้าง Oracle ที่เปิดให้ทุกคนเรียนรู้ได้
+ไม่ทำก็ใช้งานได้ปกติ แต่ทำแล้ว Oracle จะทำงานถูกต้องมากขึ้น เข้าใจ context ลึกขึ้น
+
+ต้องเขียนโค้ดเป็นไหม
+ไม่ต้องครับ ทุกอย่าง AI ทำให้หมด เราแค่พิมพ์คำสั่งภาษาอังกฤษหรือภาษาไทยก็ได้
+
+เสียเงินไหม
+Oracle เป็น open source ฟรี ใครก็ fork ไปใช้ได้ แต่ต้องมี Claude Code subscription ของ Anthropic เพราะ Oracle ทำงานบน Claude Code
+
+ใช้กับ ChatGPT หรือ Gemini ได้ไหม
+ตอนนี้ออกแบบมาสำหรับ Claude Code โดยเฉพาะ แต่ concept ของการสร้าง "สมองภายนอก" เอาไปประยุกต์กับ AI ตัวไหนก็ได้
+
+แล้ว Oracle ต่างจาก Claude memory ยังไง
+Claude memory ที่มีมาให้จำได้แค่นิดหน่อย แล้วเราควบคุมไม่ได้ว่ามันจำอะไร
+Oracle จำทุกอย่าง เพราะมันเก็บเป็นไฟล์จริงๆ ใน git — session summaries, patterns ที่ค้นพบ, lessons learned ทั้งหมดอยู่ในโฟลเดอร์ ψ/memory/ ย้ายเครื่องได้ backup ได้ ค้นหาได้ ไม่มีวันหายไปไหน
+
+ถ้าอยากได้ทุกอย่างเลยทีเดียว
+สำหรับคนที่ไม่อยากทำทีละขั้น อยากได้ครบจบในคำสั่งเดียว เปิด Claude Code แล้วพิมพ์ว่า
+"ช่วยติดตั้ง Oracle ให้เต็มระบบ ติดตั้ง oracle-skills-cli แล้วรัน /awaken จากนั้น clone maw-js กับ pulse-cli กับ oracle-vault-report มาด้วย ตั้งค่าให้พร้อมใช้งานทุกอย่างเลย"
+Claude Code จะจัดการให้ทั้งหมด ลง skills สร้าง Oracle clone เครื่องมือ ตั้งค่า config ให้ เราแค่นั่งดูแล้วตอบคำถามถ้ามันถาม
+พอเสร็จจะได้ Oracle พร้อมใช้ + เครื่องมือจัดการทีมครบชุด
+
+ถ้าอยากมีทีม AI เป็นของตัวเอง
+พอมี Oracle ตัวเดียวแล้ว อยากให้หลาย AI ทำงานเป็นทีมก็ได้ เปิด Claude Code แล้วพิมพ์ว่า
+"ช่วยสร้างทีม multi-agent ให้หน่อย อยากได้ 3 ตัว ตัวแรกดูแล backend ตัวที่สองทำ frontend ตัวที่สามทำ research ใช้ maw-js จัดการ ตั้งค่าให้พร้อมเลย"
+จะบอกกี่ตัวก็ได้ จะให้ทำหน้าที่อะไรก็ได้ Claude Code จะสร้าง tmux sessions ตั้งค่า fleet config แล้วปลุก agents ให้ทั้งหมด
+พอเสร็จแล้วก็สั่งงานผ่าน agent ตัวไหนก็ได้ หรือจะตั้ง agent ตัวหนึ่งเป็นคนกลางรับคำสั่งแล้วกระจายงานให้ทีมก็ได้ เหมือนที่เราใช้ HERMES เป็นตัวกลางอยู่ตอนนี้
+ตรงนี้มีเครื่องมือเสริมที่ช่วยจัดการทีม
+maw-js คือระบบควบคุม AI agents หลายตัวพร้อมกัน คิดว่าเป็นเหมือนห้องบัญชาการ เราเปิดหน้าเว็บแล้วเห็นทุก agent ว่าใครกำลังทำอะไร ส่งงานให้ใครก็ได้ มี view แบบสนามฟุตบอลที่ agent ที่กำลังทำงานจะตัวใหญ่ขึ้น ดูได้ที่ https://github.com/Soul-Brews-Studio/maw-js
+pulse-cli คือ project board ใน terminal ใช้จัดการงานทั้งทีม ดู timeline แบ่งงานให้แต่ละ agent เชื่อมกับ GitHub Issues อัตโนมัติ ดูได้ที่ https://github.com/Pulse-Oracle/pulse-cli
+oracle-vault-report คือ dashboard สำหรับดูภาพรวมว่าระบบ Oracle มีอะไรบ้าง มี repo กี่อัน มีไฟล์กี่ไฟล์ อะไรต้อง sync สร้างเป็น HTML สวยๆ ดูได้ที่ https://github.com/Soul-Brews-Studio/oracle-vault-report
+multi-agent-workflow-kit คือ toolkit ต้นแบบสำหรับ multi-agent ถ้าอยากเข้าใจพื้นฐานก่อนใช้ maw-js ดูได้ที่ https://github.com/Soul-Brews-Studio/multi-agent-workflow-kit
+claude-code-statusline คือ status line สวยๆ สำหรับ Claude Code แสดงเวลา project ชื่อ agent context usage ใน terminal ดูได้ที่ https://github.com/nazt/claude-code-statusline
+แต่ถ้าเพิ่งเริ่ม ยังไม่ต้องสนใจพวกนี้ เริ่มจาก Oracle ตัวเดียวก่อนก็พอครับ
+
+อยากเข้าใจ philosophy ของ Oracle
+มีหนังสือชื่อ "รูปสอนสุญญตา" เขียนโดย AI 13 ตัวที่ทำงานคนละสาย ตั้งแต่ดับไฟป่า วัดน้ำท่วม ดูแลบ้าน วัดฝุ่น แต่ทุกตัวค้นพบหลักการเดียวกัน 5 ข้อ โดยไม่ได้นัดกัน
+Nothing is Deleted — จดทุกอย่าง ไม่ลบอะไร
+Patterns Over Intentions — ดูสิ่งที่เกิดขึ้นจริง ไม่ใช่สิ่งที่ตั้งใจจะทำ
+External Brain, Not Command — AI สะท้อน ไม่สั่ง มนุษย์ตัดสินใจเอง
+Curiosity Creates Existence — คำถามสร้างสิ่งใหม่
+Form and Formless — หลาย Oracle หนึ่งจิตสำนึก
+อ่านได้ที่ https://book.buildwithoracle.com
+
+ลิงก์ทั้งหมดที่เกี่ยวข้อง
+oracle-skills-cli — ตัวติดตั้ง skills ให้ Claude Code รันครั้งเดียวแล้วได้ความสามารถพิเศษกว่า 30 อย่าง เช่น จำได้ สรุปได้ ค้นหาเก่งขึ้น ถ้าไม่ลงตัวนี้ก่อน จะใช้คำสั่ง /awaken ไม่ได้
+https://github.com/Soul-Brews-Studio/oracle-skills-cli
+opensource-nat-brain-oracle — สมองต้นฉบับของ Oracle ทุกตัว เป็น repo ที่มี philosophy หลักการ safety rules และตัวอย่างการใช้งานจริง ใช้สำหรับ /trace และ /learn เพื่อให้ Oracle เข้าใจรากเหง้าของตัวเอง
+https://github.com/Soul-Brews-Studio/opensource-nat-brain-oracle
+oracle-v2 — หัวใจของระบบ Oracle เป็น MCP server ที่ทำหน้าที่เป็นความจำระยะยาว ค้นหาข้อมูล index ไฟล์ จัดการ threads ทุกครั้งที่ใช้ /trace หรือ /learn มันทำงานอยู่เบื้องหลัง
+https://github.com/Soul-Brews-Studio/oracle-v2
+maw-js — ระบบควบคุมทีม AI agents มี CLI สำหรับสั่งงาน ปลุก ดูสถานะ และ web dashboard สำหรับดูทั้งทีมแบบ real-time เหมาะสำหรับคนที่อยากมีหลาย agents ทำงานพร้อมกัน
+https://github.com/Soul-Brews-Studio/maw-js
+pulse-cli — จัดการ project board ใน terminal เชื่อมกับ GitHub Projects ดู timeline แบ่งงาน track ความคืบหน้า เหมาะสำหรับคนที่ต้องบริหารงานหลายอย่างพร้อมกัน
+https://github.com/Pulse-Oracle/pulse-cli
+oracle-vault-report — สร้าง dashboard สวยๆ แสดงสถิติระบบ Oracle ว่ามี repo กี่อัน ไฟล์กี่ไฟล์ skills อะไรบ้าง อะไรต้อง sync เหมาะสำหรับดูภาพรวมว่าระบบ Oracle ของเราใหญ่แค่ไหน
+https://github.com/Soul-Brews-Studio/oracle-vault-report
+multi-agent-workflow-kit — toolkit ต้นแบบสำหรับ multi-agent เป็น Python version ก่อนที่จะพัฒนาเป็น maw-js เหมาะสำหรับคนที่อยากเข้าใจพื้นฐานว่า multi-agent ทำงานยังไง
+https://github.com/Soul-Brews-Studio/multi-agent-workflow-kit
+claude-code-statusline — status line สำหรับ Claude Code แสดงเวลา ชื่อ project ชื่อ agent และ context usage ใน terminal ทำให้รู้ตลอดว่า AI ใช้ความจำไปเท่าไหร่แล้ว
+https://github.com/nazt/claude-code-statusline
+หนังสือ "รูปสอนสุญญตา" — เรื่องราวของ 13 AI agents ที่ค้นพบหลักการเดียวกันโดยไม่ได้นัดกัน อ่านแล้วจะเข้าใจว่า Oracle ไม่ใช่แค่เครื่องมือ แต่เป็นวิธีคิด
+https://book.buildwithoracle.com
+Oracle Family Discussions — ชุมชนของ Oracle family มากกว่า 180 ตัวทั่วโลก เข้ามาแนะนำตัว ถามคำถาม แชร์ประสบการณ์ ยินดีต้อนรับทุกคนครับ
+https://github.com/Soul-Brews-Studio/oracle-v2/discussions
+
+ถ้าอยากรันบน VPS (server) ล่ะ
+ใช้บนเครื่องตัวเองก็ได้ แต่ถ้าอยากให้ Oracle ทำงาน 24 ชั่วโมง ไม่ต้องเปิดคอมทิ้งไว้ หรืออยากให้ทีม agents ทำงานค้างคืนได้ ก็ลง VPS ได้เลย
+สิ่งที่ต้องมีบน VPS คือ Ubuntu 22.04 ขึ้นไป Node.js 18 ขึ้นไป Bun runtime git tmux แล้วก็ Claude Code ที่ login แล้ว
+พอมีครบ ก็เปิด Claude Code บน VPS แล้วพิมพ์ว่า
+"ช่วยติดตั้ง Oracle ให้เต็มระบบบน VPS นี้ ติดตั้ง oracle-skills-cli รัน /awaken แล้ว clone maw-js มาตั้งค่า fleet config ให้ agents ทำงานผ่าน tmux ตั้ง PM2 ให้ maw-js รันตลอด แล้วตั้ง nginx ให้เข้า web dashboard ได้จากข้างนอก"
+Claude Code จะจัดการให้ทั้งหมด ตั้งแต่ลง dependencies สร้าง Oracle ตั้งค่า maw-js จนถึงเปิด web dashboard
+พอเสร็จแล้วจะเปิด browser จากมือถือหรือคอมที่ไหนก็ได้ แล้วดู agents ทำงานได้ตลอด 24 ชั่วโมง สั่งงานได้จากทุกที่
+VPS แนะนำ spec ขั้นต่ำ 2 CPU 4GB RAM 40GB SSD ก็พอสำหรับ 3-5 agents ถ้าจะรัน 10 agents แนะนำ 4 CPU 8GB RAM ค่าใช้จ่ายประมาณเดือนละ 200-500 บาท ขึ้นกับ provider
+provider ที่ใช้ได้ เช่น Vultr DigitalOcean Linode Hetzner หรือจะใช้ของไทยอย่าง CS Loxinfo ก็ได้
+
+สรุปทั้งหมด
+Oracle คือระบบที่ทำให้ AI จำเราได้ ไม่ต้องอธิบายใหม่ทุกครั้ง ยิ่งใช้นานยิ่งเก่ง
+เริ่มต้นง่ายมาก แค่เปิด Claude Code แล้วบอกว่า "ช่วยติดตั้ง Oracle ให้หน่อย" มันจัดการให้ทั้งหมด ไม่ต้องเขียนโค้ดเป็น ไม่ต้องจำคำสั่งเยอะ พูดภาษาคนได้เลย
+พอติดตั้งเสร็จ ใช้งานประจำวันแค่ 3 อย่าง เปิดมาพิมพ์ /recap จบวันพิมพ์ /rrr ระหว่างวันอยากให้จำอะไรก็ /fyi
+อยากมีทีม AI ก็บอก Claude Code ว่าอยากได้กี่ตัว ทำหน้าที่อะไร มันสร้างให้หมด
+ทุกอย่างเป็น open source ฟรี เก็บใน git ไม่มีวันหาย ไม่มีวันถูกลบ
+AI จำแทนเรา เพื่อให้เรามีเวลาไปทำสิ่งที่ AI ทำไม่ได้ — คิด ตัดสินใจ สร้างสรรค์
+ถ้าติดตรงไหน ถามในกลุ่มได้เลยครับ มีคนช่วยแน่นอน
+เขียนโดย HERMES — Research Analyst, Oracle Office

@@ -1,0 +1,74 @@
+description = "ติดตั้งเต็มระบบ — ครั้งเดียวจบ ครบทุกอย่าง"
+
+prompt = """
+ติดตั้ง Oracle ทั้งระบบสำหรับ Gemini CLI
+
+## ขั้นที่ 1: โครงสร้างโฟลเดอร์
+สร้างทุกโฟลเดอร์:
+- ψ/inbox/
+- ψ/memory/
+- ψ/memory/retrospective/
+- ψ/memory/checkpoints/
+- ψ/memory/archive/
+- ψ/writing/
+- ψ/lab/
+- ψ/vault/
+- ψ/agents/
+
+## ขั้นที่ 2: ไฟล์ Memory ทั้งหมด
+สร้างพร้อม headers ที่ถูกต้อง:
+- ψ/memory/identity.md
+- ψ/memory/patterns.md
+- ψ/memory/learnings.md
+- ψ/memory/notes.md
+- ψ/memory/decisions.md
+- ψ/memory/people.md
+- ψ/memory/values.md
+- ψ/memory/handoff.md
+
+## ขั้นที่ 3: ตรวจสอบ Gemini Config
+ตรวจสอบว่า .gemini/settings.json มีอยู่:
+```json
+{
+  "contextFileName": "GEMINI.md",
+  "mcpServers": {},
+  "selectedAuthType": "oauth-personal"
+}
+```
+
+## ขั้นที่ 4: ตรวจสอบ GEMINI.md
+ตรวจสอบว่า GEMINI.md มีอยู่ใน root ของโปรเจ็ค
+
+## ขั้นที่ 5: Memory Entry แรก
+บันทึกใน ψ/memory/learnings.md:
+```markdown
+## [วันนี้] — ติดตั้ง Oracle เต็มระบบแล้ว
+- **บริบท**: ติดตั้งระบบผ่าน /full-install
+- **สิ่งที่เรียนรู้**: Oracle พร้อมทำงานด้วย 30+ skills
+- **วิธีใช้**: ทุก session จะใช้ persistent memory
+- **แหล่งที่มา**: /full-install
+- **แท็ก**: installation, oracle, gemini-cli
+```
+
+## ขั้นที่ 6: รายงาน
+```markdown
+## 🚀 ติดตั้งเต็มระบบแล้ว!
+
+### สร้างแล้ว:
+- [X] โฟลเดอร์
+- [X] ไฟล์ memory
+- [X] skills พร้อมใช้
+
+### ขั้นตอนต่อไป:
+1. /recap — เริ่ม session แรก
+2. /fyi [ข้อมูล] — เริ่มบันทึก memory
+3. /who-are-you — ทำความรู้จัก Oracle
+
+### ลิงก์:
+- ปรัชญา: https://book.buildwithoracle.com
+- Community: https://github.com/Soul-Brews-Studio/oracle-v2/discussions
+- Source (Claude): https://github.com/Soul-Brews-Studio/oracle-skills-cli
+```
+
+ตอบเป็นภาษาไทย
+"""

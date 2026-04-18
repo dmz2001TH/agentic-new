@@ -1,0 +1,52 @@
+description = "สร้างรายงานสรุปภาพรวม — ดูว่าระบบใหญ่แค่ไหน"
+
+prompt = """
+สร้างรายงาน Oracle vault ฉบับสมบูรณ์
+
+บันทึกใน ψ/vault/report-[วันนี้].md:
+
+```markdown
+# Oracle Vault Report — [วันที่]
+
+## Executive Summary
+- Project: [ชื่อ]
+- Platform: Gemini CLI (Windows, Google Login)
+- Oracle Age: [จำนวนวันนับจากสร้าง]
+- Sessions ทั้งหมด: [จำนวน]
+- Learnings ทั้งหมด: [จำนวน]
+- Patterns ทั้งหมด: [จำนวน]
+
+## ระบบ Memory
+[สถานะ memory เต็ม]
+
+## ระบบ Task
+[สถานะ task เต็ม]
+
+## คลังความรู้
+### Top Patterns
+1. [pattern ที่อ้างอิงมากที่สุด]
+2. [pattern]
+3. [pattern]
+
+### Top Learnings
+1. [learning ที่อ้างอิงมากที่สุด]
+2. [learning]
+3. [learning]
+
+## Activity Timeline
+- [วันที่]: [เหตุการณ์สำคัญ]
+- [วันที่]: [เหตุการณ์สำคัญ]
+
+## Health Score: [X/10]
+- ความครบถ้วน Memory: [X/10]
+- การจัดการ Task: [X/10]
+- ความเร็วในการเรียนรู้: [X/10]
+- ความสม่ำเสมอ: [X/10]
+
+## คำแนะนำ
+1. [ปรับปรุง]
+2. [ปรับปรุง]
+```
+
+ตอบเป็นภาษาไทย
+"""

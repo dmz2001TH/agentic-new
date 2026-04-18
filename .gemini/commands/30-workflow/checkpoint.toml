@@ -1,0 +1,38 @@
+description = "Checkpoint — บันทึกสถานะกลางงาน เหมือน save game"
+
+prompt = """
+สร้าง checkpoint กลางงาน
+
+บริบท: $ARGUMENTS
+
+## กระบวนการ:
+1. Snapshot สถานะปัจจุบันของทุก task ที่ active
+2. บันทึก checkpoint: ψ/memory/checkpoints/[วันนี้-HH-MM].md
+
+```markdown
+# Checkpoint — [YYYY-MM-DD HH:MM]
+
+## Active Tasks
+| Task | สถานะ | ความคืบหน้า |
+|------|--------|-------------|
+| [task] | [สถานะ] | [X/Y subtasks] |
+
+## Focus ปัจจุบัน
+- [สิ่งที่กำลังทำ RIGHT NOW]
+- [ขั้นตอน/บรรทัด/บริบทที่แน่นอน]
+
+## การเปลี่ยนแปลงล่าสุด
+- [สิ่งที่เพิ่งทำ]
+- [ไฟล์ที่แก้ไข]
+
+## Notes ด่วน
+- [ข้อสังเกตด่วน]
+```
+
+3. อัพเดท handoff.md พร้อมอ้างอิง checkpoint
+
+## ยืนยัน:
+"💾 Checkpoint saved → ψ/memory/checkpoints/[timestamp].md"
+
+ตอบเป็นภาษาไทย
+"""
