@@ -97,6 +97,16 @@ export async function startServer(port = 4000) {
     }
   } catch { /* tmux may not be running */ }
 
+  // Ensure essential tmux sessions exist (survives tmux kill-server)
+  try {
+    const { execSync } = require("child_process");
+    const ensureScript = join(import.meta.dir, "..", "..", "..", "scripts", "ensure-agents.sh");
+    if (existsSync(ensureScript)) {
+      execSync(`bash ${ensureScript}`, { stdio: "pipe" });
+      console.log("[startup] ensured agent sessions");
+    }
+  } catch (err) { console.error("[startup] ensure-agents failed:", err); }
+
   // Connect transport router (non-blocking — server starts even if transports fail)
   try {
     const router = createTransportRouter();
