@@ -170,7 +170,7 @@ export async function startServer(port = 4000) {
       if (server.upgrade(req, { data: { target: null, previewTargets: new Set() } as WSData })) return;
       return new Response("WebSocket upgrade failed", { status: 400 });
     }
-    // Elysia handles all /api/* routes
+    // Elysia handles all /api/* routes (including /api/upload)
     if (url.pathname.startsWith("/api")) {
       return api.handle(req);
     }

@@ -1,69 +1,80 @@
+/**
+ * POST /api/upload — Accept image uploads for agent context.
+ * GET  /api/uploads/:filename — Serve uploaded files.
+ *
+ * Limits: 10MB per file, images only (png/jpg/gif/webp).
+ * Uploaded files stored in /tmp/maw-uploads/
+ */
 import { Elysia } from "elysia";
-import { mkdirSync, existsSync, readdirSync, statSync, unlinkSync } from "fs";
-import { join, basename } from "path";
-import { homedir } from "os";
+import { mkdirSync, existsSync, readFileSync, writeFileSync } from "fs";
+import { join } from "path";
+import { tmpdir } from "os";
+import { randomUUID } from "crypto";
 
-const INBOX_DIR = join(homedir(), ".maw", "inbox");
+const UPLOAD_DIR = join(tmpdir(), "maw-uploads");
+const MAX_SIZE = 10 * 1024 * 1024; // 10MB
+const ALLOWED_TYPES = ["image/png", "image/jpeg", "image/gif", "image/webp"];
 
-/** Ensure inbox dir exists on first use */
-function ensureInbox() {
-  if (!existsSync(INBOX_DIR)) mkdirSync(INBOX_DIR, { recursive: true });
-  return INBOX_DIR;
+function ensureDir() {
+  if (!existsSync(UPLOAD_DIR)) mkdirSync(UPLOAD_DIR, { recursive: true });
 }
 
-export const uploadApi = new Elysia();
+export const uploadApi = new Elysia({ prefix: "/api" })
+  .post("/upload", async ({ request, set }) => {
+    ensureDir();
 
-/** POST /upload — accept a file via multipart form data */
-uploadApi.post("/upload", async ({ body, set }) => {
-  try {
-    const file = (body as any)?.file;
-    if (!file || !(file instanceof Blob)) {
+    const formData = await request.formData();
+    const file = formData.get("file");
+
+    if (!file || !(file instanceof File)) {
       set.status = 400;
-      return { error: "missing 'file' field — use: curl -F 'file=@image.png' /api/upload" };
+      return { ok: false, error: "No file provided. Use multipart field 'file'." };
     }
-    const dir = ensureInbox();
-    const name = (file as any).name || `upload-${Date.now()}`;
-    const safeName = basename(name).replace(/[^a-zA-Z0-9._-]/g, "_");
-    const dest = join(dir, safeName);
 
-    // Write file to disk
-    const buf = Buffer.from(await file.arrayBuffer());
-    await Bun.write(dest, buf);
+    if (file.size > MAX_SIZE) {
+      set.status = 413;
+      return { ok: false, error: `File too large: ${file.size} bytes (max ${MAX_SIZE})` };
+    }
 
-    const kb = (buf.length / 1024).toFixed(1);
-    return { ok: true, path: dest, name: safeName, size: `${kb}KB` };
-  } catch (e: any) {
-    set.status = 500;
-    return { error: e.message };
-  }
-});
+    if (!ALLOWED_TYPES.includes(file.type)) {
+      set.status = 415;
+      return { ok: false, error: `Invalid type: ${file.type}. Allowed: ${ALLOWED_TYPES.join(", ")}` };
+    }
 
-/** GET /files — list inbox files */
-uploadApi.get("/files", () => {
-  const dir = ensureInbox();
-  try {
-    return readdirSync(dir).map((name) => {
-      const st = statSync(join(dir, name));
-      return { name, size: st.size, modified: st.mtime.toISOString() };
-    });
-  } catch {
-    return [];
-  }
-});
+    const ext = file.type.split("/")[1] || "png";
+    const filename = `${randomUUID()}.${ext}`;
+    const filepath = join(UPLOAD_DIR, filename);
 
-/** GET /files/:name — download a file */
-uploadApi.get("/files/:name", ({ params, set }) => {
-  const filePath = join(ensureInbox(), basename(params.name));
-  if (!existsSync(filePath)) { set.status = 404; return { error: "not found" }; }
-  return Bun.file(filePath);
-});
+    const buffer = Buffer.from(await file.arrayBuffer());
+    writeFileSync(filepath, buffer);
 
-/** DELETE /files/:name — remove a file (moves to /tmp) */
-uploadApi.delete("/files/:name", ({ params, set }) => {
-  const filePath = join(ensureInbox(), basename(params.name));
-  if (!existsSync(filePath)) { set.status = 404; return { error: "not found" }; }
-  const archive = `/tmp/maw-inbox-${basename(params.name)}-${Date.now()}`;
-  Bun.write(archive, Bun.file(filePath));
-  unlinkSync(filePath);
-  return { ok: true, archived: archive };
-});
+    const origin = new URL(request.url).origin;
+
+    return {
+      ok: true,
+      filename,
+      url: `${origin}/api/uploads/${filename}`,
+      path: filepath,
+      size: buffer.length,
+      type: file.type,
+    };
+  })
+  .get("/uploads/:filename", ({ params, set }) => {
+    const safe = params.filename.replace(/[^a-zA-Z0-9._-]/g, "");
+    const filepath = join(UPLOAD_DIR, safe);
+
+    if (!existsSync(filepath)) {
+      set.status = 404;
+      return "Not found";
+    }
+
+    const data = readFileSync(filepath);
+    const ext = safe.split(".").pop()?.toLowerCase() || "png";
+    const mime: Record<string, string> = {
+      png: "image/png", jpg: "image/jpeg", jpeg: "image/jpeg",
+      gif: "image/gif", webp: "image/webp",
+    };
+    set.headers["content-type"] = mime[ext] || "application/octet-stream";
+    set.headers["cache-control"] = "public, max-age=86400";
+    return data;
+  });
