@@ -7,6 +7,32 @@
 
 ---
 
+## ⚠️ ถ้า shell scripts พังเพราะ `\r` (Windows Line Endings)
+
+ถ้าเห็น error แบบนี้:
+```
+$'\r': command not found
+set: pipefail\r: invalid option name
+```
+
+แปลว่า Git แปลง line endings เป็น CRLF ตอน checkout แก้ด้วย:
+
+```bash
+# แก้ทุก .sh ในโปรเจค
+find /mnt/c/Agentic -name "*.sh" -exec sed -i 's/\r$//' {} +
+
+# หรือถ้ามี dos2unix:
+sudo apt install dos2unix
+find /mnt/c/Agentic -name "*.sh" -exec dos2unix {} +
+```
+
+**หมายเหตุ**: repo มี `.gitattributes` บังคับ LF แล้ว แต่ถ้า Git config มี `core.autocrlf=true` อยู่ก่อน อาจต้อง clone ใหม่หรือตั้งค่า:
+```bash
+git config --global core.autocrlf input
+```
+
+---
+
 ## เงื่อนไขก่อนเริ่ม
 
 - Windows 10/11 ที่มี WSL ติดตั้งแล้ว (`wsl --version` ต้องได้)
