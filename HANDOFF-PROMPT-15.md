@@ -215,15 +215,110 @@ agentic:
 - ห้ามลบ `scripts/ensure-agents.sh`
 - ห้ามลบ config files ใน `~/.config/maw/`
 - ห้ามแก้ `RoomGrid-Dfd-BVop.js` กลับ (ต้องมี WebGL fallback)
-- ห้ามลบ patch ใน `src/core/server.ts` (ensure-agents hook)
+- ห้ามแก้ `federation-CR5WtdJB.js` กลับ (ต้องมี WebGL fallback)
+- ห้ามลบ patch ใน `src/core/server.ts` (ensure-agents hook + hostname fix)
 - ห้ามแก้ `test/upload.test.ts` กลับ (routes ต้องตรง API จริง)
 
-## เริ่มทำงานได้เลย!
-1. `cd agentic/maw-js && bun install`
-2. `bun run test:all` — ยืนยัน 0 fail
-3. สร้าง config files (ดู 1.4)
-4. `export MAW_UI_DIR=... && bun src/cli.ts serve`
-5. สร้าง tmux session (ดู 2.1)
-6. เปิด browser → `http://127.0.0.1:3456/#fleet`
-7. เห็น "1 agents · 1 rooms · 1 tabs" ✅
+---
+
+## 🆕 Session 2026-04-20 — WebGL Crash Fix + WebSocket Fix + UI Verified
+
+### สิ่งที่เจอและแก้ไข
+
+#### Bug 1: Federation view crash — WebGLRenderer ไม่มี try-catch
+- **อาการ**: UI แสดง "Something crashed" ตอนเปิดหน้าแรก
+- **สาเหตุ**: `federation-CR5WtdJB.js` สร้าง `new yt({antialias:!0})` (WebGLRenderer) แบบไม่มี try-catch
+- RoomGrid มี fallback แล้ว แต่ **federation view ไม่มี**
+- **วิธีแก้**: แก้ `maw-js/ui/office/assets/federation-CR5WtdJB.js`
+  ```js
+  // BEFORE (crash):
+  const f=new yt({antialias:!0});f.setSize(r,o)...
+
+  // AFTER (fallback):
+  let f;try{f=new yt({antialias:!0})}catch(e){console.warn("WebGL not available, skipping federation 3D view");return}f.setSize(r,o)...
+  ```
+
+#### Bug 2: WebSocket ไม่ต่อ — hostname resolve ไม่ตรง
+- **อาการ**: UI แสดง "0 agents" ทั้งที่ API (`/api/sessions`) คืนข้อมูลถูก
+- **สาเหตุ**: Server bind ที่ `localhost` → resolve เป็น `127.0.1.1` แต่ browser เชื่อมต่อ `127.0.0.1`
+- curl ทดสอบ WebSocket ได้ (101 Switching Protocols) แต่ browser ไม่ได้
+- **วิธีแก้**: แก้ `maw-js/src/core/server.ts` บรรทัด 209
+  ```ts
+  // BEFORE:
+  const hostname = hasPeers ? "0.0.0.0" : "localhost";
+
+  // AFTER:
+  const hostname = "0.0.0.0";
+  ```
+
+### Tests ล่าสุด (2026-04-20)
+| ชุด | ผ่าน | ข้าม | ล้มเหลว |
+|------|------|------|---------|
+| `test` | 878 | 6 | 0 |
+| `test:isolated` | 831 | 0 | 0 |
+| `test:mock-smoke` | 6 | 0 | 0 |
+| `test:plugin` | 179 | 6 | 0 |
+| **รวม** | **1,894** | **12** | **0** |
+
+### UI ที่ทำงานแล้ว ✅
+- Header: `ARRA OFFICE | LIVE | 1 agents | 1 rooms | 1 tabs`
+- Fleet view: MawJS room (cyan header, "local" badge, "1" count)
+- Agent: "god" with idle status (gray circle)
+- WebSocket: connected, live data feed ทำงาน
+- Navigation: Inbox, Mission, Dashboard, Fleet, Office, Overview, Terminal, Chat, Teams, Fed, 2D, Config
+
+### โครงสร้างไฟล์ที่เปลี่ยน (Session 2)
 ```
+maw-js/
+├── src/core/server.ts                    [แก้] hostname: "0.0.0.0"
+└── ui/office/assets/
+    ├── RoomGrid-Dfd-BVop.js              [จาก session 1] WebGL fallback
+    └── federation-CR5WtdJB.js            [แก้] WebGL fallback
+```
+
+---
+
+## ❓ คำถาม: clone repo แล้วรัน จะเห็น agent เลยมั้ย?
+
+### คำตอบ: **ไม่เห็นทันที** — ต้องตั้งค่าเพิ่ม
+
+เพราะว่า:
+1. **Config files** อยู่นอก repo (`~/.config/maw/`) — ไม่ได้ commit มาด้วย
+2. **tmux sessions** เป็น runtime state — ไม่ได้ save มาด้วย
+3. **`MAW_UI_DIR`** เป็น env var — ต้องตั้งเอง
+
+### ขั้นตอนที่ต้องทำหลัง clone:
+```bash
+# 1. Install
+cd agentic/maw-js && bun install
+
+# 2. สร้าง config files
+mkdir -p ~/.config/maw/fleet
+cat > ~/.config/maw/maw.config.json << 'EOF'
+{"agents":{"mawjs":"local"}}
+EOF
+cat > ~/.config/maw/fleet/mawjs.json << 'EOF'
+{"name":"mawjs","node":"local","status":"active"}
+EOF
+
+# 3. สร้าง tmux session
+tmux new-session -d -s "mawjs-oracle" -c $(pwd)/..
+tmux rename-window -t mawjs-oracle:0 "god"
+
+# 4. รัน server
+export MAW_UI_DIR=$(pwd)/ui/office
+bun src/cli.ts serve
+
+# 5. เปิด browser
+# http://127.0.0.1:3456/#fleet
+# → เห็น "1 agents · 1 rooms · 1 tabs" ✅
+```
+
+### สิ่งที่จะเห็นทันทีโดยไม่ต้องตั้งค่า:
+- ✅ Server รันได้ (`bun src/cli.ts serve`)
+- ✅ API ทำงาน (`/api/sessions`, `/api/fleet`, `/api/identity`)
+- ✅ UI โหลดได้ (ไม่ crash เพราะ WebGL fallback)
+- ❌ แต่ UI จะแสดง **"0 agents"** — เพราะไม่มี config + tmux session
+
+### แนะนำ: สร้าง script `setup.sh` สำหรับ first-run
+ควรสร้าง script ที่ทำขั้นตอน 2-4 อัตโนมัติ เพื่อให้ agent ตัวถัดไป clone แล้วรันได้เลย
