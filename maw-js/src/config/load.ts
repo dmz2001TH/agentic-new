@@ -29,9 +29,7 @@ const DEFAULTS: MawConfig = {
     nexus: "gemini --yolo" 
   },
   sessions: {
-    "god-oracle": "01-oracles",
-    "nexus": "02-nexus",
-    "gemini": "03-gemini"
+    "nexus": "02-nexus"
   },
 };
 

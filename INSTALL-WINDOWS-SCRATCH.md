@@ -499,3 +499,170 @@ PowerShell:  cd C:\Agentic && .\finish-day.ps1
 ---
 
 **มีปัญหาอะไร ถามได้เลย**
+
+---
+
+## ═══════════════════════════════════════
+## 🐛 ปัญหาที่พบจริงตอนเทส + วิธีแก้
+## ═══════════════════════════════════════
+
+ส่วนนี้รวมปัญหาที่พบจริงจากการเทสระบบ พร้อมวิธีแก้ไข ทั้งหมดได้ถูกแก้ในโค้ดแล้ว แต่ถ้าเกิดซ้ำจะได้รู้วิธีแก้
+
+---
+
+### 🐛 ปัญหาที่ 1: Ghost Agents (ตัวปลอมขึ้นใน Dashboard)
+
+**อาการ:** Dashboard แสดง agent ชื่อ `god-oracle` และ `gemini` ทั้งๆ ที่ไม่ได้สร้างไว้ กดส่งงานไปก็ error
+
+**สาเหตุ:** โค้ดมีการ hardcode ชื่อ agent ปลอมไว้ 3 ที่:
+
+1. `maw-js/src/core/transport/tmux-class.ts` — `names.add("god-oracle")`
+2. `maw-js/src/api/sessions.ts` — `forceSessions` array
+3. `maw-js/src/core/transport/ssh.ts` — `names.add("god-oracle")`
+
+**วิธีแก้ (ถ้าเกิดซ้ำ):**
+
+```powershell
+# แก้ไฟล์ 1: tmux-class.ts
+# ลบบรรทัดที่มี names.add("god-oracle"), names.add("gemini") ออก
+
+# แก้ไฟล์ 2: sessions.ts
+# ลบ forceSessions array และ forEach ที่เพิ่มมันเข้าไป
+
+# แก้ไฟล์ 3: ssh.ts
+# ลบบรรทัด names.add("god-oracle"), names.add("gemini") ออก
+
+# แก้ไฟล์ 4: .env.json
+# ลบ "god-oracle" ออกจาก sessions
+```
+
+**ป้องกัน:** โค้ดได้ถูกแก้แล้ว ห้ามเพิ่ม `names.add()` หรือ `forceSessions` กลับเข้าไปอีก
+
+---
+
+### 🐛 ปัญหาที่ 2: .env.json Port ผิด
+
+**อาการ:** Maw API รันบน port แปลกๆ ไม่ใช่ 3456
+
+**สาเหตุ:** `.env.json` เขียน `"port": 3457` แต่มาตรฐานคือ 3456
+
+**วิธีแก้:** แก้ `.env.json` เปลี่ยน port เป็น `3456`
+
+```json
+{
+  "port": 3456
+}
+```
+
+---
+
+### 🐛 ปัญหาที่ 3: Oracle Core รันผิดไฟล์ (MCP แทน HTTP)
+
+**อาการ:** Maw API ไม่สามารถเชื่อมต่อ Oracle Core ได้ ฟีเจอร์ memory/search ไม่ทำงาน
+
+**สาเหตุ:** `start-oracle.cmd` รัน `bun run src\index.ts` ซึ่งเป็น MCP stdio server ไม่ใช่ HTTP server
+
+**วิธีแก้:** เปลี่ยนเป็น `bun src\server.ts` ซึ่งเป็น HTTP server ที่รันบน port 47778
+
+```powershell
+# ผิด ❌
+bun run src\index.ts
+
+# ถูก ✅
+bun src\server.ts
+```
+
+---
+
+### 🐛 ปัญหาที่ 4: 127.0.0.1 vs localhost
+
+**อาการ:** ไม่มีอาการโดยตรง แต่โค้ดไม่สอดคล้องกัน
+
+**วิธีแก้:** เปลี่ยนทุกที่เป็น `localhost` เพื่อความสอดคล้อง (ทั้งสองใช้แทนกันได้)
+
+---
+
+### 🐛 ปัญหาที่ 5: Hardcoded Path C:\Agentic
+
+**อาการ:** ย้ายโฟลเดอร์โปรเจ็คแล้ว `start-oracle.cmd` รันไม่ได้
+
+**วิธีแก้:** ใช้ `%~dp0` (path ของไฟล์ .cmd เอง) แทน hardcode path
+
+```cmd
+# ผิด ❌
+cd /d C:\Agentic\arra-oracle-v3
+
+# ถูก ✅
+cd /d %~dp0\arra-oracle-v3
+```
+
+---
+
+### 🐛 ปัญหาที่ 6: Session Cache vs Real Sessions
+
+**อาการ:** Engine log บอก "1 sessions" แต่ API คืน 3 sessions
+
+**สาเหตุ:** Session cache (`initSessionCache()`) ใช้ `tmux.listAll()` แต่ API endpoint `/api/sessions` ใช้ `listSessions()` จาก `ssh.ts` + `forceSessions` — คนละ source กัน
+
+**วิธีแก้:** แก้ให้ทั้งคู่อ่านจาก tmux โดยตรง ไม่ hardcode เพิ่ม
+
+---
+
+### 🐛 ปัญหาที่ 7: Tmux CRLF Issue (Windows)
+
+**อาการ:** Maw API ไม่เจอ tmux sessions บน Windows
+
+**สาเหตุ:** Windows ใช้ `\r\n` สำหรับบรรทัดใหม่ แต่โค้ดใช้ `.split("\n")`
+
+**วิธีแก้:** เปลี่ยนเป็น `.split(/\r?\n/)` เพื่อรองรับทั้งคู่
+
+```typescript
+// ผิด ❌
+const names = raw.split("\n");
+
+// ถูก ✅
+const names = raw.split(/\r?\n/);
+```
+
+---
+
+### 🐛 ปัญหาที่ 8: Deprecated API Shims
+
+**อาการ:** Dashboard ขึ้น error 404 หรือ 500 สำหรับ routes เช่น `/api/auth/status`, `/api/stats`
+
+**สาเหตุ:** Frontend เรียก routes ที่ถูกลบไปแล้วใน maw-js เวอร์ชันใหม่
+
+**วิธีแก้:** สร้าง `deprecated.ts` ที่ mock endpoints เหล่านั้น แล้ว import ใน `api/index.ts`
+
+---
+
+## ═══════════════════════════════════════
+## 📋 สรุป Port Mapping (หลังแก้ทุกอย่าง)
+## ═══════════════════════════════════════
+
+```
+localhost:47778  → Oracle Core     (arra-oracle-v3/src/server.ts)
+                    สมองความจำ — Hono.js HTTP server
+                    maw-js เชื่อมมาที่นี่ผ่าน oracleUrl
+
+localhost:3456   → Maw API         (maw-js/server.ts)
+                    ระบบควบคุม — Elysia.js API server
+                    คุณสั่งงานผ่าน port นี้ (CLI / Dashboard)
+
+localhost:5173   → Dashboard       (arra-oracle-v3/frontend)
+                    หน้าเว็บ — Vite dev server
+                    proxy /api → localhost:3456
+                    live terminal ผ่าน ws://localhost:3456/ws/pty
+```
+
+## ═══════════════════════════════════════
+## 🔒 กฎที่ห้ามทำอีก (เพื่อไม่ให้ปัญหาย้อนกลับ)
+## ═══════════════════════════════════════
+
+1. **ห้ามเพิ่ม `names.add("ชื่อagent")`** ใน tmux-class.ts หรือ ssh.ts — ให้แสดงเฉพาะ tmux sessions จริง
+2. **ห้ามเพิ่ม `forceSessions`** ใน sessions.ts — เหตุผลเดียวกัน
+3. **ห้ามเปลี่ยน port ใน .env.json** จาก 3456 เป็นอย่างอื่นโดยไม่แก้ทุกที่
+4. **ห้ามเปลี่ยน Oracle Core command** จาก `bun src/server.ts` เป็น `bun run src/index.ts`
+5. **ห้าม hardcode path** `C:\Agentic` — ใช้ `%~dp0` แทน
+6. **ห้ามใช้ `127.0.0.1`** — ใช้ `localhost` ทุกที่
+
