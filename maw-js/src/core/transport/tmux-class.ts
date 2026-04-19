@@ -36,12 +36,7 @@ export class Tmux {
     try {
       const raw = await this.run("list-sessions", "-F", "#{session_name}");
       const sessions: TmuxSession[] = [];
-      const names = new Set(raw.split(/\r?\n/).filter(Boolean));
-      
-      // Force include our core agents
-      names.add("nexus");
-      names.add("god-oracle");
-      names.add("gemini");
+      const names = raw.split(/\r?\n/).filter(Boolean);
 
       for (const s of names) {
         const windows = await this.listWindows(s).catch(() => [{ index: 0, name: "main", active: true }]);
@@ -49,12 +44,8 @@ export class Tmux {
       }
       return sessions;
     } catch { 
-      // Fallback for Windows if tmux is completely unresponsive
-      return [
-        { name: "nexus", windows: [{ index: 0, name: "main", active: true }] },
-        { name: "god-oracle", windows: [{ index: 0, name: "main", active: true }] },
-        { name: "gemini", windows: [{ index: 0, name: "main", active: true }] }
-      ];
+      // tmux not available or no sessions running
+      return [];
     }
   }
 
@@ -71,18 +62,12 @@ export class Tmux {
         map.get(session)!.push({ index: +idx, name, active: active === "1", cwd: cwd || undefined });
       }
 
-      if (!map.has("nexus")) map.set("nexus", [{ index: 0, name: "gemini", active: true }]);
-      if (!map.has("god-oracle")) map.set("god-oracle", [{ index: 0, name: "main", active: true }]);
-      if (!map.has("gemini")) map.set("gemini", [{ index: 0, name: "gemini", active: true }]);
+      // Only show real tmux sessions — no ghost agents
 
       return [...map.entries()].map(([name, windows]) => ({ name, windows }));
     } catch { 
-      return [
-        { name: "nexus", windows: [{ index: 0, name: "gemini", active: true }] },
-        { name: "god-oracle", windows: [{ index: 0, name: "main", active: true }] },
-        { name: "gemini", windows: [{ index: 0, name: "gemini", active: true }] }
-      ];
-    } // fallback for Windows
+      return [];
+    } // tmux not available
   }
 
   async hasSession(name: string): Promise<boolean> {
