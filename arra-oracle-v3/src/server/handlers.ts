@@ -182,7 +182,9 @@ export async function handleSearch(
       } else {
         const msg = result.reason instanceof Error ? result.reason.message : String(result.reason);
         console.error('[Vector Search Error]', msg);
-        if (!warning) warning = `Vector search error: ${msg}`;
+        // Only surface warning if it's NOT a connection error (embedding service not installed)
+        const isConnError = msg.includes('Unable to connect') || msg.includes('ECONNREFUSED') || msg.includes('fetch failed');
+        if (!warning && !isConnError) warning = `Vector search error: ${msg}`;
       }
     }
 

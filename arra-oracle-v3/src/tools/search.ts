@@ -365,7 +365,9 @@ export async function handleSearch(ctx: ToolContext, input: OracleSearchInput): 
       vectorSearchError = true;
       const errorMessage = error instanceof Error ? error.message : String(error);
       console.error('[ChromaDB]', errorMessage);
-      warning = `Vector search unavailable: ${errorMessage}. Using FTS5 only.`;
+      // Suppress warning for connection errors (embedding service not installed)
+      const isConnError = errorMessage.includes('Unable to connect') || errorMessage.includes('ECONNREFUSED') || errorMessage.includes('fetch failed');
+      if (!isConnError) warning = `Vector search unavailable: ${errorMessage}. Using FTS5 only.`;
     }
 
     if (vecResults.length === 0 && !vectorSearchError) {

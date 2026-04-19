@@ -21,7 +21,7 @@ function detectGhqRoot(): string {
 const DEFAULTS: MawConfig = {
   host: "localhost",
   port: 4000,
-  ghqRoot: "C:\\Agentic",
+  ghqRoot: detectGhqRoot(),
   oracleUrl: "http://localhost:47778",
   env: {},
   commands: { 
