@@ -1,0 +1,25 @@
+# Dependencies
+node_modules/
+
+# SQLite binary files (keep exports/JSON for backup)
+ψ/vault/*.db
+ψ/vault/*.db-shm
+ψ/vault/*.db-wal
+ψ/vault/*.db.backup-*
+ψ/vault/*.pid
+
+# Lock files (reproducible via bun install)
+package-lock.json
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+
+# Temporary
+.tmp/
+*.tmp

@@ -12,13 +12,13 @@ taskkill /F /IM bun.exe /T >nul 2>&1
 timeout /t 2 >nul
 
 echo [2/4] Starting Oracle Core Memory (Port 47778)...
-start "Oracle Core Memory (47778)" cmd /c "cd /d C:\Agentic\arra-oracle-v3 && title Oracle Core Memory (47778) && color 0A && echo Starting Oracle Core... && bun run src\index.ts"
+start "Oracle Core Memory (47778)" cmd /c "cd /d %~dp0\arra-oracle-v3 && title Oracle Core Memory (47778) && color 0A && echo Starting Oracle Core... && bun src\server.ts"
 
 echo [3/4] Starting Maw API Server (Port 3456)...
-start "Maw API Server (3456)" cmd /c "cd /d C:\Agentic\maw-js && title Maw API Server (3456) && color 0D && echo Starting Maw API Server... && bun server.ts"
+start "Maw API Server (3456)" cmd /c "cd /d %~dp0\maw-js && title Maw API Server (3456) && color 0D && echo Starting Maw API Server... && bun server.ts"
 
 echo [4/4] Starting Frontend Dashboard (Port 5173)...
-start "Frontend Dashboard (5173)" cmd /c "cd /d C:\Agentic\arra-oracle-v3\frontend && title Frontend Dashboard (5173) && color 0E && echo Starting Frontend UI... && bun run dev --port 5173 --host 127.0.0.1"
+start "Frontend Dashboard (5173)" cmd /c "cd /d %~dp0\arra-oracle-v3\frontend && title Frontend Dashboard (5173) && color 0E && echo Starting Frontend UI... && bun run dev --port 5173 --host 127.0.0.1"
 
 echo.
 echo ========================================================

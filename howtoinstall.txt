@@ -57,8 +57,8 @@
 
 2. รัน Oracle Core (สมองหลัก):
    cd C:/Agentic/arra-oracle-v3
-   bun run src/index.ts
-   (รันใน Terminal หน้าต่างใหม่ หรือรันเป็น Background)
+   bun src/server.ts
+   (รันใน Terminal หน้าต่างใหม่ หรือใช้ start-oracle.cmd)
 
 3. รัน Maw API Server (เส้นประสาท):
    cd C:/Agentic/maw-js
