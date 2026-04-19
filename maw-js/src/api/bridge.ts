@@ -68,32 +68,31 @@ function isPromptLine(line: string): boolean {
   return PROMPT_PATTERNS.some(p => p.test(stripped));
 }
 
-/** Diff two text blocks — return only new lines */
+/** Diff two text blocks — return only new lines.
+ *  Since tmux capture-pane returns the visible buffer, new output appends
+ *  to the bottom. We find where prev's suffix matches curr's prefix, then
+ *  return everything after that match. */
 function diffCapture(prev: string, curr: string): string[] {
   if (!prev) return [];
   const prevLines = prev.split("\n");
   const currLines = curr.split("\n");
 
-  // Find where prev content ends in curr (suffix match)
-  // Try matching last N lines of prev against curr
-  for (let start = Math.min(prevLines.length, currLines.length); start >= 1; start--) {
+  // Find the longest suffix of prev that appears as a contiguous block
+  // at the START of curr. Everything after that block is new.
+  for (let len = Math.min(prevLines.length, currLines.length); len >= 1; len--) {
     let match = true;
-    for (let i = 0; i < start; i++) {
-      const pi = prevLines.length - start + i;
-      const ci = currLines.length - start + i;
-      if (pi < 0 || ci < 0 || prevLines[pi] !== currLines[ci]) {
+    for (let i = 0; i < len; i++) {
+      if (prevLines[prevLines.length - len + i] !== currLines[i]) {
         match = false;
         break;
       }
     }
     if (match) {
-      // New lines = everything after the matched suffix
-      return currLines.slice(currLines.length - start + start);
+      return currLines.slice(len);
     }
   }
-
-  // No overlap found — return all of curr (first capture or total change)
-  return currLines.length > 0 ? currLines : [];
+  // No overlap — return all of curr
+  return [...currLines];
 }
 
 /** Clean output for relay — strip ANSI, trim, remove empty lines */
