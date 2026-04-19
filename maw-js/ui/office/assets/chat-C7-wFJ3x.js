@@ -1,0 +1,1 @@
+import"./modulepreload-polyfill-B5Qt9EMX.js";import{j as m}from"./useWebSocket-CCJyY2w_.js";import{m as o,A as r}from"./AppShell-BRXCXibB.js";import{C as t}from"./ChatView-Bbt2zyow.js";import"./PinLock-BOD7WCBU.js";import"./react-Bwpkuqlj.js";o(()=>m.jsx(r,{view:"chat",children:()=>m.jsx(t,{})}));

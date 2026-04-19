@@ -1,0 +1,1 @@
+import"./modulepreload-polyfill-B5Qt9EMX.js";import{j as i}from"./useWebSocket-CCJyY2w_.js";import{m as o,A as m}from"./AppShell-BRXCXibB.js";import{C as r}from"./ConfigView-CNwEPVy7.js";import"./PinLock-BOD7WCBU.js";import"./react-Bwpkuqlj.js";o(()=>i.jsx(m,{view:"config",fullHeight:!0,children:()=>i.jsx(r,{})}));

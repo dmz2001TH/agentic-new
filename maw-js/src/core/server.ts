@@ -15,6 +15,7 @@ import { listSessions } from "./transport/ssh";
 import { Tmux } from "./transport/tmux";
 import { handlePtyMessage, handlePtyClose } from "./transport/pty";
 import { setBunServer } from "../lib/elysia-auth";
+import { handleBridgeWs } from "../api/bridge";
 
 // --- Version info (computed once at startup) ---
 
@@ -148,14 +149,20 @@ export async function startServer(port = 4000) {
   const wsHandler = {
     open: (ws: any) => {
       if (ws.data.mode === "pty") return;
+      if (ws.data.mode === "bridge") {
+        handleBridgeWs(ws, ws.data.bridgeId);
+        return;
+      }
       engine.handleOpen(ws);
     },
     message: (ws: any, msg: any) => {
       if (ws.data.mode === "pty") { handlePtyMessage(ws, msg); return; }
+      if (ws.data.mode === "bridge") return;
       engine.handleMessage(ws, msg);
     },
     close: (ws: any) => {
       if (ws.data.mode === "pty") { handlePtyClose(ws); return; }
+      if (ws.data.mode === "bridge") return;
       engine.handleClose(ws);
     },
   };
@@ -169,6 +176,13 @@ export async function startServer(port = 4000) {
     if (url.pathname === "/ws") {
       if (server.upgrade(req, { data: { target: null, previewTargets: new Set() } as WSData })) return;
       return new Response("WebSocket upgrade failed", { status: 400 });
+    }
+    // Bridge WebSocket: /ws/bridge/:id
+    const bridgeMatch = url.pathname.match(/^\/ws\/bridge\/([a-zA-Z0-9-]+)$/);
+    if (bridgeMatch) {
+      const bridgeId = bridgeMatch[1];
+      if (server.upgrade(req, { data: { target: null, previewTargets: new Set(), mode: "bridge", bridgeId } as WSData })) return;
+      return new Response("Bridge not found", { status: 404 });
     }
     // Elysia handles all /api/* routes (including /api/upload)
     if (url.pathname.startsWith("/api")) {
