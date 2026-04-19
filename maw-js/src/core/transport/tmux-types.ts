@@ -5,10 +5,14 @@ export function resolveSocket(): string | undefined {
   return process.env.MAW_TMUX_SOCKET || loadConfig().tmuxSocket || undefined;
 }
 
-/** Build the `tmux` (or `tmux -S <socket>`) prefix for raw commands. */
+/** Build the `tmux` (or `tmux -S <socket>`) prefix for raw commands.
+ * On Windows, tmux lives in WSL — prefix with "wsl" so hostExec routes
+ * the command through WSL bash instead of cmd.exe.
+ */
 export function tmuxCmd(): string {
   const socket = resolveSocket();
-  return socket ? `tmux -S '${socket}'` : "tmux";
+  const prefix = process.platform === "win32" ? "wsl " : "";
+  return socket ? `${prefix}tmux -S '${socket}'` : `${prefix}tmux`;
 }
 
 export interface TmuxPane {

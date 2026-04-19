@@ -8,7 +8,23 @@ const IS_LOCAL = DEFAULT_HOST === "local" || DEFAULT_HOST === "localhost" || DEF
 export async function hostExec(cmd: string, host = DEFAULT_HOST): Promise<string> {
   const local = host === "local" || host === "localhost" || host === "127.0.0.1" || IS_LOCAL;
   const isWin = process.platform === "win32";
-  const args = local ? (isWin ? ["cmd.exe", "/c", cmd] : ["bash", "-c", cmd]) : ["ssh", host, cmd];
+  let args: string[];
+  if (local) {
+    if (isWin) {
+      // tmux lives in WSL — route through "wsl bash -c" so single quotes,
+      // 2>/dev/null and other bash syntax work. Native Windows commands
+      // still go through cmd.exe.
+      if (cmd.includes("tmux")) {
+        args = ["wsl", "bash", "-c", cmd];
+      } else {
+        args = ["cmd.exe", "/c", cmd];
+      }
+    } else {
+      args = ["bash", "-c", cmd];
+    }
+  } else {
+    args = ["ssh", host, cmd];
+  }
   const proc = Bun.spawn(args, { stdout: "pipe", stderr: "pipe", windowsHide: true });
   const text = await new Response(proc.stdout).text();
   const code = await proc.exited;
