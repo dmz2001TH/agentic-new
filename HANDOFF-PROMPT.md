@@ -2,26 +2,20 @@
 
 ## สถานะปัจจุบัน
 
-**โปรเจ็คอยู่**: `G:\My Drive\Agentic` (Google Drive)
+**โปรเจ็คอยู่**: `C:\Agentic` (Local Drive - ย้ายมาจาก Google Drive แล้ว)
 **Platform**: Windows + Gemini CLI
 **สิ่งที่ทำเสร็จแล้ว**:
+- ✅ ย้ายโปรเจ็คจาก G: Drive มาที่ C:\Agentic เพื่อแก้ปัญหา symlinks และ file locks
 - ✅ ติดตั้ง Gemini CLI และ login
-- ✅ สร้างโครงสร้างโฟลเดอร์ ψ/
+- ✅ สร้างโครงสร้างโฟลเดอร์ ψ/ ครบถ้วน (รวมถึง resonance, learnings, retrospectives)
 - ✅ สร้าง settings.json และ memory files
-- ✅ สร้าง GEMINI.md context file
-- ✅ สร้าง commands ทั้งหมด 37 commands (จาก S.txt)
-- ✅ ตั้งค่า auto-approve ด้วย script wrapper gemini-yolo
-- ✅ Clone repos ทั้งหมด 8 repos:
-  - opensource-nat-brain-oracle
-  - arra-oracle-skills-cli
-  - arra-oracle-v3
-  - maw-js
-  - pulse-cli
-  - oracle-vault-report
-  - multi-agent-workflow-kit
-  - oracle-maw-guide
-- ✅ อัพเดท Oracle-Ecosystem-Summary.md
-- ✅ เปิด oracle-vault-report index.html (static HTML dashboard)
+- ✅ สร้าง GEMINI.md context file (ปรับปรุงสำหรับ Gemini CLI)
+- ✅ สร้าง commands ทั้งหมด 47+ commands ใน .gemini/commands/
+- ✅ ตั้งค่า MCP Server (arra-oracle-v2) ใน .gemini/settings.json
+- ✅ Clone repos ครบทั้ง 12+ repos (รวมถึง maw-learn, maw-project, maw-plugin-registry)
+- ✅ ติดตั้ง dependencies (bun install) ในโปรเจ็คหลักๆ แล้ว
+- ✅ รัน Oracle API Server (47778), Maw Server (3456), และ Maw UI (5173/5174) สำเร็จ
+- ✅ ทำการ Index ข้อมูลเบื้องต้น (แต่ยังรอไฟล์ .md ที่มีโครงสร้าง ###/## ที่ถูกต้อง)
 
 ## ปัญหาที่พบ
 

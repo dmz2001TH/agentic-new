@@ -78,27 +78,44 @@ async function attach(ws: MawWS, target: string, cols: number, rows: number) {
   const windowPart = safe.includes(":") ? safe.split(":").slice(1).join(":") : "";
   const c = Math.max(1, Math.min(cfgLimit("ptyCols"), Math.floor(cols)));
   const r = Math.max(1, Math.min(cfgLimit("ptyRows"), Math.floor(rows)));
+  const isWin = process.platform === "win32";
 
   // Create a grouped session — shares windows but has independent client sizing.
   // This prevents the web terminal from shrinking the real terminal.
   const ptySessionName = `maw-pty-${Date.now()}-${++nextPtyId}`;
   try {
-    await tmux.newGroupedSession(sessionName, ptySessionName, {
-      cols: c, rows: r, window: windowPart || undefined,
-    });
-    // Hide status bar in PTY sessions so it doesn't appear in terminal output
-    await tmux.setOption(ptySessionName, "status", "off").catch(() => { /* expected: option may not apply */ });
+    if (isWin) {
+      // Windows with WSL: Use wsl tmux for grouped session creation
+      const groupCmd = `tmux new-session -d -t '${sessionName}' -s '${ptySessionName}' -x ${c} -y ${r}`;
+      await Bun.spawn(["wsl", "bash", "-c", groupCmd], { stdout: "pipe", stderr: "pipe" }).exited;
+      // Hide status bar in PTY sessions
+      await Bun.spawn(["wsl", "bash", "-c", `tmux set-option -t '${ptySessionName}' status off`], { stdout: "pipe", stderr: "pipe" }).exited;
+    } else {
+      // Unix/Linux: Use tmux class
+      await tmux.newGroupedSession(sessionName, ptySessionName, {
+        cols: c, rows: r, window: windowPart || undefined,
+      });
+      // Hide status bar in PTY sessions so it doesn't appear in terminal output
+      await tmux.setOption(ptySessionName, "status", "off").catch(() => { /* expected: option may not apply */ });
+    }
   } catch {
     attaching.delete(safe);
     ws.send(JSON.stringify({ type: "error", message: "Failed to create PTY session" }));
     return;
   }
 
-  // Spawn PTY via script(1) — attach to our grouped session (not the original)
+  // Spawn PTY via script(1) on Unix, WSL on Windows — attach to our grouped session (not the original)
   let args: string[];
   if (isLocalHost()) {
-    const cmd = `stty rows ${r} cols ${c} 2>/dev/null; TERM=xterm-256color ${tmuxCmd()} attach-session -t '${ptySessionName}'`;
-    args = ["script", "-qfc", cmd, "/dev/null"];
+    if (isWin) {
+      // Windows with tmux in WSL: Use wsl to run script command with plain 'tmux' (not tmuxCmd which resolves to Windows tmux)
+      const cmd = `stty rows ${r} cols ${c} 2>/dev/null; TERM=xterm-256color tmux attach-session -t '${ptySessionName}'`;
+      args = ["wsl", "script", "-qfc", cmd, "/dev/null"];
+    } else {
+      // Unix/Linux: Use script(1) for PTY
+      const cmd = `stty rows ${r} cols ${c} 2>/dev/null; TERM=xterm-256color ${tmuxCmd()} attach-session -t '${ptySessionName}'`;
+      args = ["script", "-qfc", cmd, "/dev/null"];
+    }
   } else {
     const host = process.env.MAW_HOST || loadConfig().host || "local";
     args = ["ssh", "-tt", host, `TERM=xterm-256color ${tmuxCmd()} attach-session -t '${ptySessionName}'`];
@@ -139,7 +156,12 @@ async function attach(ws: MawWS, target: string, cols: number, rows: number) {
     } catch { /* expected: PTY stream ended */ }
     // PTY process ended — clean up grouped session
     sessions.delete(safe);
-    tmux.killSession(s.ptySessionName);
+    if (isWin) {
+      // Windows with WSL: Use wsl tmux to kill session
+      Bun.spawn(["wsl", "bash", "-c", `tmux kill-session -t '${s.ptySessionName}'`], { stdout: "pipe", stderr: "pipe" });
+    } else {
+      tmux.killSession(s.ptySessionName);
+    }
     for (const v of s.viewers) {
       try { v.send(JSON.stringify({ type: "detached", target: safe })); } catch { /* expected: viewer may have disconnected */ }
     }
@@ -153,6 +175,7 @@ function resize(_ws: MawWS, _cols: number, _rows: number) {
 }
 
 function detach(ws: MawWS) {
+  const isWin = process.platform === "win32";
   for (const [target, session] of sessions) {
     if (!session.viewers.has(ws)) continue;
     session.viewers.delete(ws);
@@ -160,7 +183,11 @@ function detach(ws: MawWS) {
       // Grace period before killing PTY
       session.cleanupTimer = setTimeout(() => {
         try { session.proc.kill(); } catch { /* expected: process may already be dead */ }
-        tmux.killSession(session.ptySessionName);
+        if (isWin) {
+          Bun.spawn(["wsl", "bash", "-c", `tmux kill-session -t '${session.ptySessionName}'`], { stdout: "pipe", stderr: "pipe" });
+        } else {
+          tmux.killSession(session.ptySessionName);
+        }
         sessions.delete(target);
       }, cfgTimeout("pty"));
     }

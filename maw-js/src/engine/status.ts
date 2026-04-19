@@ -89,7 +89,7 @@ export class StatusDetector {
     const now = Date.now();
     for (const { target, name, session } of agents) {
       const cmd = (cmds[target] || "").toLowerCase();
-      const isAgent = /claude|codex|node/i.test(cmd);
+      const isAgent = /claude|codex|node|gemini/i.test(cmd);
       const isShell = /^(zsh|bash|sh|fish)$/.test(cmd.trim());
 
       // Skip ALL agents running Claude — real hooks handle their status.

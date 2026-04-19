@@ -43,7 +43,7 @@ Oracle เป็นระบบที่ทำให้ AI จำเราได
 - **จำนวน releases**: 140 releases
 - **Repository**: https://github.com/Soul-Brews-Studio/arra-oracle-skills-cli
 - **คำสั่งติดตั้ง**: `npx arra-oracle-skills@3.9.1-alpha.1 install -g -y --agent claude-code`
-- **หน้าที่**: ติดตั้ง Oracle skills ให้ Claude Code, OpenCode, Cursor และ AI coding agents อื่นๆ กว่า 12+ ตัว
+- **หน้าที่**: ติดตั้ง Oracle skills ให้ Gemini CLI, OpenCode, Cursor และ AI coding agents อื่นๆ กว่า 12+ ตัว
 - **หมายเหตุ**: เปลี่ยนชื่อจาก oracle-skills-cli เป็น arra-oracle-skills-cli
 
 ### 2. arra-oracle-v3 (เดิม: oracle-v2)
@@ -102,7 +102,7 @@ Oracle เป็นระบบที่ทำให้ AI จำเราได
 ### 8. claude-code-statusline (เดิม: nazt/claude-code-statusline)
 - **สถานะ**: ✅ Active
 - **Repository**: https://github.com/laris-co/claude-code-statusline
-- **หน้าที่**: Starship-inspired status line สำหรับ Claude Code CLI - แสดงเวลา ชื่อ project ชื่อ agent และ context usage ใน terminal
+- **หน้าที่**: Starship-inspired status line สำหรับ Gemini CLI CLI - แสดงเวลา ชื่อ project ชื่อ agent และ context usage ใน terminal
 - **คุณสมบัติ**: Effective context window, auto-compact discovery
 - **หมายเหตุ**: เปลี่ยน owner จาก nazt เป็น laris-co
 
@@ -152,12 +152,12 @@ Oracle เป็นระบบที่ทำให้ AI จำเราได
 # ขั้นที่ 1: ติดตั้ง skills
 npx arra-oracle-skills@3.9.1-alpha.1 install -g -y --agent claude-code
 
-# ขั้นที่ 2: เปิด Claude Code ใน repo ที่ต้องการ แล้วพิมพ์
+# ขั้นที่ 2: เปิด Gemini CLI ใน repo ที่ต้องการ แล้วพิมพ์
 /awaken
 ```
 
 ### แบบที่ 2: ติดตั้งเต็มระบบ (Oracle + Multi-Agent Tools)
-เปิด Claude Code แล้วพิมพ์:
+เปิด Gemini CLI แล้วพิมพ์:
 ```
 ช่วยติดตั้ง Oracle ให้เต็มระบบ ติดตั้ง arra-oracle-skills-cli แล้วรัน /awaken 
 จากนั้น clone maw-js กับ pulse-cli กับ oracle-vault-report มาด้วย 
@@ -197,7 +197,7 @@ npx arra-oracle-skills@3.9.1-alpha.1 install -g -y --agent claude-code
 
 ## 💡 เคล็ดลับ
 
-1. **ไม่ต้องจำคำสั่งเยอะ** - พูดภาษาคนกับ Claude Code ก็ได้ เช่น "เมื่อวานเราทำอะไรไปบ้าง"
+1. **ไม่ต้องจำคำสั่งเยอะ** - พูดภาษาคนกับ Gemini CLI ก็ได้ เช่น "เมื่อวานเราทำอะไรไปบ้าง"
 2. **เริ่มจาก Oracle เดี่ยวก่อน** - ถ้าเพิ่งเริ่ม ยังไม่ต้องสนใจ multi-agent tools
 3. **ใช้ทุกวัน** - ยิ่งใช้นาน Oracle ยิ่งเข้าใจเรามากขึ้น
 4. **ติดตั้งบน VPS ได้** - ถ้าอยากให้ Oracle ทำงาน 24 ชั่วโมง (spec ขั้นต่ำ 2 CPU 4GB RAM 40GB SSD)

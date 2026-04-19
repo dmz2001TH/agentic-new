@@ -70,8 +70,8 @@ const app = new Hono();
 // CORS middleware — restrict to same-origin in production
 app.use('*', cors({
   origin: (origin) => {
-    // Allow same-origin (no origin header) and localhost variants
-    if (!origin) return origin;
+    // Allow same-origin (no origin header), direct file access (origin null), and localhost variants
+    if (!origin || origin === 'null') return origin || '*';
     if (origin.startsWith('http://localhost:') || origin.startsWith('http://127.0.0.1:')) {
       return origin;
     }

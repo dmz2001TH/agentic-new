@@ -34,8 +34,8 @@ const send: Handler = async (ws, data, engine) => {
   if (!data.force) {
     try {
       const cmd = await getPaneCommand(data.target);
-      if (!/claude|codex|node/i.test(cmd)) {
-        ws.send(JSON.stringify({ type: "error", error: `no active Claude session in ${data.target} (running: ${cmd})` }));
+      if (!/claude|codex|node|gemini/i.test(cmd)) {
+        ws.send(JSON.stringify({ type: "error", error: `no active AI session in ${data.target} (running: ${cmd})` }));
         return;
       }
     } catch { /* pane check failed, proceed anyway */ }

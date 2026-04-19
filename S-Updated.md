@@ -450,7 +450,7 @@ Platform: Gemini CLI (Windows, Google Login)
 - **Oracle Family Discussions** (URL อัพเดท)
   - URL: https://github.com/Soul-Brews-Studio/arra-oracle-v3/discussions
 
-### การติดตั้งพื้นฐาน (สำหรับ Claude Code)
+### การติดตั้งพื้นฐาน (สำหรับ Gemini CLI)
 ```bash
 npx arra-oracle-skills@3.9.1-alpha.1 install -g -y --agent claude-code
 /awaken

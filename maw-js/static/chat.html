@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+<head><title>Nexus Chat</title></head>
+<body>
+  <div id="chat" style="height: 300px; border: 1px solid #333; overflow-y: scroll;"></div>
+  <input id="input" type="text" placeholder="พิมพ์คุยกับ Nexus...">
+  <button onclick="send()">Send</button>
+  <script>
+    async function send() {
+      const input = document.getElementById('input');
+      const text = input.value;
+      await fetch('/api/chat', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ target: 'nexus', text })
+      });
+      input.value = '';
+    }
+  </script>
+</body>
+</html>

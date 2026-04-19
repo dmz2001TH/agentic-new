@@ -50,7 +50,7 @@ views.get("/topology", async (c) => {
 
 mountViews(views);
 
-// Serve packed maw-ui dist (Shape A — single port, single process)
+// Serve packed maw-ui dist
 const MAW_UI_DIR = process.env.MAW_UI_DIR || join(homedir(), ".maw", "ui", "dist");
 if (existsSync(MAW_UI_DIR)) {
   views.use("/*", serveStatic({ root: MAW_UI_DIR }));
@@ -74,7 +74,7 @@ export { views };
 
 // --- Server ---
 
-export async function startServer(port = +(process.env.MAW_PORT || loadConfig().port || 3456)) {
+export async function startServer(port = 4000) {
   const engine = new MawEngine({ feedBuffer, feedListeners });
 
   const HTTP_URL = `http://localhost:${port}`;
@@ -206,7 +206,4 @@ export async function startServer(port = +(process.env.MAW_PORT || loadConfig().
   return server;
 }
 
-// Auto-start unless imported by CLI (CLI sets MAW_CLI=1)
-if (!process.env.MAW_CLI) {
-  startServer();
-}
+// Server start is handled by entry point (server.ts)

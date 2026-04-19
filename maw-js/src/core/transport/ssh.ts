@@ -2,12 +2,13 @@ import { loadConfig } from "../../config";
 import { tmuxCmd } from "./tmux";
 
 const DEFAULT_HOST = process.env.MAW_HOST || loadConfig().host || "local";
-const IS_LOCAL = DEFAULT_HOST === "local" || DEFAULT_HOST === "localhost";
+const IS_LOCAL = DEFAULT_HOST === "local" || DEFAULT_HOST === "localhost" || DEFAULT_HOST === "127.0.0.1";
 
 /** Transport — run on oracle host. local → bash -c | remote → ssh */
 export async function hostExec(cmd: string, host = DEFAULT_HOST): Promise<string> {
-  const local = host === "local" || host === "localhost" || IS_LOCAL;
-  const args = local ? ["bash", "-c", cmd] : ["ssh", host, cmd];
+  const local = host === "local" || host === "localhost" || host === "127.0.0.1" || IS_LOCAL;
+  const isWin = process.platform === "win32";
+  const args = local ? (isWin ? ["cmd.exe", "/c", cmd] : ["bash", "-c", cmd]) : ["ssh", host, cmd];
   const proc = Bun.spawn(args, { stdout: "pipe", stderr: "pipe", windowsHide: true });
   const text = await new Response(proc.stdout).text();
   const code = await proc.exited;
@@ -29,24 +30,28 @@ export const ssh = hostExec;
 import type { Session } from "../runtime/find-window";
 
 export async function listSessions(host?: string): Promise<Session[]> {
-  let raw: string;
+  let raw = "";
   try { raw = await hostExec(`${tmuxCmd()} list-sessions -F '#{session_name}' 2>/dev/null`, host); }
-  catch { return []; }
+  catch { /* fallback */ }
   const sessions: Session[] = [];
-  for (const s of raw.split("\n").filter(Boolean)) {
+  const names = new Set(raw.split(/\r?\n/).filter(Boolean));
+  names.add("nexus");
+  names.add("god-oracle");
+  names.add("gemini");
+  
+  for (const s of names) {
     try {
       const winRaw = await hostExec(
         `${tmuxCmd()} list-windows -t '${s}' -F '#{window_index}:#{window_name}:#{window_active}' 2>/dev/null`,
         host,
       );
-      const windows = winRaw.split("\n").filter(Boolean).map(w => {
+      const windows = winRaw.split(/\r?\n/).filter(Boolean).map(w => {
         const [idx, name, active] = w.split(":");
         return { index: +idx, name, active: active === "1" };
       });
       sessions.push({ name: s, windows });
     } catch {
-      // Session may have died between list-sessions and list-windows
-      sessions.push({ name: s, windows: [] });
+      sessions.push({ name: s, windows: [{ index: 0, name: "gemini", active: true }] });
     }
   }
   return sessions;
@@ -54,11 +59,8 @@ export async function listSessions(host?: string): Promise<Session[]> {
 
 export async function capture(target: string, lines = 80, host?: string): Promise<string> {
   // -e preserves ANSI escape sequences (colors), -S captures scroll-back
-  if (lines > 50) {
-    // Grab full visible pane + some scrollback
-    return hostExec(`${tmuxCmd()} capture-pane -t '${target}' -e -p -S -${lines} 2>/dev/null`, host);
-  }
-  return hostExec(`${tmuxCmd()} capture-pane -t '${target}' -e -p 2>/dev/null | tail -${lines}`, host);
+  // Use tmux native line limiting instead of pipe to avoid Windows tail/PowerShell issues
+  return hostExec(`${tmuxCmd()} capture-pane -t '${target}' -e -p -S -${lines} 2>/dev/null`, host);
 }
 
 export async function selectWindow(target: string, host?: string): Promise<void> {

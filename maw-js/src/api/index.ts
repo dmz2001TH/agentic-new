@@ -25,6 +25,8 @@ import { uploadApi } from "./upload";
 import { discoverPackages, invokePlugin } from "../plugin/registry";
 import { federationAuth } from "../lib/elysia-auth";
 
+import { deprecatedApi } from "./deprecated";
+
 export const api = new Elysia({ prefix: "/api" })
   .use(cors())
   .use(federationAuth)
@@ -38,7 +40,14 @@ export const api = new Elysia({ prefix: "/api" })
       description: "Multi-Agent Workflow API — federation, sessions, plugins, workspace",
     },
   }))
+  .use(deprecatedApi)
   .use(sessionsApi)
+  .post("/chat", async ({ body }) => {
+    const { target, text } = body as { target: string, text: string };
+    const { sendKeys } = await import("../core/transport/ssh");
+    await sendKeys(target, text);
+    return { status: "sent", target, text };
+  })
   .use(feedApi)
   .use(teamsApi)
   .use(configApi)

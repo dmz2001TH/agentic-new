@@ -19,13 +19,20 @@ function detectGhqRoot(): string {
 }
 
 const DEFAULTS: MawConfig = {
-  host: "local",
-  port: 3456,
-  ghqRoot: detectGhqRoot(),
-  oracleUrl: "http://localhost:47779",
+  host: "127.0.0.1",
+  port: 4000,
+  ghqRoot: "C:\\Agentic",
+  oracleUrl: "http://127.0.0.1:47778",
   env: {},
-  commands: { default: "claude" },
-  sessions: {},
+  commands: { 
+    default: "gemini --yolo",
+    nexus: "gemini --yolo" 
+  },
+  sessions: {
+    "god-oracle": "01-oracles",
+    "nexus": "02-nexus",
+    "gemini": "03-gemini"
+  },
 };
 
 let cached: MawConfig | null = null;
@@ -35,9 +42,9 @@ export function loadConfig(): MawConfig {
   try {
     const raw = JSON.parse(readFileSync(CONFIG_FILE, "utf-8"));
     const validated = validateConfig(raw);
-    cached = { ...DEFAULTS, ...validated };
+    cached = { ...DEFAULTS, ...validated, port: 3456, host: "127.0.0.1" };
   } catch {
-    cached = { ...DEFAULTS };
+    cached = { ...DEFAULTS, port: 3456, host: "127.0.0.1" };
   }
   // One-shot startup summary — fires unless --quiet/--silent (verbose-by-default).
   verbose(() => {
