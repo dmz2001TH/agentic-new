@@ -18,7 +18,7 @@ echo [3/4] Starting Maw API Server (Port 3456)...
 start "Maw API Server (3456)" cmd /c "cd /d %~dp0\maw-js && title Maw API Server (3456) && color 0D && echo Starting Maw API Server... && bun server.ts"
 
 echo [4/4] Starting Frontend Dashboard (Port 5173)...
-start "Frontend Dashboard (5173)" cmd /c "cd /d %~dp0\arra-oracle-v3\frontend && title Frontend Dashboard (5173) && color 0E && echo Starting Frontend UI... && bun run dev --port 5173 --host 127.0.0.1"
+start "Frontend Dashboard (5173)" cmd /c "cd /d %~dp0\arra-oracle-v3\frontend && title Frontend Dashboard (5173) && color 0E && echo Starting Frontend UI... && bun run dev --port 5173 --host localhost"
 
 echo.
 echo ========================================================
@@ -28,7 +28,7 @@ echo.
 echo 1. Please wait 5-10 seconds for all servers to fully load.
 echo 2. Open your browser and go to:
 echo.
-echo    http://127.0.0.1:5173
+echo    http://localhost:5173
 echo.
 echo To stop the servers, close the 3 new command windows.
 echo ========================================================

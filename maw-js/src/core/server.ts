@@ -182,7 +182,7 @@ export async function startServer(port = 4000) {
   // Security: bind to localhost unless peers are configured (federation needs network access)
   const config = loadConfig();
   const hasPeers = (config.peers?.length ?? 0) > 0 || (config.namedPeers?.length ?? 0) > 0;
-  const hostname = hasPeers ? "0.0.0.0" : "127.0.0.1";
+  const hostname = hasPeers ? "0.0.0.0" : "localhost";
 
   if (hasPeers && !config.federationToken) {
     console.warn(`\x1b[31m⚠ WARNING: peers configured but no federationToken set!\x1b[0m`);
