@@ -39,6 +39,7 @@ CONFLICT_FILES=(
   test/isolated/bud-init.test.ts
   test/isolated/bud-repo.test.ts
   test/isolated/bud-wake.test.ts
+  src/commands/plugins/oracle/oracle.test.ts
 )
 
 echo "=== Running ${#CONFLICT_FILES[@]} conflict files individually ==="
@@ -46,7 +47,7 @@ for f in "${CONFLICT_FILES[@]}"; do
   [ -f "$f" ] && run_file "$f"
 done
 
-# Collect remaining files
+# Collect remaining files (only from test/isolated/)
 REMAINING=()
 for f in test/isolated/*.test.ts; do
   skip=false

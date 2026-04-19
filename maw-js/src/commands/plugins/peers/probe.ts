@@ -93,13 +93,21 @@ export function classifyProbeError(input: unknown): ProbeErrorCode {
 /**
  * DNS precheck — resolves host-doesn't-resolve vs connection-refused before
  * fetch (Bun conflates them). Returns DNS LastError on failure, null on ok.
+ *
+ * Has a 2s timeout to prevent hanging on .local domains without mDNS (Avahi).
  */
 async function prefetchDnsCheck(url: string): Promise<LastError | null> {
   let hostname: string;
   try { hostname = new URL(url).hostname; } catch { return null; }
   if (/^\d+\.\d+\.\d+\.\d+$/.test(hostname) || hostname.startsWith("[")) return null;
   try {
-    await lookup(hostname);
+    // Race DNS lookup against a 2s timeout — .local domains without mDNS
+    // (Avahi) can hang indefinitely on Linux, causing tests and CLI to stall.
+    const lookupPromise = lookup(hostname);
+    const timeoutPromise = new Promise<never>((_, reject) =>
+      setTimeout(() => reject(Object.assign(new Error(`DNS lookup timed out for ${hostname}`), { code: "ETIMEDOUT" })), 2000)
+    );
+    await Promise.race([lookupPromise, timeoutPromise]);
     return null;
   } catch (e: any) {
     return {
