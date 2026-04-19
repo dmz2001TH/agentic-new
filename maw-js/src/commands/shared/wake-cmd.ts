@@ -40,7 +40,7 @@ export async function cmdWake(oracle: string, opts: { task?: string; newWt?: str
     session = getSessionMap()[oracle] || resolveFleetSession(oracle) || oracle;
     const mainWindowName = `${oracle}-oracle`;
     await tmux.newSession(session, { window: mainWindowName, cwd: repoPath });
-    await setSessionEnv(session);
+    await setSessionEnv(session, oracle);
     await new Promise(r => setTimeout(r, 300));
     await tmux.sendText(`${session}:${mainWindowName}`, buildCommandInDir(mainWindowName, repoPath));
     console.log(`\x1b[32m+\x1b[0m created session '${session}' (main: ${mainWindowName})`);
@@ -69,7 +69,7 @@ export async function cmdWake(oracle: string, opts: { task?: string; newWt?: str
       }
     }
   } else {
-    await setSessionEnv(session);
+    await setSessionEnv(session, oracle);
     let preExistingWindows = new Set<string>();
     try { preExistingWindows = new Set((await tmux.listWindows(session)).map(w => w.name)); } catch { /* ok */ }
 

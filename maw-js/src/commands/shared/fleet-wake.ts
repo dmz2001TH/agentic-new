@@ -67,6 +67,8 @@ export async function cmdWakeAll(opts: { kill?: boolean; all?: boolean; resume?:
     for (const [key, val] of Object.entries(getEnvVars())) {
       await tmux.setEnvironment(sess.name, key, val);
     }
+    // Set CLAUDE_AGENT_NAME so each agent knows its identity
+    await tmux.setEnvironment(sess.name, "CLAUDE_AGENT_NAME", first.name);
 
     if (!sess.skip_command) {
       await new Promise(r => setTimeout(r, 300));

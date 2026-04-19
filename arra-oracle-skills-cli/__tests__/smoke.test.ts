@@ -1,6 +1,12 @@
 import { describe, it, expect } from "bun:test";
 import { $ } from "bun";
 
+// Check if `cal` command is available
+const hasCal = await (async () => {
+  try { const p = Bun.spawn(["which", "cal"], { stdout: "pipe" }); await p.exited; return p.exitCode === 0; }
+  catch { return false; }
+})();
+
 const S = "src/skills";
 
 // Helper: run script and get stdout+stderr
@@ -33,7 +39,7 @@ describe("recap scripts", () => {
 
 describe("schedule scripts", () => {
   // Skip calendar.ts on CI - `cal` command not available on Linux runners
-  it.skipIf(!!process.env.CI || !!process.env.SKIP_CAL)("calendar.ts", async () => expect(await run(`${S}/schedule/scripts/calendar.ts`)).toMatch(/\d{4}|Su Mo Tu/));
+  it.skipIf(!hasCal || !!process.env.SKIP_CAL)("calendar.ts", async () => expect(await run(`${S}/schedule/scripts/calendar.ts`)).toMatch(/\d{4}|Su Mo Tu/));
   it("query.ts", async () => expect(await run(`${S}/schedule/scripts/query.ts`)).toMatch(/Schedule|No events|Cannot connect/));
 });
 

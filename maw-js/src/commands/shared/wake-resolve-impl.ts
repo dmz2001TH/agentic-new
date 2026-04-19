@@ -203,13 +203,17 @@ export async function detectSession(oracle: string): Promise<string | null> {
   return null;
 }
 
-export async function setSessionEnv(session: string): Promise<void> {
+export async function setSessionEnv(session: string, oracleName?: string): Promise<void> {
   for (const [key, val] of Object.entries(getEnvVars())) {
     if (val.startsWith("pass:")) {
       await hostExec(`tmux set-environment -t '${session}' ${key} "$(pass show '${val.slice(5)}')"`)
     } else {
       await tmux.setEnvironment(session, key, val);
     }
+  }
+  // Set CLAUDE_AGENT_NAME so the agent knows its identity
+  if (oracleName) {
+    await tmux.setEnvironment(session, "CLAUDE_AGENT_NAME", oracleName);
   }
 }
 
