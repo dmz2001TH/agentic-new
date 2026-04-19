@@ -35,9 +35,7 @@ export async function listSessions(host?: string): Promise<Session[]> {
   catch { /* fallback */ }
   const sessions: Session[] = [];
   const names = new Set(raw.split(/\r?\n/).filter(Boolean));
-  names.add("nexus");
-  names.add("god-oracle");
-  names.add("gemini");
+  // Only show real tmux sessions — no ghost agents
   
   for (const s of names) {
     try {

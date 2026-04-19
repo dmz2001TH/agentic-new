@@ -30,22 +30,12 @@ function resolveCapture(query: string, sessions: { name: string }[]): string {
 sessionsApi.get("/sessions", async ({ query }) => {
   const local = await listSessions();
   
-  // Hard-inject agents for Windows UI consistency
-  const forceSessions = [
-    { name: "nexus", windows: [{ index: 0, name: "gemini", active: true }], source: "local" },
-    { name: "god-oracle", windows: [{ index: 0, name: "main", active: true }], source: "local" }
-  ];
-
+  // Show only real tmux sessions — no ghost agents
   if (query.local === "true") {
-    const combined = [...local.map(s => ({ ...s, source: "local" }))];
-    // Avoid duplicates if scanner actually starts working
-    forceSessions.forEach(fs => { if (!combined.find(c => c.name === fs.name)) combined.push(fs); });
-    return combined;
+    return local.map(s => ({ ...s, source: "local" }));
   }
   
-  const aggregated = await getAggregatedSessions(local);
-  forceSessions.forEach(fs => { if (!aggregated.find(a => (a as any).name === fs.name)) aggregated.push(fs as any); });
-  return aggregated;
+  return await getAggregatedSessions(local);
 }, {
   query: t.Object({
     local: t.Optional(t.String()),
