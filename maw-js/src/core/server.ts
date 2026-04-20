@@ -102,7 +102,8 @@ export async function startServer(port = 4000) {
     const { execSync } = require("child_process");
     const ensureScript = join(import.meta.dir, "..", "..", "..", "scripts", "ensure-agents.sh");
     if (existsSync(ensureScript)) {
-      execSync(`bash ${ensureScript}`, { stdio: "pipe" });
+      // Use relative path for bash to avoid C:\ issues
+      execSync(`bash ./scripts/ensure-agents.sh`, { stdio: "pipe", cwd: join(import.meta.dir, "..", "..", "..") });
       console.log("[startup] ensured agent sessions");
     }
   } catch (err) { console.error("[startup] ensure-agents failed:", err); }
