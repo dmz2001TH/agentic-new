@@ -2,7 +2,7 @@
 # ensure-agents.sh — สร้าง tmux sessions สำหรับทุก agent
 # เรียกตอน server boot หรือ manual:
 #   bash scripts/ensure-agents.sh              # รันทุก agent ที่ลงทะเบียน
-#   bash scripts/ensure-agents.sh god nexus    # รันเฉพาะตัวที่ระบุ
+#   bash scripts/ensure-agents.sh god        # รันเฉพาะตัวที่ระบุ
 #   bash scripts/ensure-agents.sh --list       # ดู agent ที่ลงทะเบียนไว้
 
 set -euo pipefail
@@ -15,7 +15,6 @@ GEMINI_DIR="$AGENTS_DIR/.gemini"
 # ═══════════════════════════════════════════
 REGISTERED_AGENTS=(
   "god:mawjs-oracle:god"
-  "nexus:mawjs-nexus:nexus"
   # เพิ่ม agent ใหม่ที่นี่:
   # "zeus:mawjs-zeus:zeus"
   # "apollo:mawjs-apollo:apollo"

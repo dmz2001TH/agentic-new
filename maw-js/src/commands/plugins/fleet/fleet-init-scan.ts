@@ -33,7 +33,7 @@ const GROUPS: Record<string, { session: string; order: number }> = {
   calliope: { session: "calliope", order: 11 },
   odin: { session: "odin", order: 12 },
   mother: { session: "mother", order: 13 },
-  nexus: { session: "nexus", order: 14 },
+  god: { session: "god", order: 14 },
   // Brewing (15)
   xiaoer: { session: "xiaoer", order: 15 },
   // Dormant (20+)
