@@ -15,10 +15,6 @@
   },
 
   "sessions": {
-    "nexus": "01-oracles",
-    "hermes": "07-hermes",
-    "pulse": "09-pulse",
-    "calliope": "10-calliope",
-    "homekeeper": "11-homekeeper"
+    "god": "god"
   }
 }

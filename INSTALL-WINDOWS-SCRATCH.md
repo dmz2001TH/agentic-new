@@ -213,7 +213,7 @@ dir
 arra-oracle-v3/        ← สมองความจำ
 maw-js/                ← ระบบควบคุม
 start-oracle.cmd       ← รันระบบทั้งหมด
-start-nexus.cmd        ← ปลุก Agent
+start-god.cmd        ← ปลุก Agent
 INSTALLATION.md        ← คู่มือฉบับเต็ม
 ```
 
@@ -296,22 +296,22 @@ http://localhost:5173
 ---
 
 ## ═══════════════════════════════════════
-## ขั้นตอนที่ 9: ปลุก Agent ตัวแรก (Nexus)
+## ขั้นตอนที่ 9: ปลุก Agent ตัวแรก (GOD)
 ## ═══════════════════════════════════════
 
 ### 9.1 สร้างโฟลเดอร์ให้ Agent
 
 ```powershell
-mkdir C:\Agentic\ψ\agents\nexus\memory
+mkdir C:\Agentic\ψ\agents\god\memory
 ```
 
 ### 9.2 สร้างไฟล์ตัวตน
 
-เปิด **Notepad** หรือ **Windsurf** แล้วสร้างไฟล์ `C:\Agentic\ψ\agents\nexus\identity.md`:
+เปิด **Notepad** หรือ **Windsurf** แล้วสร้างไฟล์ `C:\Agentic\ψ\agents\god\identity.md`:
 
 ```markdown
 # Agent Identity
-- Name: Nexus
+- Name: GOD
 - Role: Memory Coordinator
 - Project: Agentic
 - Platform: Gemini CLI (Windows)
@@ -324,12 +324,12 @@ mkdir C:\Agentic\ψ\agents\nexus\memory
 เปิดไฟล์ `C:\Agentic\ψ\memory\people.md` แล้วเพิ่ม:
 
 ```markdown
-## Nexus
+## GOD
 - **บทบาท**: Memory Coordinator Agent
 - **ติดต่อล่าสุด**: 2026-04-19
 ```
 
-### 9.4 ปลุก Nexus
+### 9.4 ปลุก GOD
 
 **วิธีที่ 1: ผ่าน Ubuntu/WSL**
 
@@ -338,7 +338,7 @@ mkdir C:\Agentic\ψ\agents\nexus\memory
 
 ```bash
 cd /mnt/c/Agentic
-tmux new-session -d -s nexus "gemini --yolo"
+tmux new-session -d -s god "gemini --yolo"
 ```
 
 **วิธีที่ 2: ผ่านไฟล์ (ง่ายกว่า)**
@@ -346,19 +346,19 @@ tmux new-session -d -s nexus "gemini --yolo"
 ```powershell
 # ใน PowerShell
 cd C:\Agentic
-.\start-nexus.cmd
+.\start-god.cmd
 ```
 
-### 9.5 ตรวจสอบว่า Nexus ออนไลน์
+### 9.5 ตรวจสอบว่า GOD ออนไลน์
 
 ใน Ubuntu/WSL:
 ```bash
 tmux list-sessions
 ```
 
-ควรเห็น `nexus: 1 windows`
+ควรเห็น `god: 1 windows`
 
-หรือดูใน Dashboard: http://localhost:5173 → มองหา nexus ใน Fleet
+หรือดูใน Dashboard: http://localhost:5173 → มองหา god ใน Fleet
 
 ---
 
@@ -377,7 +377,7 @@ tmux list-sessions
 
 - แก้ไขโค้ด (config, template, scripts)
 - ดูไฟล์ memory (`ψ/memory/` ต่างๆ)
-- แก้ identity (`ψ/agents/nexus/identity.md`)
+- แก้ identity (`ψ/agents/god/identity.md`)
 - ใช้ AI ของ Windsurf ช่วยเขียนโค้ด
 
 ### สิ่งที่ต้องรันใน Terminal แยก
@@ -385,7 +385,7 @@ tmux list-sessions
 ไม่ต้องรันใน Windsurf terminal ให้รันใน **PowerShell** แยกต่างหาก:
 
 - `.\start-oracle.cmd` — เริ่มระบบทั้งหมด
-- `.\start-nexus.cmd` — ปลุก Agent
+- `.\start-god.cmd` — ปลุก Agent
 - `.\finish-day.ps1` — จบวัน
 
 ---
@@ -398,7 +398,7 @@ tmux list-sessions
 
 ```
 1. PowerShell:  cd C:\Agentic && .\start-oracle.cmd
-2. Ubuntu/WSL:  tmux new-session -d -s nexus "gemini --yolo"
+2. Ubuntu/WSL:  tmux new-session -d -s god "gemini --yolo"
 3. Browser:     http://localhost:5173
 4. Windsurf:    เปิดโฟลเดอร์ C:\Agentic
 ```
@@ -407,7 +407,7 @@ tmux list-sessions
 
 ```
 - ดูสถานะ:    http://localhost:5173
-- คุยกับ Agent: tmux attach -t nexus (ใน Ubuntu)
+- คุยกับ Agent: tmux attach -t god (ใน Ubuntu)
 - ออกจาก tmux:  Ctrl+B แล้วกด D (ไม่ฆ่า session)
 ```
 
@@ -453,7 +453,7 @@ Maw API ไม่ได้รัน → รัน `.\start-oracle.cmd` ใหม
 
 ### ❌ 0 Agents ใน Dashboard
 
-ไม่มี tmux session → เปิด Ubuntu แล้วรัน `tmux new-session -d -s nexus "gemini --yolo"`
+ไม่มี tmux session → เปิด Ubuntu แล้วรัน `tmux new-session -d -s god "gemini --yolo"`
 
 ### ❌ git clone ไม่ได้
 
@@ -485,7 +485,7 @@ git clone https://github.com/dmz2001TH/agentic.git C:\Agentic --depth 1
 
 ```
 1. PowerShell:  cd C:\Agentic && .\start-oracle.cmd
-2. Ubuntu/WSL:  tmux new-session -d -s nexus "gemini --yolo"
+2. Ubuntu/WSL:  tmux new-session -d -s god "gemini --yolo"
 3. Browser:     http://localhost:5173
 4. Windsurf:    เปิดโฟลเดอร์ C:\Agentic
 ```

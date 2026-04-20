@@ -1,375 +1,372 @@
-# 🔮 HANDOFF PROMPT — Oracle v3 Agentic Project
+# 🔮 HANDOFF — Oracle v3 Agentic Project
 
-**สำหรับ:** AI Agent ตัวถัดไปที่จะ接手โปรเจ็คนี้
-**สร้างเมื่อ:** 2026-04-19
-**สถานะปัจจุบัน:** ระบบรันได้ทั้ง 3 ports + Maw UI ติดตั้งแล้ว (ARRA Office) Frontend แสดงข้อมูลจริงจาก Oracle
-
----
-
-## 📌 สรุปสิ่งที่ทำไปแล้ว (What Was Done)
-
-คุณกำลัง接手โปรเจ็ค **Oracle v3** ที่เป็น multi-agent system สำหรับ Windows + Windsurf ประกอบด้วย 3 ส่วนหลัก:
-
-### โครงสร้างโปรเจ็ค
-
-```
-Repo: https://github.com/dmz2001TH/agentic
-Branch: master
-โฟลเดอร์หลัก: C:\Agentic (บน Windows)
-```
-
-| Component | Port | หน้าที่ | Source |
-|-----------|------|---------|--------|
-| **arra-oracle-v3** | 47778 | สมองความจำ (HTTP API) | `arra-oracle-v3/src/server.ts` |
-| **maw-js** | 3456 | Fleet Control + API + Maw UI (ARRA Office) | `maw-js/server.ts` |
-| **Frontend** | 5173 | Dashboard UI | `arra-oracle-v3/frontend` |
-
-### สิ่งที่ทำไปแล้วทั้งหมด
-
-#### 1. แก้ Bug Critical (commit a5b8de4)
-- **`.env.json`** port 3457 → 3456
-- **`start-oracle.cmd`** เปลี่ยนจาก `bun run src\index.ts` (MCP) เป็น `bun src\server.ts` (HTTP)
-- **`start-oracle.cmd`** เปลี่ยน path จาก `C:\Agentic` เป็น `%~dp0`
-- **`howtoinstall.txt`** อัพเดทคำสั่ง Oracle Core
-- **`maw-js/src/api/index.ts`** แก้ comment ผิด ("deprecated.ts removed")
-- สร้าง **`.gitignore`** สำหรับ SQLite binary files
-- ลบ SQLite DB files ออกจาก git tracking
-- ลบ `package-lock.json` ที่ว่างเปล่า
-
-#### 2. เปลี่ยน 127.0.0.1 → localhost (commit efdc7b2)
-- เปลี่ยนใน 8 ไฟล์: `.env.json`, `load.ts`, `vite.config.ts`, `server.ts` (ทั้ง 2 ตัว), `start-oracle.cmd`, `start-nexus.cmd`, `howtoinstall.txt`
-- สร้าง **`INSTALLATION.md`** — คู่มือติดตั้งฉบับเต็ม
-
-#### 3. ลบ Ghost Agents จุดที่ 1 (commit 1d749cd)
-- **`maw-js/src/core/transport/tmux-class.ts`** — ลบ `names.add("nexus"/"god-oracle"/"gemini")` ใน `listSessions()` และ `listAll()`
-
-#### 4. ลบ Ghost Agents จุดที่ 2-3 (commit 78be8b9)
-- **`maw-js/src/api/sessions.ts`** — ลบ `forceSessions` array ใน `/api/sessions` endpoint
-- **`maw-js/src/core/transport/ssh.ts`** — ลบ `names.add("god-oracle")` ใน `listSessions()`
-
-#### 5. ลบ Ghost Agents จาก Config (commit 6cda5bc)
-- **`maw-js/.env.json`** — ลบ `"god-oracle"` จาก sessions, ลบ `"*-oracle"` จาก commands
-- **`maw-js/src/config/load.ts`** — ลบ `"god-oracle"` และ `"gemini"` จาก DEFAULTS sessions
-- **`INSTALL-WINDOWS-SCRATCH.md`** — เพิ่มส่วน troubleshooting 8 จุด + กฎป้องกัน regression
-
-#### 6. คู่มือที่สร้าง
-- **`INSTALLATION.md`** — คู่มือสำหรับคนที่มี GitHub อยู่แล้ว
-- **`INSTALL-WINDOWS-SCRATCH.md`** — คู่มือสำหรับคนเริ่มจาก 0 (ติดตั้ง Git, Node, Bun, WSL, tmux, Gemini CLI)
-- **`agentic-project-review.md`** — รีวิวโปรเจ็คฉบับละเอียด (อยู่ใน workspace ของ agent เก่า)
-
-#### 7. แก้ Frontend แสดง Mock Data (commit 44a3d01)
-- **`maw-js/src/api/deprecated.ts`** — เปลี่ยนจาก mock endpoints → proxy จริงไป Oracle Core (15 routes)
-  - `GET /api/search` — proxy ไป Oracle (ก่อนหน้า: 404)
-  - `POST /api/learn` — proxy ไป Oracle (ก่อนหน้า: 404)
-  - `POST /api/auth/login` — proxy ไป Oracle (ก่อนหน้า: 404)
-  - `GET /api/settings` — proxy ไป Oracle (ก่อนหน้า: 404)
-  - `POST /api/settings` — proxy ไป Oracle (ก่อนหน้า: 404)
-  - `GET /api/list, /api/stats, /api/reflect, /api/graph, /api/map` — proxy จริง (ก่อนหน้า: mock empty data)
-  - `GET /api/dashboard/summary, /api/dashboard/activity, /api/dashboard/growth` — proxy จริง
-  - `GET /api/auth/status, /api/session/stats, /api/oraclenet/status` — proxy จริง
-  - `GET /api/similar` — proxy ไป Oracle (ก่อนหน้า: 404)
-  - มี fallback ถ้า Oracle ไม่รัน → คืนค่า default (ไม่ crash)
-- **`maw-js/src/config/load.ts`** — `ghqRoot: "C:\Agentic"` → `ghqRoot: detectGhqRoot()` (dynamic detection)
-- **`arra-oracle-v3/src/server/handlers.ts`** — ซ่อน vector search warning ถ้าเป็น connection error (Ollama ไม่ได้ติดตั้ง)
-- **`arra-oracle-v3/src/tools/search.ts`** — ซ่อน vector search warning (MCP side)
-- **`.gitignore`** — เพิ่ม `psi/vault/*.db.export-*.csv` และ `psi/vault/*.db.export-*.json`
-
-#### 8. แก้ Windows WSL tmux compatibility (commit pending)
-- **`maw-js/src/core/transport/tmux-types.ts`** — `tmuxCmd()` ตรวจจับ Windows (`process.platform === "win32"`) → คืน `wsl tmux` แทน `tmux` (เพราะ tmux อยู่ใน WSL ไม่ใช่ Windows native)
-- **`maw-js/src/core/transport/ssh.ts`** — `hostExec()` บน Windows: ถ้า command มี `tmux` → รันผ่าน `["wsl", "bash", "-c", cmd]` แทน `["cmd.exe", "/c", cmd]` เพื่อให้ single quotes, `2>/dev/null` และ bash syntax ทำงานได้
-- ส่งผลให้ `listSessions()`, `capture()`, `sendKeys()`, `switchClient()` ทำงานบน Windows + WSL ได้
-
-#### 9. ติดตั้ง Maw UI (ARRA Office)
-- ดาวน์โหลด maw-ui v1.4.2 จาก GitHub Releases → แตกไฟล์ไปที่ `~/.maw/ui/dist/`
-- หน้าแรก (`/`) แสดง ARRA Office แทน landing page เปล่า
-- Pages ที่มี: office, fleet, terminal, dashboard, chat, mission, config, inbox, workspace, federation_2d, federation, arena, shrine, timemachine
-- **บน Windows:** รัน `maw ui --install` หรือดาวน์โหลดจาก https://github.com/Soul-Brews-Studio/maw-ui/releases/latest
+**Last Updated:** 2026-04-20
+**Current Agent:** OpenClaw (MiMo) — testing & fixes session
+**Project:** https://github.com/dmz2001TH/agentic-new
 
 ---
 
-## 🔗 ลิงก์ทั้งหมดที่ Agent ต้องดู
+## 📌 ภาพรวมโปรเจ็ค
 
-### โปรเจ็คหลัก
-- **Repo หลัก:** https://github.com/dmz2001TH/agentic
-- **Commits:** https://github.com/dmz2001TH/agentic/commits/master
+Oracle v3 = Multi-Agent Management Platform ที่มี 3 ส่วนหลัก:
 
-### โปรเจ็คต้นฉบับ (Fork มาจาก)
-- **maw-js:** https://github.com/Soul-Brews-Studio/maw-js
-- **arra-oracle-v3:** https://github.com/Soul-Brews-Studio/arra-oracle-v3
-- **oracle-skills-cli:** https://github.com/Soul-Brews-Studio/oracle-skills-cli
-- **multi-agent-workflow-kit:** https://github.com/Soul-Brews-Studio/multi-agent-workflow-kit
-- **oracle-vault-report:** https://github.com/Soul-Brews-Studio/oracle-vault-report
-- **opensource-nat-brain-oracle:** https://github.com/Soul-Brews-Studio/opensource-nat-brain-oracle
+```
+┌──────────────────────────────────────┐
+│  Browser → http://localhost:5173     │
+│  Frontend Dashboard (Vite+React)     │
+└──────────────┬───────────────────────┘
+               │ /api proxy
+┌──────────────▼───────────────────────┐
+│  Maw API (Elysia.js) → Port 3456    │
+│  Fleet Controller + API Gateway      │
+│  ┌──────────────────────────┐        │
+│  │  god (tmux → gemini yolo)│        │
+│  └──────────────────────────┘        │
+└──────────────┬───────────────────────┘
+               │ oracleUrl
+┌──────────────▼───────────────────────┐
+│  Oracle Core (Hono.js) → Port 47778  │
+│  Memory Brain: SQLite + FTS5 Search  │
+└──────────────────────────────────────┘
+```
 
-### เอกสารอ้างอิง
-- **Oracle Guide:** https://github.com/the-oracle-keeps-the-human-human/oracle-maw-guide
-- **Multi-Agent Book:** https://soul-brews-studio.github.io/multi-agent-orchestration-book/
-- **หนังสือ "รูปสอนความว่าง":** https://book.buildwithoracle.com
-- **Oracle Family Discussions:** https://github.com/Soul-Brews-Studio/arra-oracle-v3/discussions
-- **Pulse CLI:** https://github.com/Pulse-Oracle/pulse-cli
-- **Claude Code Statusline:** https://github.com/laris-co/claude-code-statusline
-
-### เครื่องมือ
-- **Bun:** https://bun.sh
-- **Gemini CLI:** https://github.com/google-gemini/gemini-cli
-- **tmux:** https://github.com/tmux/tmux
-- **Windsurf:** https://windsurf.com (AI editor ที่ผู้ใช้ใช้)
+| Component | Port | Source | บทบาท |
+|-----------|------|--------|--------|
+| **Oracle Core** | 47778 | `arra-oracle-v3/src/server.ts` | สมองความจำ — learn/search/reflect/stats/graph |
+| **Maw API** | 3456 | `maw-js/server.ts` | Fleet control + proxy ไป Oracle + WebSocket |
+| **Frontend** | 5173 | `arra-oracle-v3/frontend` | Dashboard UI (proxy → 3456) |
+| **GOD Agent** | tmux | `tmux new-session -s god "gemini --yolo"` | Fleet Supervisor |
+| **Builder** | tmux | `tmux new-session -s mawjs-builder "..."` | Coding Specialist |
+| **Researcher** | tmux | (manual start) | Knowledge Specialist |
 
 ---
 
-## 🏗️ สถาปัตยกรรมระบบ (Architecture)
+## 🏗️ โครงสร้างไฟล์สำคัญ
 
 ```
-┌─────────────────────────────────────────────────────────┐
-│                    Browser (ผู้ใช้)                      │
-│              http://localhost:5173                       │
-└──────────────────────┬──────────────────────────────────┘
-                       │ HTTP
-┌──────────────────────▼──────────────────────────────────┐
-│           Frontend Dashboard (Port 5173)                │
-│         arra-oracle-v3/frontend — Vite + React          │
-│                                                         │
-│  Pages: Overview, Search, Graph, Feed, Forum, Settings  │
-│  Proxy: /api → localhost:3456                           │
-│  Live Terminal: ws://localhost:3456/ws/pty              │
-└──────────────────────┬──────────────────────────────────┘
-                       │ /api proxy + WebSocket
-┌──────────────────────▼──────────────────────────────────┐
-│           Maw API Server (Port 3456)                    │
-│         maw-js — Elysia.js + Hono                       │
-│                                                         │
-│  API Routes: /api/sessions, /api/sessions/nexus/ask     │
-│              /api/fleet, /api/asks, /api/stats, etc.    │
-│  WebSocket: /ws (engine), /ws/pty (live terminal)       │
-│  Config: maw-js/.env.json                               │
-│                                                         │
-│  ┌──────────┐  ┌──────────┐  ┌──────────┐              │
-│  │  nexus   │  │  agent2  │  │  agent3  │  ← tmux     │
-│  │ (gemini) │  │ (gemini) │  │ (gemini) │    sessions  │
-│  └──────────┘  └──────────┘  └──────────┘              │
-└──────────────────────┬──────────────────────────────────┘
-                       │ oracleUrl: http://localhost:47778
-┌──────────────────────▼──────────────────────────────────┐
-│           Oracle Core (Port 47778)                      │
-│     arra-oracle-v3 — Hono.js + SQLite + Vector DB      │
-│                                                         │
-│  Routes: /api/health, /api/search, /api/learn           │
-│          /api/list, /api/stats, /api/graph, etc.        │
-│  Data: ~/.arra-oracle-v2/oracle.db                      │
-│  ψ/: memory, inbox, writing, lab, vault                 │
-└─────────────────────────────────────────────────────────┘
+agentic-new/
+├── arra-oracle-v3/          ← Oracle Core (Memory Brain)
+│   ├── src/server.ts        ← HTTP server entry (port 47778)
+│   ├── src/server/          ← Routes, handlers, search
+│   ├── src/tools/           ← Learn, search, reflect tools
+│   └── frontend/            ← React Dashboard
+│       ├── vite.config.ts   ← Proxy: /api → localhost:3456
+│       └── src/             ← Pages, components
+├── maw-js/                  ← Fleet Controller
+│   ├── server.ts            ← HTTP + WS server entry (port 3456)
+│   ├── .env.json            ← Config: ports, commands, sessions
+│   ├── src/config/load.ts   ← Config loader + detectGhqRoot()
+│   ├── src/api/
+│   │   ├── deprecated.ts    ← Proxy routes → Oracle Core (15 routes)
+│   │   ├── sessions.ts      ← /api/sessions
+│   │   ├── fleet.ts         ← /api/fleet
+│   │   ├── asks.ts          ← /api/asks (send to agents)
+│   │   ├── tools.ts         ← /api/tools/* — Agent's hands (learn/search/file/goals/exec/message) ← NEW
+│   │   ├── heartbeat-api.ts ← /api/heartbeat — Task runner + heartbeat control ← NEW
+│   │   ├── git.ts           ← /api/git/* — Git operations (status/add/commit/push/ship) ← NEW
+│   │   └── search.ts        ← /api/search/* — Web search + URL fetch ← NEW
+│   ├── src/core/
+│   │   ├── server.ts        ← Main server + WebSocket + ensure-agents + heartbeat
+│   │   ├── task-runner.ts   ← Autonomous goal execution engine ← NEW
+│   │   ├── heartbeat.ts     ← Periodic check (30min) + task dispatch ← NEW
+│   │   └── transport/
+│   │       ├── ssh.ts       ← hostExec() + listSessions()
+│   │       ├── tmux-class.ts← Tmux wrapper class
+│   │       └── pty.ts       ← Live Terminal handler
+│   └── src/commands/plugins/← Wake, oracle, bud plugins
+├── scripts/
+│   ├── ensure-agents.sh     ← Auto-create tmux sessions on boot
+│   ├── oracle-tools.sh      ← GOD's hands: API + file + goal + fleet tools ← NEW
+│   └── validate-system.sh   ← System validation (31 checks) ← NEW
+├── ψ/                       ← Memory System
+│   ├── memory/              ← Shared brain (all agents read)
+│   │   ├── identity.md      ← System identity
+│   │   ├── people.md        ← Agent roster
+│   │   ├── goals.md         ← Goal tracker
+│   │   ├── patterns.md      ← Learned patterns
+│   │   ├── decisions.md     ← Decision log
+│   │   ├── values.md        ← Core values
+│   │   ├── notes.md         ← Session notes
+│   │   ├── handoff.md       ← Handoff state
+│   │   ├── locks/           ← Memory write locks
+│   │   └── reflections/     ← Post-task reflections
+│   ├── agents/god/memory/   ← GOD's personal brain
+│   ├── agents/builder/memory/ ← Builder's personal brain ← NEW
+│   └── inbox/               ← Tasks
+├── .gemini/
+│   ├── agents/god.md        ← GOD's context file for Gemini CLI
+│   └── launch-agent.sh      ← Launch Gemini with agent context
+├── start-oracle.cmd         ← รันทุกอย่างรวม GOD (Windows)
+├── start-god.cmd            ← ปลุก GOD แยก
+├── start-oracle-system.cmd  ← Alternative starter (WSL)
+├── INSTALLATION.md          ← คู่มือติดตั้ง
+└── HANDOFF-PROMPT.md        ← ไฟล์นี้
 ```
 
 ---
 
-## 📁 โครงสร้างไฟล์สำคัญ
+## ✅ สิ่งที่ทำเสร็จแล้ว
 
-### Config Files
-```
-maw-js/.env.json                    ← Maw API config (port, sessions, commands)
-maw-js/src/config/load.ts           ← Config loader + DEFAULTS
-arra-oracle-v3/src/config.ts        ← Oracle paths resolver
-arra-oracle-v3/src/const.ts         ← Oracle constants (default port 47778)
-arra-oracle-v3/frontend/vite.config.ts ← Frontend proxy config
-```
+### Bug Fixes (ห้ามย้อนกลับ)
 
-### Transport Layer (Ghost Agent Fix Location)
-```
-maw-js/src/core/transport/tmux-class.ts  ← Tmux wrapper (listSessions, listAll)
-maw-js/src/core/transport/ssh.ts         ← SSH transport (listSessions — ใช้จริง!)
-maw-js/src/core/transport/pty.ts         ← Live Terminal PTY handler
-maw-js/src/api/sessions.ts               ← /api/sessions endpoint
-```
+| # | สิ่งที่แก้ | ไฟล์ |
+|---|-----------|------|
+| 1 | `.env.json` port 3457→3456 | `maw-js/.env.json` |
+| 2 | Oracle Core: `bun run src/index.ts` → `bun src/server.ts` | `start-oracle.cmd` |
+| 3 | Hardcoded `C:\Agentic` → `%~dp0` | `start-oracle.cmd` |
+| 4 | `127.0.0.1` → `localhost` (8 ไฟล์) | Multiple |
+| 5 | Ghost agents (nexus/god-oracle/gemini) ลบแล้ว | `ssh.ts`, `tmux-class.ts`, `sessions.ts`, `load.ts` |
+| 6 | `forceSessions` array ลบแล้ว | `sessions.ts` |
+| 7 | deprecated.ts: mock → proxy จริง (15 routes) | `deprecated.ts` |
+| 8 | Vector search warning ซ่อน (Ollama ไม่มี → เงียบ fallback FTS5) | `handlers.ts`, `search.ts` |
+| 9 | Windows WSL tmux: `cmd.exe /c` → `wsl bash -c` | `ssh.ts`, `tmux-types.ts` |
+| 10 | `detectGhqRoot()` dynamic detection | `load.ts` |
+| 11 | `/api/health` endpoint added | `deprecated.ts` |
+| 12 | Proxy error logging (`console.warn`) | `deprecated.ts` |
+| 13 | nexus → god ทั้งระบบ | All config + docs + scripts |
+| 14 | Auto-start GOD in `start-oracle.cmd` | `start-oracle.cmd` |
 
-### API Layer
-```
-maw-js/src/api/index.ts             ← API router (import deprecatedApi)
-maw-js/src/api/deprecated.ts        ← Proxy endpoints → Oracle Core (search, learn, auth, settings, dashboard)
-maw-js/src/api/sessions.ts          ← Sessions API (was forceSessions)
-maw-js/src/api/fleet.ts             ← Fleet management
-maw-js/src/api/asks.ts              ← Ask/message agents
-maw-js/src/core/server.ts           ← Main server + WebSocket handler
-```
+### กฎเหล็ก (ห้ามย้อนกลับ)
 
-### Start Scripts
-```
-start-oracle.cmd                    ← เริ่มระบบทั้งหมด (3 ports)
-start-nexus.cmd                     ← ปลุก Agent Nexus
-finish-day.ps1                      ← จบวัน + git commit
-gemini-yolo.cmd                     ← Wrapper สำหรับ gemini --yolo
+1. ห้ามเพิ่ม `names.add("ชื่อagent")` ใน tmux-class.ts หรือ ssh.ts
+2. ห้ามเพิ่ม `forceSessions` ใน sessions.ts
+3. ห้ามเปลี่ยน port จาก 3456 โดยไม่แก้ทุกที่
+4. ห้ามเปลี่ยน Oracle Core จาก `bun src/server.ts`
+5. ห้าม hardcode path — ใช้ `%~dp0` (Windows) หรือ dynamic detection
+6. ห้ามใช้ `127.0.0.1` — ใช้ `localhost`
+7. ห้ามเปลี่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่use the deprecated.ts proxy)
 ```
 
-### Documentation
-```
-INSTALLATION.md                     ← คู่มือติดตั้ง (มี GitHub)
-INSTALL-WINDOWS-SCRATCH.md          ← คู่มือติดตั้ง (เริ่มจาก 0)
-howtoinstall.txt                    ← คู่มือเก่า (แก้แล้ว)
-GEMINI.md                           ← ระบบ Oracle สำหรับ Gemini CLI
-HANDOFF-PROMPT.md                   ← ไฟล์นี้ (ส่งต่อให้ agent ถัดไป)
-```
+### 🔴 P0 — Agent ทำอะไรได้จริง (Make GOD Actually Do Things) ✅ DONE
 
-### Memory System
-```
-ψ/memory/identity.md                ← ตัวตน Agent
-ψ/memory/patterns.md                ← Patterns ที่ค้นพบ
-ψ/memory/learnings.md               ← สิ่งที่เรียนรู้
-ψ/memory/notes.md                   ← บันทึกด่วน
-ψ/memory/decisions.md               ← การตัดสินใจ
-ψ/memory/people.md                  ← คน & Agent ที่ลงทะเบียน
-ψ/memory/values.md                  ← ค่านิยม
-ψ/memory/handoff.md                 ← Handoff ระหว่าง session
-ψ/memory/retrospectives/            ← สรุปประจำวัน
-ψ/inbox/                            ← งานที่กำลังทำ
-ψ/vault/                            ← SQLite DB + backups
+**สิ่งที่ทำ:**
+1. ✅ `scripts/oracle-tools.sh` — Bash-level tools (20+ functions)
+2. ✅ `maw-js/src/api/tools.ts` — HTTP API endpoints (server-side, works from any agent):
+   - `POST /api/tools/learn` — learn to Oracle
+   - `GET /api/tools/search` — search knowledge
+   - `GET/PUT/PATCH /api/tools/file` — read/write/append files
+   - `GET/POST/PATCH /api/tools/goals` — goal management
+   - `POST /api/tools/message` — send to agent via tmux
+   - `POST /api/tools/exec` — execute commands
+   - `POST /api/tools/reflect` — post-task reflection
+   - `GET/POST /api/tools/inbox` — inbox management
+   - `GET/PUT/PATCH /api/tools/memory/:file` — memory operations
+   - `GET /api/tools/fleet` — full system status
+3. ✅ `.gemini/agents/god.md` — Practical instructions for both HTTP API + bash script
+
+**เกณฑ์สำเร็จ:** ✅ GOD สามารถอ่านไฟล์, บันทึกสิ่งที่เรียนรู้ลง Oracle, และแก้ไขโค้ดได้โดยไม่ต้องให้มนุษย์ช่วย
+
+---
+
+### 🔴 P0 — Goal Execution System (ทำตามเป้าหมายอัตโนมัติ) ✅ DONE
+
+**สิ่งที่ทำ:**
+1. ✅ `maw-js/src/core/task-runner.ts` — Server-side task runner:
+   - `parseGoals()` — read goals.md into structured data
+   - `getNextPendingGoal()` — find first [ ] goal
+   - `markGoalActive/Done()` — update status
+   - `dispatchToAgent()` — send task to agent via tmux
+   - `processInbox()` — convert inbox items to goals
+   - `runTaskCycle()` — full cycle: inbox → goal → dispatch
+2. ✅ `scripts/oracle-tools.sh` — Bash-level task runner functions
+3. ✅ Goals format + status tracking [ ]/[~]/[x]/[!]
+4. ✅ API endpoints: `POST /api/heartbeat/task-cycle`, `GET /api/heartbeat/next-goal`
+
+**เกณฑ์สำเร็จ:** ✅ อ่าน goal → mark active → dispatch to agent → log — อัตโนมัติ
+
+---
+
+### 🟡 P1 — Multi-Agent Collaboration (มีมากกว่า 1 ตัว) ⚡ PARTIAL
+
+**สิ่งที่ทำ:**
+1. ✅ สร้าง agent ตัวที่ 2 (Builder) + ตัวที่ 3 (Researcher):
+   - `.gemini/agents/builder.md` — Coding Specialist
+   - `.gemini/agents/researcher.md` — Knowledge Specialist
+   - `ψ/agents/builder/memory/identity.md`
+   - `ψ/agents/researcher/memory/identity.md`
+   - `start-builder.cmd` — launch script
+2. ✅ Task delegation system ใน god.md:
+   - Delegation Rules: ไฟล์เดียว → ทำเอง, หลายไฟล์ → delegate builder
+   - ส่ง task format: TASK/FILE/TEST
+3. ✅ Inter-agent communication:
+   - `send_to_agent` — ส่ง message ผ่าน tmux send-keys
+   - `ask_agent` — ส่ง message ผ่าน Maw API /api/asks
+   - `ensure-agents.sh` updated — builder registered
+
+**ยังขาด:**
+- ⬜ เทสจริง: GOD ส่งงานให้ Builder → Builder ทำ → รายงานกลับ
+- ⬜ เพิ่ม builder ใน REGISTERED_AGENTS (เปิด comment)
+
+**เกณฑ์สำเร็จ:** ⚡ GOD ส่งงานให้ agent ตัวอื่นได้ แต่ยังไม่ได้เทส end-to-end
+
+---
+
+### 🟡 P1 — Autonomous Loop (Agent ทำงานเองโดยไม่ต้องถาม) ⚡ PARTIAL
+
+**สิ่งที่ทำ:**
+1. ✅ `maw-js/src/core/heartbeat.ts` — Periodic autonomous check (30min default):
+   - Check Oracle health
+   - Check agent sessions
+   - Count pending goals + inbox items
+   - Auto-run task cycle if work exists
+   - Log all heartbeats to ψ/memory/logs/heartbeat.log
+2. ✅ Auto-start heartbeat in server.ts startup
+3. ✅ API control: `POST /api/heartbeat/start|stop|run`
+4. ✅ god.md AUTONOMOUS MODE instructions
+
+**ยังขาด:**
+- ⬜ Decision engine (priority evaluation)
+- ⬜ Memory-driven behavior (patterns/decisions/learnings ปรับพฤติกรรม)
+
+**เกณฑ์สำเร็จ:** ⚡ Heartbeat ทำงาน + task dispatch ได้ แต่ยังไม่มี smart prioritization
+
+---
+
+### 🟢 P2 — Tool Integration (เครื่องมือสำหรับ Agent) ✅ DONE
+
+**สิ่งที่ทำ:**
+1. ✅ Git integration — `maw-js/src/api/git.ts`:
+   - `GET /api/git/status` — ดู staged/unstaged changes
+   - `GET /api/git/log` — commit history
+   - `GET /api/git/diff` — diff ไฟล์
+   - `POST /api/git/add` — stage files
+   - `POST /api/git/commit` — commit
+   - `POST /api/git/push` — push
+   - `POST /api/git/pull` — pull --rebase
+   - `POST /api/git/ship` — one-shot add+commit+push
+   - `GET /api/git/branch` — current branch
+   - `POST /api/git/stash` — stash changes
+2. ✅ Web search — `maw-js/src/api/search.ts`:
+   - `GET /api/search/web?q=...` — multi-provider search (DuckDuckGo + Wikipedia + Hacker News)
+   - `GET /api/search/fetch?url=...` — fetch + extract text from URL
+3. ✅ File system — `/api/tools/file` (GET/PUT/PATCH)
+4. ✅ API calls — `/api/tools/exec` (run any command)
+5. ✅ Terminal — `/api/tools/exec` + tmux send-keys via `/api/tools/message`
+
+**เกณฑ์สำเร็จ:** ✅ GOD ใช้เครื่มือได้ 5+ อย่าง (learn, search, git, file, exec, message)
+
+---
+
+### 🟢 P2 — Dashboard Enhancement ⚡ PARTIAL
+
+**สิ่งที่ทำ:**
+- Live terminal — PTY handler มีอยู่แล้วใน maw-js (`/ws/pty`)
+- Task board — `/api/tools/goals` + `/api/heartbeat/goals` endpoints
+- Fleet view — `/api/tools/fleet` + `/api/sessions`
+
+**ยังขาด:**
+- ⬜ React UI components สำหรับ task board (ต้องแก้ frontend)
+- ⬜ Knowledge graph visualization
+- ⬜ Agent activity timeline
+
+---
+
+### 🔵 P3 — Production Readiness ⚡ PARTIAL
+
+**สิ่งที่ทำ:**
+1. ✅ Auto-restart — `scripts/run-with-restart.sh` (bash wrapper with restart logic)
+2. ✅ Production start — `start-oracle-prod.cmd` (all services with auto-restart)
+3. ✅ Logging — heartbeat.log, task-runner.log, service logs via run-with-restart
+4. ✅ Backup — `scripts/backup-db.sh` (SQLite backup with 7-day retention)
+5. ✅ Auth — Optional `MAW_TOOLS_TOKEN` / `toolsToken` config for /api/tools/* endpoints
+
+**ยังขาด:**
+- ⬜ PM2/NSSM daemon setup
+- ⬜ TLS/HTTPS certificates
+
+---
+
+## 🧪 วิธีเทสระบบ
+
+```powershell
+# 1. รันระบบทั้งหมด + GOD
+cd C:\Agentic
+.\start-oracle.cmd
+
+# 2. รอ 10 วินาที แล้วเทส
+# Oracle Core
+curl http://localhost:47778/api/health
+
+# Maw API
+curl http://localhost:3456/api/health
+curl http://localhost:3456/api/sessions
+
+# Frontend
+start http://localhost:5173
+
+# 3. ดู GOD ใน tmux
+tmux attach -t god
+
+# 4. ออกจาก tmux (ไม่ฆ่า)
+# กด Ctrl+B แล้วกด D
 ```
 
 ---
 
-## 🐛 ปัญหาที่แก้แล้ว (DO NOT REVERT)
+## 📚 Reference Links
 
-### กฎเหล็ก — ห้ามย้อนกลับ
-
-1. **ห้ามเพิ่ม `names.add("ชื่อagent")`** ใน tmux-class.ts หรือ ssh.ts
-2. **ห้ามเพิ่ม `forceSessions`** ใน sessions.ts
-3. **ห้ามเปลี่ยน port** จาก 3456 โดยไม่แก้ทุกที่
-4. **ห้ามเปลี่ยน Oracle Core** จาก `bun src/server.ts` เป็น `bun run src/index.ts`
-5. **ห้าม hardcode path** `C:\Agentic` — ใช้ `%~dp0`
-6. **ห้ามใช้ `127.0.0.1`** — ใช้ `localhost`
-7. **ห้ามเปลี่ยน deprecated.ts กลับเป็น mock** — ต้อง proxy จริงไป Oracle Core เสมอ
-8. **ห้ามแสดง vector search warning** ให้ผู้ใช้เห็น — ถ้า Ollama ไม่ได้ติดตั้ง ให้เงียบ fallback เป็น FTS5
-9. **ห้ามเปลี่ยน hostExec** กลับเป็น `cmd.exe /c` สำหรับ tmux — ต้องผ่าน `wsl bash -c` เสมอ
+| Resource | URL |
+|----------|-----|
+| Repo | https://github.com/dmz2001TH/agentic-new |
+| maw-js upstream | https://github.com/Soul-Brews-Studio/maw-js |
+| arra-oracle-v3 upstream | https://github.com/Soul-Brews-Studio/arra-oracle-v3 |
+| Oracle Guide | https://github.com/the-oracle-keeps-the-human-human/oracle-maw-guide |
+| Multi-Agent Book | https://soul-brews-studio.github.io/multi-agent-orchestration-book/ |
+| รูปสอนความว่าง | https://book.buildwithoracle.com |
 
 ---
 
-## ✅ สิ่งที่เทสแล้ว (Verified Working)
+## 🔄 Handoff Protocol (สำหรับ Agent ทุกตัว)
 
-| ทดสอบ | ผล |
-|--------|-----|
-| Oracle Core HTTP (47778) | ✅ Health, Learn, Search, Stats, List, Reflect, Graph, Map |
-| Maw API (3456) | ✅ Sessions, Config, Triggers, Fleet |
-| Frontend Proxy (5173→3456) | ✅ /api ผ่าน proxy ได้ |
-| Maw → Oracle proxy (deprecated.ts) | ✅ 15 routes ส่งข้อมูลจริง (search, learn, auth, settings, dashboard) |
-| Vector warning suppressed | ✅ ไม่แสดง warning เมื่อ Ollama ไม่ได้ติดตั้ง |
-| Tmux session detection | ✅ แสดง real sessions เท่านั้น |
-| No ghost agents | ✅ god-oracle/gemini หายแล้ว |
-| Live Terminal (PTY) | ✅ Grouped session + capture pane |
-| Frontend build | ✅ TypeScript + Vite build ผ่าน |
-| Windows WSL tmux (code review) | ✅ hostExec routes tmux through wsl bash -c on win32 |
-| Maw UI (ARRA Office) | ✅ 17 pages served on :3456 (fleet, terminal, dashboard, chat, etc.) |
-
----
-
-## 🔧 งานที่ยังไม่ได้ทำ (TODO)
-
-### สิ่งที่ควรทำต่อ
-
-1. **ทดสอบบน Windows จริง** — ตอนนี้เทสแค่บน Linux ยังไม่ได้เทส WSL + Windows path
-2. **Gemini CLI auto-login** — หาวิธี login ล่วงหน้าเพื่อไม่ต้อง login ทุกครั้งที่สร้าง agent ใหม่
-3. **Multiple agents** — ทดสอบสร้าง agent หลายๆ ตัวทำงานพร้อมกัน
-4. **Fleet management** — ทดสอบ wake/sleep/peek ผ่าน Dashboard
-5. **Vector search (optional)** — ถ้าต้องการ semantic search ต้องติดตั้ง Ollama + ollama pull bge-m3 (ปัจจุบันใช้ FTS5 keyword search ทำงานปกติ)
-6. **Process management** — หาวิธีรัน 3 services เป็น background daemon บน Windows (PM2 หรือ NSSM)
-7. **Frontend bundle optimization** — ตอนนี้ 1.4MB ควร code-split ด้วย dynamic import
-8. **Maw UI on Windows** — ทดสอบ maw-ui บน Windows (`maw ui --install` หรือ manual download)
-
-### ปัญหาที่ยังมีอยู่ (Known Issues)
-
-1. **Vector search warning** — `Unable to connect. Is the computer able to access the url?` (embedding service ไม่ได้ตั้งค่า)
-2. **Orphaned PTY sessions** — ถ้า browser ปิดโดยไม่ detach PTY session จะค้าง (มี cleanup timer แต่ช้า)
-3. **`ψ/vault/*.db.export-*.csv/json`** — ยังอยู่ใน git (ไม่ได้ลบออกเพราะ Oracle philosophy "Nothing is Deleted")
-4. **Config defaults** — `load.ts` DEFAULTS ยังมี `ghqRoot: "C:\\Agentic"` ที่ hardcode path
-
----
-
-## 🧪 วิธีเทสระบบ (How to Test)
-
-### ติดตั้ง Maw UI (ครั้งแรกเท่านั้น)
-
-```bash
-# Option A: maw CLI (ต้องมี gh CLI)
-maw ui --install
-
-# Option B: Manual download
-# 1. ดาวน์โหลดจาก https://github.com/Soul-Brews-Studio/maw-ui/releases/latest
-# 2. แตกไฟล์ไป ~/.maw/ui/dist/
-```
-
-### เริ่มระบบทั้งหมด
-
-```bash
-# Terminal 1: Oracle Core
-cd /tmp/agentic/arra-oracle-v3
-bun src/server.ts
-
-# Terminal 2: Maw API
-cd /tmp/agentic/maw-js
-bun server.ts
-
-# Terminal 3: Frontend
-cd /tmp/agentic/arra-oracle-v3/frontend
-bun run dev --port 5173 --host localhost
-```
-
-### สร้าง Agent + ทดสอบ Live Terminal
-
-```bash
-# สร้าง tmux session
-tmux new-session -d -s nexus "gemini"
-
-# ตรวจสอบผ่าน API
-curl -s http://localhost:3456/api/sessions | python3 -m json.tool
-
-# ทดสอบ PTY grouped session
-tmux new-session -d -t nexus -s maw-pty-test -x 120 -y 40
-tmux capture-pane -t maw-pty-test -p
-
-# ล้าง
-tmux kill-session -t maw-pty-test
-tmux kill-server
-```
-
-### เทส Oracle Core
-
-```bash
-# Learn
-curl -s -X POST http://localhost:47778/api/learn \
-  -H "Content-Type: application/json" \
-  -d '{"pattern": "test", "category": "test"}'
-
-# Search
-curl -s "http://localhost:47778/api/search?q=test" | python3 -m json.tool
-
-# Stats
-curl -s http://localhost:47778/api/stats | python3 -m json.tool
-```
+**เมื่อทำงานเสร็จ 1 session:**
+1. อัพเดท `HANDOFF-PROMPT.md` — เพิ่มสิ่งที่ทำเสร็จ, ลบสิ่งที่ทำแล้วจาก TODO
+2. อัพเดท `INSTALLATION.md` — ถ้ามีการเปลี่ยนวิธีติดตั้ง
+3. Commit + Push ทุกอย่าง
+4. เขียน prompt ใหม่สำหรับ agent ถัดไป (ส่วน "💬 Prompt สำหรับ Agent ถัดไป" ด้านล่าง)
+5. รายงานมนุษย์ว่าทำอะไรเสร็จ, เหลืออะไร, agent ถัดไปต้องทำอะไร
 
 ---
 
 ## 💬 Prompt สำหรับ Agent ถัดไป
 
-คุณได้รับมอบหมายให้ดูแลโปรเจ็ค **Oracle v3 Agentic System** (https://github.com/dmz2001TH/agentic)
+_(อัพเดทส่วนนี้ทุกครั้งที่ทำงานเสร็จ — copy ไปให้ agent ใหม่ได้เลย)_
 
-**背景:**
-- โปรเจ็คนี้เป็น multi-agent system สำหรับ Windows ใช้ Bun + tmux + Gemini CLI
-- ประกอบด้วย 3 ส่วน: Oracle Core (47778), Maw API (3456), Frontend Dashboard (5173)
-- ผู้ใช้ใช้ **Windsurf** เป็น AI editor หลัก
-- มี bug ที่แก้แล้ว 8 จุด (ดู HANDOFF-PROMPT.md ใน repo)
+```
+คุณได้รับมอบหมายให้ดูแลโปรเจ็ค Oracle v3 Agentic System
+Repo: https://github.com/dmz2001TH/agentic-new
 
-**สิ่งที่ต้องทำ:**
-1. อ่านไฟล์ทั้งหมดใน repo โดยเฉพาะ: `INSTALL-WINDOWS-SCRATCH.md`, `INSTALLATION.md`, `howtoinstall.txt`
-2. อ่านโค้ดใน: `maw-js/src/api/sessions.ts`, `maw-js/src/core/transport/ssh.ts`, `maw-js/src/core/transport/tmux-class.ts`, `maw-js/src/core/transport/pty.ts`
-3. เทสระบบตามขั้นตอนใน "วิธีเทสระบบ" ด้านบน
-4. ดู reference: https://github.com/Soul-Brews-Studio/maw-js, https://soul-brews-studio.github.io/multi-agent-orchestration-book/
+อ่าน HANDOFF-PROMPT.md ใน repo ก่อน — มีรายละเอียดทั้งหมด
 
-**ห้าม:**
-- ย้อนกลับ bug fixes ที่ทำไปแล้ว (ดู "กฎเหล็ก" ด้านบน)
-- เปลี่ยน port หรือ path โดยไม่แก้ทุกที่
-- เพิ่ม ghost agents กลับเข้าไป
-- เปลี่ยน deprecated.ts กลับเป็น mock (ต้อง proxy จริงไป Oracle)
-- แสดง vector search warning ให้ผู้ใช้เห็น
-- เปลี่ยน hostExec กลับเป็น cmd.exe สำหรับ tmux commands (ต้องผ่าน wsl bash -c)
+สิ่งที่ทำเสร็จแล้ว:
+- ✅ P0: GOD Tool Integration — /api/tools/* (15 endpoints), oracle-tools.sh (bash), god.md practical instructions
+- ✅ P0: Goal Execution System — task-runner.ts, heartbeat.ts (30min auto), /api/heartbeat/* endpoints
+- ✅ P1: Multi-Agent — Builder + Researcher agents, /api/tools/message, ensure-agents.sh
+- ✅ P1: Autonomous Loop — heartbeat auto-start, /api/heartbeat/start|stop|run
+- ✅ P2: Git Integration — /api/git/* (status/log/add/commit/push/ship)
+- ✅ P2: Web Search — /api/search/web (DuckDuckGo + Wikipedia + HN), /api/search/fetch
+- ✅ P3: Auto-restart — run-with-restart.sh, start-oracle-prod.cmd
+- ✅ P3: Backup — backup-db.sh (SQLite backup, 7-day retention)
+- ✅ P3: Auth — MAW_TOOLS_TOKEN for /api/tools/* (optional, dev mode = no auth)
+- ✅ All TypeScript compiles: 570 modules bundled successfully
+- ✅ Memory system files ครบ, validate-system.sh 31/31
 
-**เป้าหมาย:**
-- ทำให้ระบบรันบน Windows ได้ 100% ผ่าน Windsurf
-- ผู้ใช้ใช้ port 3456 เป็นหลักในการควบคุม
-- Live Terminal ต้องทำงานได้จริงผ่าน Dashboard
+สิ่งที่ต้องทำต่อ:
+1. 🔴 เทสจริง: รัน start-oracle.cmd → curl localhost:3456/api/tools/fleet
+2. 🔴 เทส task runner: เพิ่ม goal → POST /api/heartbeat/task-cycle → ดู dispatch
+3. 🟡 React UI: Task board component สำหรับ dashboard
+4. 🟡 Decision engine: priority evaluation สำหรับ goals
+5. 🟡 Knowledge graph visualization
+6. 🔵 PM2/NSSM daemon setup
+
+ข้อควรระวัง:
+- กฎเหล็ก 10 ข้อใน HANDOFF-PROMPT.md — ห้ามย้อนกลับ
+- ห้ามใช้ 127.0.0.1 → ใช้ localhost
+- ห้าม hardcode path → ใช้ dynamic detection
+- agent ชื่อ GOD เท่านั้น
+
+เมื่อคุณทำงานเสร็จ:
+1. อัพเดท HANDOFF-PROMPT.md (สิ่งที่ทำเสร็จ + สิ่งที่เหลือ)
+2. อัพเดทส่วน "Prompt สำหรับ Agent ถัดไป" นี้
+3. Commit + Push ทั้งหมด
+4. ส่ง prompt นี้ให้ agent ตัวถัดไปทำงานต่อ
+```

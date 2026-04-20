@@ -119,6 +119,15 @@ export async function startServer(port = 4000) {
   // Hook workflow triggers into feed events
   setupTriggerListener(feedListeners);
 
+  // Start autonomous heartbeat (checks inbox/goals every 30min)
+  try {
+    const { startHeartbeat } = await import("./heartbeat");
+    startHeartbeat();
+    console.log("[heartbeat] autonomous loop started (30min interval)");
+  } catch (err) {
+    console.error("[heartbeat] failed to start:", err);
+  }
+
   // Plugin system — built-in + user plugins
   try {
     const { PluginSystem, loadPlugins, reloadUserPlugins, watchUserPlugins } = require("../plugins/index");
