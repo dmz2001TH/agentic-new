@@ -17,38 +17,36 @@ Repo: https://github.com/dmz2001TH/agentic-new
 - ✅ Agent GOD — ตั้งเป็น agent หลักแทน nexus, auto-start ใน start-oracle.cmd
 - ✅ Config: dynamic ghqRoot detection, /health endpoint, error logging
 - ✅ Unit tests: arra-oracle-v3 208/0 pass, maw-js 1174/161 pass
+- ✅ P0: GOD Tool Integration — /api/tools/* (15 endpoints), oracle-tools.sh, god.md practical instructions
+- ✅ P0: Goal Execution System — task-runner.ts, heartbeat.ts (30min auto), /api/heartbeat/* endpoints
+- ✅ P1: Multi-Agent — Builder + Researcher agents (.md context + memory), /api/tools/message, ensure-agents.sh
+- ✅ P1: Autonomous Loop — heartbeat auto-start in server.ts, /api/heartbeat/start|stop|run
+- ✅ P2: Git Integration — maw-js/src/api/git.ts (status/add/commit/push/ship/pull/stash)
+- ✅ P2: Web Search — maw-js/src/api/search.ts (DuckDuckGo + Wikipedia + HN)
+- ✅ P3: Auto-restart — scripts/run-with-restart.sh, start-oracle-prod.cmd
+- ✅ P3: Backup — scripts/backup-db.sh (SQLite backup, 7-day retention)
+- ✅ P3: Auth — MAW_TOOLS_TOKEN for /api/tools/* (optional, dev=no auth)
+- ✅ All TypeScript compiles: 570 modules bundled successfully
 
 ## สิ่งที่ต้องทำต่อ (按ลำดับความสำคัญ)
 
-### 🔴 P0 — ให้ GOD ทำอะไรได้จริง
-- ให้ GOD เรียก Oracle API เองได้ (curl learn/search/stats)
-- ให้ GOD อ่าน/เขียนไฟล์ได้
-- ให้ GOD รัน commands ได้
-- เกณฑ์: GOD ทำงาน autonomously ได้ 1 task โดยไม่ต้องให้มนุษย์ช่วย
+### 🔴 P0 — เทสจริง (Runtime Testing)
+- รัน start-oracle.cmd แล้วเทส: curl http://localhost:3456/api/tools/fleet
+- เทส task runner: เพิ่ม goal → POST /api/heartbeat/task-cycle → ดู dispatch
+- เทส GOD เรียก API: tmux attach -t god → สั่งให้ GOD เรียก curl /api/tools/*
 
-### 🔴 P0 — Goal Execution System
-- สร้าง task runner: อ่าน goal → วางแผน → ลงมือ → รายงาน
-- GOD อ่าน ψ/memory/goals.md → execute → update status
-- เกณฑ์: GOD ทำ goal ให้เสร็จโดยอัตโนมัติ
-
-### 🟡 P1 — Multi-Agent Collaboration
-- สร้าง agent ตัวที่ 2 (Builder/Researcher)
-- Task delegation: GOD แบ่งงาน → agent ทำ → รายงานกลับ
-- ใช้ Maw API /api/asks สำหรับ inter-agent communication
-
-### 🟡 P1 — Autonomous Loop
-- Heartbeat: GOD เช็ค inbox/goals ทุก 30 นาที
-- Decision engine: GOD ประเมิน priority เอง
-- Memory-driven: ใช้ patterns/decisions/learnings ปรับพฤติกรรม
-
-### 🟢 P2 — Tool Integration
-- Git (commit/push), Web search, File system, API calls, Terminal
+### 🟡 P1 — Decision Engine
+- สร้าง priority evaluation สำหรับ goals
+- Memory-driven behavior: ใช้ patterns/decisions ปรับพฤติกรรม heartbeat
 
 ### 🟢 P2 — Dashboard Enhancement
-- Live terminal (PTY), Task board, Knowledge graph, Agent timeline
+- React UI components สำหรับ task board
+- Knowledge graph visualization
+- Agent activity timeline
 
 ### 🔵 P3 — Production
-- PM2/NSSM daemon, Auto-restart, Logging, Backup, Auth
+- PM2/NSSM daemon setup
+- TLS/HTTPS certificates
 
 ## ขั้นตอนเมื่อคุณทำงานเสร็จ
 1. อัพเดท HANDOFF-PROMPT.md — เพิ่มสิ่งที่ทำเสร็จ ลบจาก TODO
