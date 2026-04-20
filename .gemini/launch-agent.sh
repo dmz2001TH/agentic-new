@@ -42,4 +42,5 @@ cleanup() {
 trap cleanup EXIT
 
 # --- Launch Gemini CLI ---
+export CLAUDE_AGENT_NAME="${AGENT_NAME}"
 exec gemini --yolo "$@"
