@@ -165,6 +165,14 @@ ot-gmail-unsubscribe() {
     fi
 }
 
+ot-facebook-scan() {
+  echo -e "${PURPLE}👍 Scanning Facebook for Intelligence...${NC}"
+  # Translate Project Root to Windows Path for node.exe
+  local script_win_path=$(wslpath -w "$PROJECT_ROOT/oracle-cowork/src/facebook-scanner.js")
+  # Run via Windows node.exe
+  node.exe "$script_win_path"
+}
+
 
 # ═══════════════════════════════════════════
 # CLI ENTRY POINT
@@ -190,7 +198,8 @@ case "$COMMAND" in
     gmail-scan)  ot-gmail-scan ;;
     gmail-clean) ot-gmail-clean "$@";;
     gmail-unsubscribe) ot-gmail-unsubscribe "$@";;
+    facebook-scan) ot-facebook-scan ;;
     *)
-      echo "Commands: verify, pre-flight, edit, read-range, hey, compress, extract-skill, pulse, status, safe-write, chrome-connect, hack-chrome, cowork-open, gmail-scan, gmail-clean, gmail-unsubscribe"
+      echo "Commands: verify, pre-flight, edit, read-range, hey, compress, extract-skill, pulse, status, safe-write, chrome-connect, hack-chrome, cowork-open, gmail-scan, gmail-clean, gmail-unsubscribe, facebook-scan"
       ;;
 esac
