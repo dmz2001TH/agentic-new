@@ -15,10 +15,10 @@ GEMINI_DIR="$AGENTS_DIR/.gemini"
 # ═══════════════════════════════════════════
 REGISTERED_AGENTS=(
   "god:mawjs-oracle:god"
+  "builder:mawjs-builder:builder"
   # เพิ่ม agent ใหม่ที่นี่:
+  # "researcher:mawjs-researcher:researcher"
   # "zeus:mawjs-zeus:zeus"
-  # "apollo:mawjs-apollo:apollo"
-  # "athena:mawjs-athena:athena"
 )
 
 # --- Helper: ensure tmux session + launch agent ---

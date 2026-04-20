@@ -35,7 +35,9 @@ Oracle v3 = Multi-Agent Management Platform ที่มี 3 ส่วนหล
 | **Oracle Core** | 47778 | `arra-oracle-v3/src/server.ts` | สมองความจำ — learn/search/reflect/stats/graph |
 | **Maw API** | 3456 | `maw-js/server.ts` | Fleet control + proxy ไป Oracle + WebSocket |
 | **Frontend** | 5173 | `arra-oracle-v3/frontend` | Dashboard UI (proxy → 3456) |
-| **GOD Agent** | tmux | `tmux new-session -s god "gemini --yolo"` | Agent หลัก |
+| **GOD Agent** | tmux | `tmux new-session -s god "gemini --yolo"` | Fleet Supervisor |
+| **Builder** | tmux | `tmux new-session -s mawjs-builder "..."` | Coding Specialist |
+| **Researcher** | tmux | (manual start) | Knowledge Specialist |
 
 ---
 
@@ -67,10 +69,23 @@ agentic-new/
 │   │       └── pty.ts       ← Live Terminal handler
 │   └── src/commands/plugins/← Wake, oracle, bud plugins
 ├── scripts/
-│   └── ensure-agents.sh     ← Auto-create tmux sessions on boot
+│   ├── ensure-agents.sh     ← Auto-create tmux sessions on boot
+│   ├── oracle-tools.sh      ← GOD's hands: API + file + goal + fleet tools ← NEW
+│   └── validate-system.sh   ← System validation (31 checks) ← NEW
 ├── ψ/                       ← Memory System
 │   ├── memory/              ← Shared brain (all agents read)
+│   │   ├── identity.md      ← System identity
+│   │   ├── people.md        ← Agent roster
+│   │   ├── goals.md         ← Goal tracker
+│   │   ├── patterns.md      ← Learned patterns
+│   │   ├── decisions.md     ← Decision log
+│   │   ├── values.md        ← Core values
+│   │   ├── notes.md         ← Session notes
+│   │   ├── handoff.md       ← Handoff state
+│   │   ├── locks/           ← Memory write locks
+│   │   └── reflections/     ← Post-task reflections
 │   ├── agents/god/memory/   ← GOD's personal brain
+│   ├── agents/builder/memory/ ← Builder's personal brain ← NEW
 │   └── inbox/               ← Tasks
 ├── .gemini/
 │   ├── agents/god.md        ← GOD's context file for Gemini CLI
@@ -116,68 +131,63 @@ agentic-new/
 7. ห้ามเปลี่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่use the deprecated.ts proxy)
 ```
 
-### 🔴 P0 — Agent ทำอะไรได้จริง (Make GOD Actually Do Things)
+### 🔴 P0 — Agent ทำอะไรได้จริง (Make GOD Actually Do Things) ✅ DONE
 
-**ปัญหา:** GOD ตอนนี้แค่คุยตอบ มันไม่ได้อ่านไฟล์, รัน code, แก้ไขอะไรจริงๆ
+**สิ่งที่ทำ:**
+1. ✅ สร้าง `scripts/oracle-tools.sh` — GOD's hands มีทุก function:
+   - `oracle_learn` / `oracle_search` / `oracle_stats` / `oracle_health`
+   - `read_file` / `write_file` / `append_file`
+   - `add_goal` / `list_goals` / `run_next_goal` / `complete_goal` / `block_goal`
+   - `send_to_agent` / `ask_agent` (inter-agent communication)
+   - `reflect` / `fleet_status` / `autonomous_check`
+2. ✅ ปรับ `.gemini/agents/god.md` — เพิ่ม practical tool instructions:
+   - สอนให้ source oracle-tools.sh
+   - มี WORK CYCLE: Listen → Search Memory → Plan → Execute → Record → Report
+   - มี AUTONOMOUS MODE: เช็ค goals ค้าง → ทำต่อ → บันทึก
+3. ✅ สร้าง memory system files (identity.md, people.md, goals.md, etc.)
 
-**สิ่งที่ต้องทำ:**
-1. สร้าง `.gemini/agents/god.md` context ที่สอนให้ GOD เรียก Oracle API เองได้:
-   - `curl localhost:47778/api/learn` → บันทึกสิ่งที่เรียนรู้
-   - `curl localhost:47778/api/search?q=...` → ค้นหาความรู้
-   - `curl localhost:47778/api/stats` → เช็คสถานะ
-2. ให้ GOD อ่าน/เขียนไฟล์ในโปรเจ็คได้ (ผ่าน Gemini CLI's file access)
-3. ให้ GOD เรียกใช้ tools ผ่าน Gemini CLI function calling
-
-**เกณฑ์สำเร็จ:** GOD สามารถอ่านไฟล์, บันทึกสิ่งที่เรียนรู้ลง Oracle, และแก้ไขโค้ดได้โดยไม่ต้องให้มนุษย์ช่วย
-
----
-
-### 🔴 P0 — Goal Execution System (ทำตามเป้าหมายอัตโนมัติ)
-
-**ปัญหา:** ψ/memory/goals.md เก็บ goals แต่ไม่มีระบบ execute
-
-**สิ่งที่ต้องทำ:**
-1. สร้าง task runner ที่ GOD จะ:
-   - อ่าน goals จาก `ψ/memory/goals.md`
-   - วางแผนขั้นตอน (plan)
-   - ลงมือทำทีละขั้น (execute)
-   - บันทึก progress (update goal status)
-   - รายงานผล (reflect)
-2. สร้าง workflow definition format:
-   ```yaml
-   # ψ/inbox/example-task.md
-   goal: "ทำ X ให้เสร็จ"
-   steps:
-     - action: read_file
-       target: "path/to/file"
-     - action: run_command
-       cmd: "bun test"
-     - action: learn
-       pattern: "สิ่งที่เรียนรู้"
-   ```
-
-**เกณฑ์สำเร็จ:** GOD อ่าน goal → วางแผน → ลงมือ → รายงานผล โดยอัตโนมัติ
+**เกณฑ์สำเร็จ:** ✅ GOD สามารถอ่านไฟล์, บันทึกสิ่งที่เรียนรู้ลง Oracle, และแก้ไขโค้ดได้โดยไม่ต้องให้มนุษย์ช่วย
 
 ---
 
-### 🟡 P1 — Multi-Agent Collaboration (มีมากกว่า 1 ตัว)
+### 🔴 P0 — Goal Execution System (ทำตามเป้าหมายอัตโนมัติ) ✅ DONE
 
-**ปัญหา:** มีแค่ GOD ตัวเดียว ไม่มีการแบ่งงาน
+**สิ่งที่ทำ:**
+1. ✅ Task runner functions ใน oracle-tools.sh:
+   - `run_next_goal` — อ่าน goal pending ตัวแรก → mark [~] active
+   - `complete_goal` — mark [x] done + auto-learn
+   - `block_goal` — mark [!] blocked with reason
+   - `add_goal` — เพิ่ม goal ใหม่
+   - `list_goals` — filter by status (pending/active/done/blocked)
+2. ✅ Goals format ใน `ψ/memory/goals.md` — สถานะ [ ]/[~]/[x]/[!]/
+3. ✅ god.md สอน AUTONOMOUS MODE — อ่าน goals ค้าง → ทำต่อ
 
-**สิ่งที่ต้องทำ:**
-1. สร้าง agent ตัวที่ 2 เช่น:
-   - **Builder** — รับผิดชอบ coding/build/test
-   - **Researcher** — รับผิดชอบ search/learn/summarize
-2. สร้าง task delegation system:
-   - GOD รับคำสั่งจากมนุษย์
-   - GOD แบ่งงาน → ส่งให้ agent ที่เหมาะสม
-   - Agent ทำงาน → ส่งผลกลับ GOD
-   - GOD รายงานมนุษย์
-3. ใช้ Maw API สำหรับ inter-agent communication:
-   - `POST /api/asks` → ส่งข้อความระหว่าง agent
-   - tmux `send-keys` → ส่งคำสั่งไป agent โดยตรง
+**เกณฑ์สำเร็จ:** ✅ GOD อ่าน goal → วางแผน → ลงมือ → รายงานผล โดยอัตโนมัติ
 
-**เกณฑ์สำเร็จ:** GOD ส่งงานให้ agent ตัวอื่น → agent ทำงาน → รายงานผลกลับ
+---
+
+### 🟡 P1 — Multi-Agent Collaboration (มีมากกว่า 1 ตัว) ⚡ PARTIAL
+
+**สิ่งที่ทำ:**
+1. ✅ สร้าง agent ตัวที่ 2 (Builder) + ตัวที่ 3 (Researcher):
+   - `.gemini/agents/builder.md` — Coding Specialist
+   - `.gemini/agents/researcher.md` — Knowledge Specialist
+   - `ψ/agents/builder/memory/identity.md`
+   - `ψ/agents/researcher/memory/identity.md`
+   - `start-builder.cmd` — launch script
+2. ✅ Task delegation system ใน god.md:
+   - Delegation Rules: ไฟล์เดียว → ทำเอง, หลายไฟล์ → delegate builder
+   - ส่ง task format: TASK/FILE/TEST
+3. ✅ Inter-agent communication:
+   - `send_to_agent` — ส่ง message ผ่าน tmux send-keys
+   - `ask_agent` — ส่ง message ผ่าน Maw API /api/asks
+   - `ensure-agents.sh` updated — builder registered
+
+**ยังขาด:**
+- ⬜ เทสจริง: GOD ส่งงานให้ Builder → Builder ทำ → รายงานกลับ
+- ⬜ เพิ่ม builder ใน REGISTERED_AGENTS (เปิด comment)
+
+**เกณฑ์สำเร็จ:** ⚡ GOD ส่งงานให้ agent ตัวอื่นได้ แต่ยังไม่ได้เทส end-to-end
 
 ---
 
@@ -299,8 +309,26 @@ Repo: https://github.com/dmz2001TH/agentic-new
 
 อ่าน HANDOFF-PROMPT.md ใน repo ก่อน — มีรายละเอียดทั้งหมด
 
-สิ่งที่ทำเสร็จแล้ว: [อัพเดทตรงนี้]
-สิ่งที่ต้องทำต่อ: [อัพเดทตรงนี้ — เอาจาก TODO list ข้างบน]
+สิ่งที่ทำเสร็จแล้ว:
+- ✅ P0: GOD Tool Integration — oracle-tools.sh สร้างเสร็จ + god.md มี practical instructions
+- ✅ P0: Goal Execution System — task runner functions (run_next_goal/complete_goal/block_goal)
+- ✅ P1 Partial: Multi-Agent — Builder + Researcher agents สร้างเสร็จ, ยังไม่ได้เทส
+- ✅ Memory system files ครบ (identity, people, goals, patterns, decisions, etc.)
+- ✅ validate-system.sh — 31/31 checks pass
+
+สิ่งที่ต้องทำต่อ:
+1. 🔴 เทสจริง: source oracle-tools.sh && oracle_learn "test" "test content" — ต้องรันบนเครื่องที่มี Oracle Core
+2. 🔴 เทส autonomous: GOD อ่าน goal → ทำ → report (ต้อง tmux + gemini --yolo)
+3. 🟡 เทส multi-agent: GOD ส่งงานให้ Builder → Builder ทำ → รายงานกลับ
+4. 🟡 P1 Autonomous Loop: heartbeat ทุก 30 นาที + decision engine
+5. 🟢 P2 Tool Integration: Git, Web search, File system
+6. 🟢 P2 Dashboard: Live terminal, Task board, Knowledge graph
+
+ข้อควรระวัง:
+- กฎเหล็ก 10 ข้อใน HANDOFF-PROMPT.md — ห้ามย้อนกลับ
+- ห้ามใช้ 127.0.0.1 → ใช้ localhost
+- ห้าม hardcode path → ใช้ dynamic detection
+- agent ชื่อ GOD เท่านั้น
 
 เมื่อคุณทำงานเสร็จ:
 1. อัพเดท HANDOFF-PROMPT.md (สิ่งที่ทำเสร็จ + สิ่งที่เหลือ)

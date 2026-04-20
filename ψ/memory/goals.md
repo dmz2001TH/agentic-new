@@ -14,3 +14,8 @@
 ---
 
 <!-- เพิ่ม goals ด้านล่าง -->
+
+- [ ] [2026-04-20] เทส GOD tool integration — ให้ GOD เรียก Oracle API เองได้ (learn/search/stats) — by god
+- [ ] [2026-04-20] เทส autonomous goal execution — GOD อ่าน goal → ทำ → report — by god
+- [ ] [2026-04-20] ปลุก Builder agent — tmux session + launch — by god
+- [ ] [2026-04-20] เทส task delegation — GOD ส่งงานให้ Builder → Builder ทำ → รายงานกลับ — by god
