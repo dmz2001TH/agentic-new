@@ -234,4 +234,77 @@ Platform: Gemini CLI (Windows, Google Login)
 
 ---
 
+## ระบบความทรงจำ (MEMORY SYSTEM)
+
+**สำคัญที่สุด**: ทุกครั้งที่ตื่น ต้องอ่านไฟล์ความจำก่อนทำงาน ไม่มีข้อยกเว้น
+
+### ขั้นตอนโหลดความจำ (Load on Startup — ทำทุกครั้ง)
+
+```bash
+# ขั้นที่ 1: ตัวตน
+cat ψ/memory/identity.md
+
+# ขั้นที่ 2: ดื่มน้ำความจำ (Memory Hydration)
+cat ψ/memory/patterns.md        # รูปแบบที่เรียนรู้
+cat ψ/memory/decisions.md       # การตัดสินใจสำคัญ
+cat ψ/memory/values.md          # ค่านิยมและหลักการ
+cat ψ/memory/people.md          # คนและ agent ที่เกี่ยวข้อง
+cat ψ/memory/notes.md           # บันทึกทั่วไป
+cat ψ/memory/handoff.md         # สิ่งค้างจาก session ที่แล้ว
+
+# ขั้นที่ 3: Learnings ล่าสุด
+ls -lt ψ/memory/learnings/ 2>/dev/null | head -5
+cat ψ/memory/learnings/*.md 2>/dev/null
+
+# ขั้นที่ 4: Retrospectives ล่าสุด
+ls -lt ψ/memory/retrospectives/ 2>/dev/null | head -3
+cat ψ/memory/retrospectives/*.md 2>/dev/null
+
+# ขั้นที่ 5: Inbox (งานค้าง)
+ls ψ/inbox/ 2>/dev/null
+cat ψ/inbox/*.md 2>/dev/null
+```
+
+### กฎความจำ (Memory Rules)
+
+1. **อ่านก่อนทำงานเสมอ** — ทุก session ใหม่ ไม่มีข้ออ้างไม่อ่าน
+2. **จดหลังเรียนรู้เสมอ** — เรียนรู้อะไรใหม่ บันทึกทันที
+3. **Update ไม่ใช่เขียนทับ** — เพิ่มความรู้ ไม่ลบของเดิม
+4. **Handoff คือสัญญา** — ถ้า handoff.md มีงานค้าง ต้องทำก่อน
+5. **Identity ต้องอัพเดท** — Last Active = วันนี้, Sessions += 1
+
+### วิธีบันทึกความจำใหม่
+
+เมื่อเรียนรู้สิ่งใหม่:
+```bash
+# เพิ่มลง patterns.md
+echo "- [YYYY-MM-DD] [สิ่งที่เรียนรู้]" >> ψ/memory/patterns.md
+
+# หรือสร้าง learning file ใหม่
+cat > ψ/memory/learnings/YYYY-MM-DD_topic.md << 'EOF'
+# Learning: [หัวข้อ]
+- Date: YYYY-MM-DD
+- Context: [บริบท]
+- Insight: [สิ่งที่เรียนรู้]
+- Action: [สิ่งที่ควรทำ]
+EOF
+```
+
+### ตารางความจำ (What Memory Contains)
+
+| ไฟล์ | สิ่งที่จำ |
+|------|-----------|
+| `identity.md` | ชื่อ, บทบาท, ตัวตน, session count |
+| `people.md` | ผู้ใช้, agent อื่น, stakeholder |
+| `patterns.md` | รูปแบบการทำงาน, best practices |
+| `decisions.md` | การตัดสินใจสำคัญและเหตุผล |
+| `values.md` | ค่านิยม, หลักการที่ยึดถือ |
+| `handoff.md` | สิ่งค้างจาก session ก่อน |
+| `learnings/` | บทเรียนรายวัน |
+| `retrospectives/` | สรุป session |
+| `notes.md` | บันทึกด่วน |
+| `inbox/` | งานค้าง, tasks |
+
+---
+
 เริ่มทำงานได้เลย อ่าน memory ก่อนทุกครั้ง
