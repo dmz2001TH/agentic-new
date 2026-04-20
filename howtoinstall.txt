@@ -29,7 +29,7 @@
 - ไฟล์: `maw-js/src/core/transport/tmux-class.ts`
 - จุดที่แก้: ฟังก์ชัน `listSessions()` และ `listAll()`
 - วิธีแก้: เปลี่ยนการใช้ `.split("\n")` เป็น `.split(/\r?\n/)` เพื่อให้รองรับบรรทัดใหม่ของ Windows
-- ท่าไม้ตาย (หากสแกนไม่เจอจริงๆ): ใส่ Hard-code ชื่อ Agent ลงไปก่อน return (เช่น "nexus", "god-oracle")
+- ท่าไม้ตาย (หากสแกนไม่เจอจริงๆ): ใส่ Hard-code ชื่อ Agent ลงไปก่อน return (เช่น "god", "god-oracle")
 
 การแก้ไขที่ 2: ปัญหาหน้าจอ UI Error 404/500 (API Shims)
 - ไฟล์: `maw-js/src/api/deprecated.ts` (ถ้าไม่มีให้สร้าง)
@@ -74,16 +74,16 @@
    เปิด Browser ไปที่: http://localhost:5173
 
 --------------------------------------------------------------------
-ขั้นที่ 4: การสร้างและปลุก Agent ตัวแรก (Nexus)
+ขั้นที่ 4: การสร้างและปลุก Agent ตัวแรก (GOD)
 --------------------------------------------------------------------
 1. สร้างโฟลเดอร์หน่วยความจำให้ Agent:
-   mkdir -p ψ/agents/nexus/memory
-2. สร้างไฟล์ตัวตน `ψ/agents/nexus/identity.md`:
-   ใส่ข้อมูลชื่อ (Name: Nexus) และบทบาท (Role) ของ Agent
+   mkdir -p ψ/agents/god/memory
+2. สร้างไฟล์ตัวตน `ψ/agents/god/identity.md`:
+   ใส่ข้อมูลชื่อ (Name: GOD) และบทบาท (Role) ของ Agent
 3. ลงทะเบียน Agent ในระบบหลัก:
-   เพิ่มชื่อ Nexus ลงในไฟล์ `ψ/memory/people.md`
+   เพิ่มชื่อ GOD ลงในไฟล์ `ψ/memory/people.md`
 4. ปลุก Agent ขึ้นมาทำงาน:
-   รันคำสั่ง `gemini --yolo` ในหน้าต่าง Tmux ใหม่ที่ตั้งชื่อ Session ว่า "nexus"
+   รันคำสั่ง `gemini --yolo` ในหน้าต่าง Tmux ใหม่ที่ตั้งชื่อ Session ว่า "god"
    (Maw-JS จะสแกนเจอและนำไปแสดงบนหน้าจอ Dashboard อัตโนมัติ)
 
 --------------------------------------------------------------------

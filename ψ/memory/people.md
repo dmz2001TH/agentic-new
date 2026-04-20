@@ -1,6 +1,6 @@
 ﻿# คน & ผู้เกี่ยวข้อง
 
-## Nexus (AI Agent)
+## ~~Nexus~~ (AI Agent — archived, replaced by GOD)
 - **บทบาท**: หน่วยวิเคราะห์และจัดการความจำ (Fleet Support)
 - **สร้างเมื่อ**: 2026-04-19
 - **สถานะ**: Active (Awakened)

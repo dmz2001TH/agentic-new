@@ -76,7 +76,7 @@ Branch: master (commit 3237825)
    - ของเราดีกว่า
 
 3. **ห้ามเพิ่ม ghost agents:**
-   - ลบ hardcoded "nexus"/"god-oracle"/"gemini" จาก listSessions() แล้ว
+   - ลบ hardcoded "god"/"god-oracle"/"gemini" จาก listSessions() แล้ว
    - ลบ forceSessions array จาก /api/sessions แล้ว
    - ลบ "god-oracle" จาก .env.json sessions แล้ว
 

@@ -206,7 +206,7 @@ cat ψ/agents/god/memory/patterns.md 2>/dev/null
 ```
 ψ/memory/                    ← สมองรวม (ทุกตัวอ่านได้, เขียนต้อง lock)
 ψ/agents/god/memory/         ← สมองส่วนตัว GOD (เขียนได้เลย)
-ψ/agents/nexus/memory/       ← สมองส่วนตัว Nexus
+ψ/agents/god/memory/       ← สมองส่วนตัว GOD
 ψ/agents/<name>/memory/      ← สมองส่วนตัว agent อื่น
 ```
 

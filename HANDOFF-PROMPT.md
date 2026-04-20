@@ -37,11 +37,11 @@ Branch: master
 - ลบ `package-lock.json` ที่ว่างเปล่า
 
 #### 2. เปลี่ยน 127.0.0.1 → localhost (commit efdc7b2)
-- เปลี่ยนใน 8 ไฟล์: `.env.json`, `load.ts`, `vite.config.ts`, `server.ts` (ทั้ง 2 ตัว), `start-oracle.cmd`, `start-nexus.cmd`, `howtoinstall.txt`
+- เปลี่ยนใน 8 ไฟล์: `.env.json`, `load.ts`, `vite.config.ts`, `server.ts` (ทั้ง 2 ตัว), `start-oracle.cmd`, `start-god.cmd`, `howtoinstall.txt`
 - สร้าง **`INSTALLATION.md`** — คู่มือติดตั้งฉบับเต็ม
 
 #### 3. ลบ Ghost Agents จุดที่ 1 (commit 1d749cd)
-- **`maw-js/src/core/transport/tmux-class.ts`** — ลบ `names.add("nexus"/"god-oracle"/"gemini")` ใน `listSessions()` และ `listAll()`
+- **`maw-js/src/core/transport/tmux-class.ts`** — ลบ `names.add("god"/"god-oracle"/"gemini")` ใน `listSessions()` และ `listAll()`
 
 #### 4. ลบ Ghost Agents จุดที่ 2-3 (commit 78be8b9)
 - **`maw-js/src/api/sessions.ts`** — ลบ `forceSessions` array ใน `/api/sessions` endpoint
@@ -138,13 +138,13 @@ Branch: master
 │           Maw API Server (Port 3456)                    │
 │         maw-js — Elysia.js + Hono                       │
 │                                                         │
-│  API Routes: /api/sessions, /api/sessions/nexus/ask     │
+│  API Routes: /api/sessions, /api/sessions/god/ask     │
 │              /api/fleet, /api/asks, /api/stats, etc.    │
 │  WebSocket: /ws (engine), /ws/pty (live terminal)       │
 │  Config: maw-js/.env.json                               │
 │                                                         │
 │  ┌──────────┐  ┌──────────┐  ┌──────────┐              │
-│  │  nexus   │  │  agent2  │  │  agent3  │  ← tmux     │
+│  │  god   │  │  agent2  │  │  agent3  │  ← tmux     │
 │  │ (gemini) │  │ (gemini) │  │ (gemini) │    sessions  │
 │  └──────────┘  └──────────┘  └──────────┘              │
 └──────────────────────┬──────────────────────────────────┘
@@ -194,7 +194,7 @@ maw-js/src/core/server.ts           ← Main server + WebSocket handler
 ### Start Scripts
 ```
 start-oracle.cmd                    ← เริ่มระบบทั้งหมด (3 ports)
-start-nexus.cmd                     ← ปลุก Agent Nexus
+start-god.cmd                     ← ปลุก Agent GOD
 finish-day.ps1                      ← จบวัน + git commit
 gemini-yolo.cmd                     ← Wrapper สำหรับ gemini --yolo
 ```
@@ -314,13 +314,13 @@ bun run dev --port 5173 --host localhost
 
 ```bash
 # สร้าง tmux session
-tmux new-session -d -s nexus "gemini"
+tmux new-session -d -s god "gemini"
 
 # ตรวจสอบผ่าน API
 curl -s http://localhost:3456/api/sessions | python3 -m json.tool
 
 # ทดสอบ PTY grouped session
-tmux new-session -d -t nexus -s maw-pty-test -x 120 -y 40
+tmux new-session -d -t god -s maw-pty-test -x 120 -y 40
 tmux capture-pane -t maw-pty-test -p
 
 # ล้าง

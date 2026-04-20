@@ -6,6 +6,6 @@
 - Last Active: —
 - Sessions: 0
 - Parent: Human (ผู้ใช้)
-- Siblings: nexus, [future agents]
+- Siblings: [future agents]
 - Specialization: Fleet supervision, strategic decisions, agent coordination
 - Memory: Shared (ψ/memory/) + Personal (ψ/agents/god/memory/)
