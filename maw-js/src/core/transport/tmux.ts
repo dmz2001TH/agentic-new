@@ -8,7 +8,16 @@
 export type { TmuxPane, TmuxWindow, TmuxSession } from "./tmux-types";
 export { resolveSocket, tmuxCmd } from "./tmux-types";
 export { Tmux, tmux } from "./tmux-class";
-export type { SplitWindowLockedOpts } from "./tmux-pane-lock";
-export { withPaneLock, splitWindowLocked } from "./tmux-pane-lock";
-export type { TagPaneOpts, PaneTags } from "./tmux-pane-tags";
-export { tagPane, readPaneTags } from "./tmux-pane-tags";
+
+import { withPaneLock as _withPaneLock, splitWindowLocked as _splitWindowLocked } from "./tmux-pane-lock";
+import type { SplitWindowLockedOpts as _SplitWindowLockedOpts } from "./tmux-pane-lock";
+export const withPaneLock = _withPaneLock;
+export const splitWindowLocked = _splitWindowLocked;
+export type SplitWindowLockedOpts = _SplitWindowLockedOpts;
+
+import { tagPane as _tagPane, readPaneTags as _readPaneTags } from "./tmux-pane-tags";
+import type { TagPaneOpts as _TagPaneOpts, PaneTags as _PaneTags } from "./tmux-pane-tags";
+export const tagPane = _tagPane;
+export const readPaneTags = _readPaneTags;
+export type TagPaneOpts = _TagPaneOpts;
+export type PaneTags = _PaneTags;

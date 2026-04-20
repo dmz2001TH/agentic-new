@@ -73,3 +73,17 @@ export function findPeersForTest(oracleName: string, fleet: FleetEntry[]): strin
   }
   return [];
 }
+
+/**
+ * Pure logic — resolveProjectSlug without any external deps.
+ * Copied from resolve.ts to avoid ESM require() cascade through tmux.
+ */
+export function resolveProjectSlug(repoRoot: string, ghqRoot: string): string | null {
+  if (!repoRoot.startsWith(ghqRoot)) return null;
+  let rel = repoRoot.slice(ghqRoot.length).replace(/^\/+/, "");
+  rel = rel.replace(/^(github\.com|gitlab\.com|bitbucket\.org)\//, "");
+  const parts = rel.split("/").slice(0, 2);
+  if (parts.length !== 2 || !parts[0] || !parts[1]) return null;
+  parts[1] = parts[1].replace(/\.wt-.*$/, "");
+  return parts.join("/");
+}
