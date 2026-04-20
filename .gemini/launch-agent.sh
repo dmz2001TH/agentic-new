@@ -18,7 +18,7 @@ if [ -f "$SCRIPT_DIR/agents/${AGENT_NAME}.md" ]; then
   CONTEXT_FILE="agents/${AGENT_NAME}.md"
   echo "🔮 Loading agent context: $CONTEXT_FILE"
 else
-  CONTEXT_FILE="GEMINI.md"
+  CONTEXT_FILE="agents/god.md"
   echo "🔮 No agent-specific context for '$AGENT_NAME', using default: $CONTEXT_FILE"
 fi
 
