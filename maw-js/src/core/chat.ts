@@ -106,15 +106,21 @@ export function markChatRead(filename: string): void {
  */
 export async function dispatchChat(message: ChatMessage): Promise<boolean> {
   const config = loadConfig();
-  const sessionName = (config.sessions as Record<string, string>)?.[message.to] || `mawjs-${message.to}`;
 
   try {
     const sessions = await listSessions();
-    const session = sessions.find(s => s.name.trim() === sessionName.trim());
+    const possibleNames = [
+      (config.sessions as Record<string, string>)?.[message.to],
+      `mawjs-${message.to}`,
+      message.to
+    ].filter(Boolean) as string[];
+
+    const session = sessions.find(s => possibleNames.includes(s.name.trim()));
     if (!session) {
-      log(`Chat dispatch failed: ${message.to} offline (session: ${sessionName}). Available sessions: ${sessions.map(s => s.name).join(", ")}`);
+      log(`Chat dispatch failed: ${message.to} offline (tried: ${possibleNames.join(", ")}). Available sessions: ${sessions.map(s => s.name).join(", ")}`);
       return false;
     }
+    const sessionName = session.name.trim();
 
     const formatted = `[CHAT from:${message.from}] ${message.content}`;
     await sendKeys(sessionName, formatted);
@@ -173,7 +179,7 @@ export function listAllChats(): ChatMessage[] {
 
 // ─── Internal ───
 
-function parseChatFile(filename: string, content: string): ChatMessage | null {
+export function parseChatFile(filename: string, content: string): ChatMessage | null {
   const lines = content.split("\n");
   let from = "", to = "", timestamp = "";
   let bodyStart = 0;

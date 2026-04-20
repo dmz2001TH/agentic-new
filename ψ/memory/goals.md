@@ -19,10 +19,13 @@
 - [x] [2026-04-20] เทส autonomous goal execution — GOD อ่าน goal → ทำ → report — by god
 - [x] [2026-04-20] ปลุก Builder agent — tmux session + launch — by god
 - [x] [2026-04-20] Evolution to Supreme Agent (Phase 1-3) — ACI v2.0, CLAUDE.md — by god
+- [x] [2026-04-21] Chrome Remote Debugging Connector implementation (Autonomous) — by builder
+- [x] [2026-04-21] WSL-to-Windows Chrome Networking Bridge (Port 9222) — by builder
 - [~] [2026-04-20] เทส task delegation — GOD ส่งงานให้ Builder → Builder ทำ → รายงานกลับ — by god
-- [~] [2026-04-21] Implement Semantic Memory Consolidation (Mem0 style) — by builder
+- [~] [2026-04-21] Implement Semantic Memory Consolidation (Mem0 style) — [In Progress] by builder
 - [~] [2026-04-21] Deploy Token-Saving Policies (from Researcher results) — by god
 - [~] [2026-04-21] Implement Self-Reflection Loop — ให้ Builder วิเคราะห์ Failure และบันทึกแนวทางแก้ไข — by builder
-- [ ] [2026-04-21] Implement Cyclic Error Handling (LangGraph pattern) — by builder
+- [~] [2026-04-21] Implement Cyclic Error Handling (LangGraph pattern) — by builder
 - [-] [2026-04-20] ตั้งค่า GitHub Org สำหรับ Pulse CLI — (Cancelled by user)
 - [-] [2026-04-20] เทสการย้าย Archive ความจำไป G: — (Cancelled by user)
+- [x] [2026-04-21] Implement Oracle Cowork Engine: Playwright with Persistent Context — by builder

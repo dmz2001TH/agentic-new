@@ -16,6 +16,7 @@ import { readFileSync, writeFileSync, existsSync, readdirSync, mkdirSync, append
 import { join, resolve } from "path";
 import { sendKeys, listSessions } from "../core/transport/ssh";
 import { loadConfig } from "../config";
+import { sendChatMessage, getChatMessages, dispatchChat, markChatRead } from "./chat";
 
 const PROJECT_ROOT = resolve(import.meta.dir, "..", "..", "..");
 const PSI_DIR = join(PROJECT_ROOT, "ψ");
@@ -233,11 +234,38 @@ export async function runNextGoal(): Promise<TaskResult> {
 export async function runTaskCycle(): Promise<TaskResult[]> {
   const results: TaskResult[] = [];
 
-  // 1. Process inbox
+  // 1. Process inbox (tasks)
   const inboxResults = await processInbox();
   results.push(...inboxResults);
 
-  // 2. Run next pending goal
+  // 2. Process chat messages
+  const allChats = readdirSync(join(PSI_DIR, "inbox")).filter(f => f.startsWith("chat-") && f.endsWith(".md"));
+  for (const file of allChats) {
+    try {
+      const content = readFileSync(join(PSI_DIR, "inbox", file), "utf-8");
+      const lines = content.split("\n");
+      let to = "";
+      for (const line of lines) {
+        if (line.startsWith("to:")) { to = line.slice(3).trim(); break; }
+      }
+      
+      if (to) {
+        const { parseChatFile } = await import("./chat");
+        const msg = parseChatFile(file, content);
+        if (msg) {
+          const dispatched = await dispatchChat(msg);
+          if (dispatched) {
+            markChatRead(file);
+            results.push({ type: "inbox", action: "chat-dispatched", success: true, detail: file });
+          }
+        }
+      }
+    } catch (e: any) {
+      log(`Failed to process chat ${file}: ${e.message}`);
+    }
+  }
+
+  // 3. Run next pending goal
   const goalResult = await runNextGoal();
   results.push(goalResult);
 

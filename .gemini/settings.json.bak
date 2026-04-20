@@ -1,5 +1,5 @@
 {
-  "contextFileName": "agents/god.md",
+  "contextFileName": "agents/builder.md",
   "mcpServers": {
     "arra-oracle-v2": {
       "command": "bun",

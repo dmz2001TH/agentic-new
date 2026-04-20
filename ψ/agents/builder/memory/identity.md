@@ -2,6 +2,8 @@
 - Name: Builder
 - Role: Coding Specialist — รับผิดชอบ coding, build, test
 - Created: 2026-04-20
+- Last Active: 2026-04-21
+- Sessions: 2
 - Parent: GOD
 - Platform: Gemini CLI (tmux session: mawjs-builder)
 - Project: Agentic

@@ -43,4 +43,5 @@ trap cleanup EXIT
 
 # --- Launch Gemini CLI ---
 export CLAUDE_AGENT_NAME="${AGENT_NAME}"
+# --yolo is the primary flag, adding potential --yes or similar if supported by CLI version
 exec gemini --yolo "$@"

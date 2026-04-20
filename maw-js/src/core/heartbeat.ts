@@ -20,7 +20,7 @@ const PROJECT_ROOT = resolve(import.meta.dir, "..", "..", "..");
 const PSI_DIR = join(PROJECT_ROOT, "ψ");
 const ORACLE_URL = process.env.ORACLE_URL || loadConfig().oracleUrl || "http://localhost:47778";
 
-const DEFAULT_INTERVAL_MS = 30 * 60 * 1000; // 30 minutes
+const DEFAULT_INTERVAL_MS = 60 * 1000; // 1 minute
 let heartbeatTimer: ReturnType<typeof setInterval> | null = null;
 let lastRun: string | null = null;
 let isRunning = false;
@@ -159,13 +159,14 @@ function logHeartbeat(result: HeartbeatResult): void {
 /**
  * Start the heartbeat loop
  */
-export function startHeartbeat(intervalMs = DEFAULT_INTERVAL_MS): void {
+export function startHeartbeat(intervalMs?: number): void {
   if (heartbeatTimer) {
     console.log("[heartbeat] Already running");
     return;
   }
 
-  console.log(`[heartbeat] Starting — interval ${intervalMs / 1000}s (${intervalMs / 60000}min)`);
+  const ms = intervalMs || loadConfig().intervals?.heartbeat || DEFAULT_INTERVAL_MS;
+  console.log(`[heartbeat] Starting — interval ${ms / 1000}s (${ms / 60000}min)`);
 
   // Run immediately on start
   runHeartbeat().then(result => {
@@ -184,7 +185,7 @@ export function startHeartbeat(intervalMs = DEFAULT_INTERVAL_MS): void {
     } catch (e: any) {
       console.error(`[heartbeat] Error: ${e.message}`);
     }
-  }, intervalMs);
+  }, ms);
 }
 
 /**
