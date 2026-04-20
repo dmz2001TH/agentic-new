@@ -75,7 +75,7 @@ export { views };
 
 // --- Server ---
 
-export async function startServer(port = 4000) {
+export async function startServer(port = 3457) {
   const engine = new MawEngine({ feedBuffer, feedListeners });
 
   const HTTP_URL = `http://localhost:${port}`;

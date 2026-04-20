@@ -12,12 +12,11 @@
 - **การกระทำ**: ทุกครั้งที่มีการทำงานกับ GitHub, External API, หรือระบบคลาวด์ ต้องสรุปผลพร้อมลิ้งค์ที่เกี่ยวข้องทันทีโดยไม่ต้องรอให้ถาม
 - **ความมั่นใจ**: สูง
 
-## 2026-04-20 — Verification First Pattern (Supreme Rule)
-- **สิ่งที่สังเกต**: การอ่านโค้ดเพียงอย่างเดียวอาจทำให้เอเจนท์สรุปผิดพลาด (Hallucination) หรือพลาด Side-effects ที่มองไม่เห็น
-- **Insight**: ในระดับ Supreme Agent การยืนยันความถูกต้องต้องทำผ่านการ "รันจริง" (Execution) เท่านั้น
-- **การกระทำ**: ทุกครั้งหลังการแก้ไขโค้ด Builder ต้องรันคำสั่ง Verify (Build/Test/Lint) และรายงานผลการรันจริงเสมอ "Reading is not verification. Run it."
+## 2026-04-20 — Time Accuracy & Tool-Verification Rule (Supreme Guard)
+- **สิ่งที่สังเกต**: เอเจนท์มักจะทำนายเวลาล่วงหน้า (Predictive Time) ผิดพลาดเมื่อเกิดอาการ Context Noise
+- **Insight**: ในฐานะ Supreme Agent การคาดเดาคือความเสี่ยง ความถูกต้องต้องมาจาก "เครื่องมือ (Tools)" เท่านั้น
+- **การกระทำ (Strict Rule)**: ห้ามบอกเวลาโดยเดาเด็ดขาด ต้องรัน `date` เพื่อเช็คความถูกต้องทุกครั้งก่อนรายงานเวลาที่แม่นยำให้ท่านพีช
 - **ความมั่นใจ**: สูงสุด
-- **เกี่ยวข้องกับ**: Claude Code, SWE-agent patterns
 
 
 
@@ -38,3 +37,24 @@
 - **Insight**: Oracle Brain (โฟลเดอร์ ψ/) คือตัวอย่างที่ดีของ Decoupled Memory แต่อาจต้องยกระดับเป็น Semantic/Episodic storage ที่ดีขึ้น
 - **การกระทำ**: นำ patterns การเก็บ Long-term memory จาก Awesome-Memory-for-Agents มาปรับโครงสร้างใน ψ/ เพื่อให้ Agent จำความชอบและสไตล์ของผู้ใช้ได้ดีขึ้น
 - **ความมั่นใจ**: สูง
+
+## 2026-04-20 — MAW Tiered Orchestration Pattern
+- **สิ่งที่สังเกต**: ความซับซ้อนของโปรเจกต์ต้องการระดับการควบคุมที่ต่างกัน (In-process vs Coordinated vs Federated)
+- **Insight**: ไม่ควรใช้เครื่องมือเดียวจัดการทุกอย่าง แต่ต้องเลือกใช้ "Tier" ให้เหมาะกับความซับซ้อนของงาน
+- **การกระทำ**: กำหนดระดับของ Task ใน `task.json` (เช่น `tier: subagent`, `tier: team`) เพื่อให้ระบบเลือกใช้วิธีการ Orchestrate ที่เหมาะสม
+- **ความมั่นใจ**: สูง
+- **เกี่ยวข้องกับ**: Multi-Agent Orchestration Book
+
+## 2026-04-20 — Autonomous Skill Extraction (Hermes Pattern)
+- **สิ่งที่สังเกต**: การเขียนโค้ดใหม่ให้เอเจนท์ทุกครั้งที่เรียนรู้เป็นเรื่องที่ช้าและไม่ยืดหยุ่น
+- **Insight**: เอเจนท์ต้องมีความสามารถในการสกัด (Extract) ความรู้ใหม่ที่ค้นพบระหว่างการทำงานออกมาเป็น "Reusable Skill" ได้เอง
+- **การกระทำ**: เพิ่มขั้นตอน "Learning Checkpoint" หลังจบภารกิจ เพื่อให้เอเจนท์บันทึกขั้นตอนที่สำเร็จลงใน `ψ/memory/learnings/` ในรูปแบบที่พร้อมเรียกใช้ (Callable Skill)
+- **ความมั่นใจ**: สูง
+- **เกี่ยวข้องกับ**: Hermes Agent reasoning
+
+## 2026-04-20 — Visibility-First Fleet Management
+- **สิ่งที่สังเกต**: การที่เอเจนท์ทำงานเบื้องหลัง (Background) มากเกินไปทำให้ผู้ใช้ขาดความเชื่อมั่นและติดตามงานยาก
+- **Insight**: "Convenience is for AI, Visibility is for Human" — ระบบต้องทำให้มนุษย์สามารถ "Peek" (แอบดู) และ "Hey" (แทรกแซง) ได้ตลอดเวลา
+- **การกระทำ**: อัพเกรดระบบ Logging และ Status Update ของ Fleet Agents ให้รายงานผลเป็นระยะแบบ Real-time (ผ่าน tmux หรือ CLI dashboard)
+- **ความมั่นใจ**: สูงสุด
+- **เกี่ยวข้องกับ**: Oracle MAW Guide, maw-js

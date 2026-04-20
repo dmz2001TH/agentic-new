@@ -50,7 +50,7 @@ export async function listSessions(host?: string): Promise<Session[]> {
   try { raw = await hostExec(`${tmuxCmd()} list-sessions -F '#{session_name}' 2>/dev/null`, host); }
   catch { /* fallback */ }
   const sessions: Session[] = [];
-  const names = new Set(raw.split(/\r?\n/).filter(Boolean));
+  const names = new Set(raw.split(/\r?\n/).map(s => s.trim()).filter(Boolean));
   // Only show real tmux sessions — no ghost agents
   
   for (const s of names) {
@@ -119,8 +119,8 @@ export async function sendKeys(target: string, text: string, host?: string): Pro
     "\x1b[B": "Down",
     "\x1b[C": "Right",
     "\x1b[D": "Left",
-    "\r": "Enter",
-    "\n": "Enter",
+    "\r": "C-m",
+    "\n": "C-m",
     "\b": "BSpace",
     "\x15": "C-u",
   };
@@ -135,7 +135,7 @@ export async function sendKeys(target: string, text: string, host?: string): Pro
 
   // If only the enter was left after stripping, just send Enter
   if (!body) {
-    await t.sendKeys(target, "Enter");
+    await t.sendKeys(target, "C-m");
     return;
   }
 
@@ -144,7 +144,7 @@ export async function sendKeys(target: string, text: string, host?: string): Pro
     for (const ch of body) {
       await t.sendKeysLiteral(target, ch);
     }
-    await t.sendKeys(target, "Enter");
+    await t.sendKeys(target, "C-m");
   } else {
     // Smart send — uses buffer for multiline/long, send-keys for short
     await t.sendText(target, body);

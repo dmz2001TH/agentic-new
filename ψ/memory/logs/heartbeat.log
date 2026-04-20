@@ -1,2 +1,10 @@
 [2026-04-20T15:08:36.960Z] oracle=ok sessions=0 pending=3 active=0 inbox=1 tasks=1
 [2026-04-20T15:38:37.114Z] oracle=ok sessions=0 pending=2 active=1 inbox=1 tasks=1
+[2026-04-20T16:50:22.983Z] oracle=unreachable sessions=0 pending=4 active=2 inbox=3 tasks=3
+[2026-04-20T16:53:25.041Z] oracle=unreachable sessions=0 pending=3 active=3 inbox=3 tasks=3
+[2026-04-20T16:53:30.427Z] oracle=unreachable sessions=0 pending=2 active=4 inbox=3 tasks=3
+[2026-04-20T16:53:44.320Z] oracle=unreachable sessions=0 pending=1 active=5 inbox=3 tasks=3
+[2026-04-20T17:23:44.398Z] oracle=unreachable sessions=0 pending=0 active=5 inbox=5 tasks=6
+[2026-04-20T17:40:29.456Z] oracle=unreachable sessions=0 pending=0 active=5 inbox=7 tasks=8
+[2026-04-20T17:41:33.724Z] oracle=unreachable sessions=0 pending=0 active=5 inbox=8 tasks=9
+[2026-04-20T17:59:36.507Z] oracle=unreachable sessions=0 pending=2 active=3 inbox=0 tasks=0

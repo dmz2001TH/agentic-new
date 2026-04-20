@@ -1,0 +1,4 @@
+{
+  "target": "mawjs-builder",
+  "text": "TASK: รัน bun test ใน maw-js แล้วรายงานผลกลับ\nSTEPS:\n1. cd maw-js && bun test 2>&1 | tail -30\n2. บันทึกผลลง Oracle: curl.exe -s -X POST http://localhost:47778/api/learn -H \"Content-Type: application/json\" -d '{\"pattern\": \"# Builder: maw-js test results\\n\\n<ใส่ผล test ตรงนี้>\"}'\n3. ส่งรายงานกลับมาที่นี่\nOUTPUT: บอกว่ากี่ test ผ่าน กี่ test fail\n"
+}

@@ -110,9 +110,9 @@ export async function dispatchChat(message: ChatMessage): Promise<boolean> {
 
   try {
     const sessions = await listSessions();
-    const session = sessions.find(s => s.name === sessionName);
+    const session = sessions.find(s => s.name.trim() === sessionName.trim());
     if (!session) {
-      log(`Chat dispatch failed: ${message.to} offline (session: ${sessionName})`);
+      log(`Chat dispatch failed: ${message.to} offline (session: ${sessionName}). Available sessions: ${sessions.map(s => s.name).join(", ")}`);
       return false;
     }
 
