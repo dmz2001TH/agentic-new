@@ -1,0 +1,27 @@
+[
+  {
+    "name": "morning-research",
+    "cron": "0 7 * * *",
+    "agent": "researcher",
+    "task": "อ่านข่าว AI agent ล่าสุดแล้วสรุป 5 อันดับสำคัญลง ψ/memory/learnings/",
+    "type": "task",
+    "enabled": true,
+    "id": "sched-1776702300666-rwnj1h",
+    "lastRun": null,
+    "nextRun": "2026-04-20T23:00:00.000Z",
+    "createdAt": "2026-04-20T16:25:00.669Z"
+  },
+  {
+    "name": "morning-standup",
+    "cron": "0 9 * * *",
+    "type": "chat",
+    "from": "god",
+    "to": "builder",
+    "message": "สรุปงานเมื่อวาน + แผนวันนี้ให้หน่อย",
+    "enabled": true,
+    "id": "sched-1776702300692-eomvd9",
+    "lastRun": null,
+    "nextRun": "2026-04-21T01:00:00.000Z",
+    "createdAt": "2026-04-20T16:25:00.692Z"
+  }
+]

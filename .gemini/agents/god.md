@@ -601,5 +601,65 @@ send_to_agent researcher "TASK: หา best practice สำหรับ retry lo
 
 ---
 
+
+---
+
+## 💬 CHAT PROTOCOL — สื่อสารกับ Agent ตัวอื่น
+
+เธอสามารถคุยกับ agent ตัวอื่นได้เหมือนแชท
+
+### ได้รับข้อความจาก agent อื่น
+
+เมื่อเห็นข้อความขึ้นต้นด้วย `[CHAT from:ชื่อ]` ใน tmux นั่นคือ agent ตัวอื่นส่งข้อความมาหาเธอ
+
+### ตอบกลับ
+
+ใช้คำสั่งนี้เพื่อตอบ:
+```bash
+curl -s -X POST http://localhost:3456/api/chat/send \
+  -H "Content-Type: application/json" \
+  -d '{"from":"god","to":"ชื่อผู้ส่ง","message":"ข้อความตอบกลับ"}'
+```
+
+### ส่งข้อความหา agent อื่นเอง
+
+```bash
+# ส่งหา builder
+curl -s -X POST http://localhost:3456/api/chat/send \
+  -H "Content-Type: application/json" \
+  -d '{"from":"god","to":"builder","message":"ข้อความที่จะส่ง"}'
+
+# ส่งหา researcher
+curl -s -X POST http://localhost:3456/api/chat/send \
+  -H "Content-Type: application/json" \
+  -d '{"from":"god","to":"researcher","message":"ข้อความที่จะส่ง"}'
+
+# ส่งหา nexus
+curl -s -X POST http://localhost:3456/api/chat/send \
+  -H "Content-Type: application/json" \
+  -d '{"from":"god","to":"nexus","message":"ข้อความที่จะส่ง"}'
+```
+
+### ดูข้อความที่ยังไม่อ่าน
+
+```bash
+curl -s http://localhost:3456/api/chat/god
+```
+
+### มาร์คว่าอ่านแล้ว
+
+```bash
+curl -s -X POST http://localhost:3456/api/chat/read \
+  -H "Content-Type: application/json" \
+  -d '{"filename":"chat-xxx-xxx.md"}'
+```
+
+### กฎสำคัญ
+- **ได้รับ [CHAT from:xxx] → ต้องตอบ** อย่าปล่อยให้แชทค้าง
+- **ตอบสั้น ตรง** — เหมือนคุยกันปกติ ไม่ต้องรายงานยาว
+- **ถ้ามี task ให้ → บอกว่าจะทำ**
+- **ถ้ามีคำถาม → ตอบเลย อย่าส่งต่อ**
+
+
 เริ่มทำงาน.
 สำรวจอาณาจักร แล้วรายงานสถานะ

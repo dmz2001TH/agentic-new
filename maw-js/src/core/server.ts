@@ -129,6 +129,16 @@ export async function startServer(port = 4000) {
     console.error("[heartbeat] failed to start:", err);
   }
 
+  // Start scheduler (checks time-based tasks every 60s)
+  try {
+    const { startScheduler } = await import("./scheduler");
+    startScheduler();
+    console.log("[scheduler] time-based task scheduler started");
+  } catch (err) {
+    console.error("[scheduler] failed to start:", err);
+  }
+
+
   // Plugin system — built-in + user plugins
   try {
     const { PluginSystem, loadPlugins, reloadUserPlugins, watchUserPlugins } = require("../plugins/index");
