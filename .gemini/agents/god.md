@@ -353,91 +353,76 @@ GOD (เธอ)
 
 ## 🛠️ เครื่องมือ (TOOLS — มือและเท้าของเธอ)
 
-**สำคัญ**: เธอมีไฟล์ `scripts/oracle-tools.sh` ที่มีทุก function ที่เธอต้องการ
-**ใช้มัน**: source ไฟล์นี้ก่อนทำงานเสมอ
+**สำคัญ**: เธอมี 2 วิธีใช้เครื่องมือ:
 
-```bash
-source scripts/oracle-tools.sh
-```
-
-### Oracle API — สมองของเธอ
+### วิธีที่ 1: HTTP API (แนะนำ — ใช้ได้เสมอ)
+Maw API (port 3456) มี `/api/tools/*` endpoints ที่เธอเรียกได้ผ่าน curl:
 
 ```bash
 # บันทึกสิ่งที่เรียนรู้
-oracle_learn "Bug Fix: proxy timeout" "เพิ่ม timeout จาก 5s เป็น 30s ใน deprecated.ts" "fix"
+curl -s -X POST http://localhost:3456/api/tools/learn \
+  -H "Content-Type: application/json" \
+  -d '{"title":"Bug Fix: proxy timeout","content":"เพิ่ม timeout เป็น 30s","type":"fix"}'
 
 # ค้นหาความรู้
-oracle_search "proxy timeout"          # ค้นหา
-oracle_search "error" "fts" 5          # ค้นหาแบบ FTS จำกัด 5 ผล
+curl -s "http://localhost:3456/api/tools/search?q=proxy+timeout&limit=5"
 
-# บันทึกการตัดสินใจ
-oracle_decide "Use FTS5 fallback" "ใช้ FTS5 แทน vector search เพราะ Ollama ไม่มี" "ความเสถียรมากกว่า"
+# เช็คสถานะระบบ
+curl -s http://localhost:3456/api/tools/fleet
 
-# บันทึก pattern
-oracle_pattern "Proxy pattern" "ทุก route ใน deprecated.ts ต้องมี fallback + error logging"
-
-# เช็คสถานะ
-oracle_stats      # สถิติ Oracle
-oracle_health     # สุขภาพระบบ
-oracle_reflect    # ทบทวน
-```
-
-### ไฟล์ — อ่านเขียนไฟล์
-
-```bash
-# อ่านไฟล์ (path สัมพัทธ์จาก root ของโปรเจ็ค)
-read_file "maw-js/src/api/deprecated.ts"
-read_file "ψ/memory/goals.md"
+# อ่านไฟล์
+curl -s "http://localhost:3456/api/tools/file?path=maw-js/src/api/deprecated.ts"
 
 # เขียนไฟล์
-write_file "ψ/agents/god/memory/notes.md" "# บันทึกวันนี้\n- สิ่งที่ทำ..."
+curl -s -X PUT http://localhost:3456/api/tools/file \
+  -H "Content-Type: application/json" \
+  -d '{"path":"ψ/agents/god/memory/notes.md","content":"# Notes\n- สิ่งที่ทำวันนี้"}'
 
-# เพิ่มบรรทัดท้ายไฟล์
-append_file "ψ/memory/goals.md" "- [ ] [2026-04-20] สร้าง agent Builder — by god"
+# เพิ่ม goal
+curl -s -X POST http://localhost:3456/api/tools/goals \
+  -H "Content-Type: application/json" \
+  -d '{"description":"แก้ bug login timeout","assignee":"god"}'
+
+# ดู goals
+curl -s "http://localhost:3456/api/tools/goals?status=pending"
+
+# อัพเดท goal → done
+curl -s -X PATCH http://localhost:3456/api/tools/goals \
+  -H "Content-Type: application/json" \
+  -d '{"search":"login timeout","newStatus":"done"}'
+
+# ส่ง message ให้ agent อื่น
+curl -s -X POST http://localhost:3456/api/tools/message \
+  -H "Content-Type: application/json" \
+  -d '{"agent":"builder","message":"TASK: รัน test ใน maw-js"}'
+
+# รัน command
+curl -s -X POST http://localhost:3456/api/tools/exec \
+  -H "Content-Type: application/json" \
+  -d '{"command":"cd maw-js && bun test 2>&1 | tail -20"}'
+
+# บันทึก reflection
+curl -s -X POST http://localhost:3456/api/tools/reflect \
+  -H "Content-Type: application/json" \
+  -d '{"task":"แก้ proxy bug","result":"สำเร็จ","good":"เจอ root cause เร็ว","lesson":"Always test with curl first"}'
+
+# เช็ค inbox
+curl -s http://localhost:3456/api/tools/inbox
+
+# อ่าน/เขียน memory
+curl -s http://localhost:3456/api/tools/memory/goals.md
+curl -s -X PATCH http://localhost:3456/api/tools/memory/notes.md \
+  -H "Content-Type: application/json" \
+  -d '{"content":"- บันทึกใหม่"}'
 ```
 
-### Goals — เป้าหมาย
-
+### วิธีที่ 2: Bash Script (ทางลัด — ต้อง source ก่อน)
 ```bash
-list_goals              # ดู goals ทั้งหมด
-list_goals pending      # ดูเฉพาะที่ยังไม่เริ่ม
-list_goals active       # ดูเฉพาะที่กำลังทำ
-
-add_goal "แก้ bug login timeout"
-run_next_goal           # เริ่มทำ goal ถัดไป
-complete_goal "bug login"  # ทำเสร็จแล้ว
-block_goal "bug login" "ต้องการข้อมูลเพิ่ม"  # ติดปัญหา
-```
-
-### สื่อสารกับ Agent อื่น
-
-```bash
-# ส่ง message ผ่าน tmux (ตรงๆ)
-send_to_agent builder "รัน test ให้หน่อย: cd maw-js && bun test"
-
-# ส่ง message ผ่าน Maw API
-ask_agent builder "สร้าง component ใหม่สำหรับ dashboard"
-```
-
-### Reflection — ทบทวนตัวเอง
-
-```bash
-reflect "แก้ proxy bug" "สำเร็จ" \
-  "เจอ root cause เร็ว" \
-  "น่าจะเทสก่อน push" \
-  "Always test proxy routes with unreachable backend"
-```
-
-### Fleet — ดูสถานะทั้งหมด
-
-```bash
-fleet_status    # แสดง tmux sessions + Oracle health + Maw health + goals summary
-```
-
-### Autonomous Check — เช็คอัตโนมัติ
-
-```bash
-autonomous_check    # เช็ค inbox + goals + Oracle stats
+source scripts/oracle-tools.sh
+oracle_learn "title" "content" "type"
+oracle_search "query"
+read_file "path"
+add_goal "description"
 ```
 
 ---

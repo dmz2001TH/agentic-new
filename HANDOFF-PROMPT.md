@@ -60,9 +60,13 @@ agentic-new/
 │   │   ├── deprecated.ts    ← Proxy routes → Oracle Core (15 routes)
 │   │   ├── sessions.ts      ← /api/sessions
 │   │   ├── fleet.ts         ← /api/fleet
-│   │   └── asks.ts          ← /api/asks (send to agents)
+│   │   ├── asks.ts          ← /api/asks (send to agents)
+│   │   ├── tools.ts         ← /api/tools/* — Agent's hands (learn/search/file/goals/exec/message) ← NEW
+│   │   └── heartbeat-api.ts ← /api/heartbeat — Task runner + heartbeat control ← NEW
 │   ├── src/core/
-│   │   ├── server.ts        ← Main server + WebSocket + ensure-agents
+│   │   ├── server.ts        ← Main server + WebSocket + ensure-agents + heartbeat
+│   │   ├── task-runner.ts   ← Autonomous goal execution engine ← NEW
+│   │   ├── heartbeat.ts     ← Periodic check (30min) + task dispatch ← NEW
 │   │   └── transport/
 │   │       ├── ssh.ts       ← hostExec() + listSessions()
 │   │       ├── tmux-class.ts← Tmux wrapper class
@@ -134,17 +138,19 @@ agentic-new/
 ### 🔴 P0 — Agent ทำอะไรได้จริง (Make GOD Actually Do Things) ✅ DONE
 
 **สิ่งที่ทำ:**
-1. ✅ สร้าง `scripts/oracle-tools.sh` — GOD's hands มีทุก function:
-   - `oracle_learn` / `oracle_search` / `oracle_stats` / `oracle_health`
-   - `read_file` / `write_file` / `append_file`
-   - `add_goal` / `list_goals` / `run_next_goal` / `complete_goal` / `block_goal`
-   - `send_to_agent` / `ask_agent` (inter-agent communication)
-   - `reflect` / `fleet_status` / `autonomous_check`
-2. ✅ ปรับ `.gemini/agents/god.md` — เพิ่ม practical tool instructions:
-   - สอนให้ source oracle-tools.sh
-   - มี WORK CYCLE: Listen → Search Memory → Plan → Execute → Record → Report
-   - มี AUTONOMOUS MODE: เช็ค goals ค้าง → ทำต่อ → บันทึก
-3. ✅ สร้าง memory system files (identity.md, people.md, goals.md, etc.)
+1. ✅ `scripts/oracle-tools.sh` — Bash-level tools (20+ functions)
+2. ✅ `maw-js/src/api/tools.ts` — HTTP API endpoints (server-side, works from any agent):
+   - `POST /api/tools/learn` — learn to Oracle
+   - `GET /api/tools/search` — search knowledge
+   - `GET/PUT/PATCH /api/tools/file` — read/write/append files
+   - `GET/POST/PATCH /api/tools/goals` — goal management
+   - `POST /api/tools/message` — send to agent via tmux
+   - `POST /api/tools/exec` — execute commands
+   - `POST /api/tools/reflect` — post-task reflection
+   - `GET/POST /api/tools/inbox` — inbox management
+   - `GET/PUT/PATCH /api/tools/memory/:file` — memory operations
+   - `GET /api/tools/fleet` — full system status
+3. ✅ `.gemini/agents/god.md` — Practical instructions for both HTTP API + bash script
 
 **เกณฑ์สำเร็จ:** ✅ GOD สามารถอ่านไฟล์, บันทึกสิ่งที่เรียนรู้ลง Oracle, และแก้ไขโค้ดได้โดยไม่ต้องให้มนุษย์ช่วย
 
@@ -153,16 +159,18 @@ agentic-new/
 ### 🔴 P0 — Goal Execution System (ทำตามเป้าหมายอัตโนมัติ) ✅ DONE
 
 **สิ่งที่ทำ:**
-1. ✅ Task runner functions ใน oracle-tools.sh:
-   - `run_next_goal` — อ่าน goal pending ตัวแรก → mark [~] active
-   - `complete_goal` — mark [x] done + auto-learn
-   - `block_goal` — mark [!] blocked with reason
-   - `add_goal` — เพิ่ม goal ใหม่
-   - `list_goals` — filter by status (pending/active/done/blocked)
-2. ✅ Goals format ใน `ψ/memory/goals.md` — สถานะ [ ]/[~]/[x]/[!]/
-3. ✅ god.md สอน AUTONOMOUS MODE — อ่าน goals ค้าง → ทำต่อ
+1. ✅ `maw-js/src/core/task-runner.ts` — Server-side task runner:
+   - `parseGoals()` — read goals.md into structured data
+   - `getNextPendingGoal()` — find first [ ] goal
+   - `markGoalActive/Done()` — update status
+   - `dispatchToAgent()` — send task to agent via tmux
+   - `processInbox()` — convert inbox items to goals
+   - `runTaskCycle()` — full cycle: inbox → goal → dispatch
+2. ✅ `scripts/oracle-tools.sh` — Bash-level task runner functions
+3. ✅ Goals format + status tracking [ ]/[~]/[x]/[!]
+4. ✅ API endpoints: `POST /api/heartbeat/task-cycle`, `GET /api/heartbeat/next-goal`
 
-**เกณฑ์สำเร็จ:** ✅ GOD อ่าน goal → วางแผน → ลงมือ → รายงานผล โดยอัตโนมัติ
+**เกณฑ์สำเร็จ:** ✅ อ่าน goal → mark active → dispatch to agent → log — อัตโนมัติ
 
 ---
 
@@ -191,25 +199,24 @@ agentic-new/
 
 ---
 
-### 🟡 P1 — Autonomous Loop (Agent ทำงานเองโดยไม่ต้องถาม)
+### 🟡 P1 — Autonomous Loop (Agent ทำงานเองโดยไม่ต้องถาม) ⚡ PARTIAL
 
-**ปัญหา:** Agent แค่ตอบเมื่อถูกถาม ไม่ได้ตื่นมาเช็คงานเอง
+**สิ่งที่ทำ:**
+1. ✅ `maw-js/src/core/heartbeat.ts` — Periodic autonomous check (30min default):
+   - Check Oracle health
+   - Check agent sessions
+   - Count pending goals + inbox items
+   - Auto-run task cycle if work exists
+   - Log all heartbeats to ψ/memory/logs/heartbeat.log
+2. ✅ Auto-start heartbeat in server.ts startup
+3. ✅ API control: `POST /api/heartbeat/start|stop|run`
+4. ✅ god.md AUTONOMOUS MODE instructions
 
-**สิ่งที่ต้องทำ:**
-1. สร้าง heartbeat/cron สำหรับ GOD:
-   - ทุก 30 นาที: เช็ค inbox, เช็ค goals ค้าง
-   - ทุกเช้า: daily planning, เช็ค calendar/email
-   - ทุกเย็น: daily retrospective
-2. สร้าง decision engine:
-   - GOD ประเมิน priority ของงานเอง
-   - เลือกทำงานที่สำคัญที่สุดก่อน
-   - รู้ว่า什么时候ควรถามมนุษย์什么时候ทำเอง
-3. Memory-driven behavior:
-   - อ่าน patterns.md → ปรับพฤติกรรม
-   - อ่าน decisions.md → ไม่ตัดสินใจซ้ำ
-   - อ่าน learnings.md → ใช้ความรู้เดิม
+**ยังขาด:**
+- ⬜ Decision engine (priority evaluation)
+- ⬜ Memory-driven behavior (patterns/decisions/learnings ปรับพฤติกรรม)
 
-**เกณฑ์สำเร็จ:** GOD ทำงาน autonomously ได้ 1+ task โดยไม่ต้องให้มนุษย์สั่ง
+**เกณฑ์สำเร็จ:** ⚡ Heartbeat ทำงาน + task dispatch ได้ แต่ยังไม่มี smart prioritization
 
 ---
 
@@ -310,19 +317,21 @@ Repo: https://github.com/dmz2001TH/agentic-new
 อ่าน HANDOFF-PROMPT.md ใน repo ก่อน — มีรายละเอียดทั้งหมด
 
 สิ่งที่ทำเสร็จแล้ว:
-- ✅ P0: GOD Tool Integration — oracle-tools.sh สร้างเสร็จ + god.md มี practical instructions
-- ✅ P0: Goal Execution System — task runner functions (run_next_goal/complete_goal/block_goal)
-- ✅ P1 Partial: Multi-Agent — Builder + Researcher agents สร้างเสร็จ, ยังไม่ได้เทส
-- ✅ Memory system files ครบ (identity, people, goals, patterns, decisions, etc.)
+- ✅ P0: GOD Tool Integration — oracle-tools.sh (bash) + /api/tools/* (HTTP API) + god.md practical instructions
+- ✅ P0: Goal Execution System — task-runner.ts (server-side) + bash script + /api/heartbeat/task-cycle
+- ✅ P1 Partial: Multi-Agent — Builder + Researcher agents, send_to_agent + ask_agent, ensure-agents.sh
+- ✅ P1 Partial: Autonomous Loop — heartbeat.ts (30min), auto-start in server.ts, /api/heartbeat/* endpoints
+- ✅ Memory system files ครบ
 - ✅ validate-system.sh — 31/31 checks pass
 
 สิ่งที่ต้องทำต่อ:
-1. 🔴 เทสจริง: source oracle-tools.sh && oracle_learn "test" "test content" — ต้องรันบนเครื่องที่มี Oracle Core
-2. 🔴 เทส autonomous: GOD อ่าน goal → ทำ → report (ต้อง tmux + gemini --yolo)
-3. 🟡 เทส multi-agent: GOD ส่งงานให้ Builder → Builder ทำ → รายงานกลับ
-4. 🟡 P1 Autonomous Loop: heartbeat ทุก 30 นาที + decision engine
-5. 🟢 P2 Tool Integration: Git, Web search, File system
+1. 🔴 เทสจริง: curl localhost:3456/api/tools/fleet — ต้องรัน maw-js server ก่อน
+2. 🔴 เทส task runner: POST /api/heartbeat/task-cycle — ต้องมี pending goals + agent online
+3. 🟡 Decision engine: priority evaluation สำหรับ goals (ยังไม่มี)
+4. 🟡 Memory-driven behavior: ใช้ patterns/decisions ปรับพฤติกรรม heartbeat
+5. 🟢 P2 Tool Integration: Git (commit/push), Web search
 6. 🟢 P2 Dashboard: Live terminal, Task board, Knowledge graph
+7. 🔵 P3 Production: PM2/NSSM, auto-restart, logging, backup, auth
 
 ข้อควรระวัง:
 - กฎเหล็ก 10 ข้อใน HANDOFF-PROMPT.md — ห้ามย้อนกลับ
