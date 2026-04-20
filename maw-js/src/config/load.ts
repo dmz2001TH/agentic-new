@@ -45,10 +45,10 @@ const DEFAULTS: MawConfig = {
   env: {},
   commands: { 
     default: "gemini --yolo",
-    nexus: "gemini --yolo" 
+    god: "gemini --yolo" 
   },
   sessions: {
-    "nexus": "02-nexus"
+    "god": "god"
   },
 };
 
