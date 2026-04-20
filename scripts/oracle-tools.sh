@@ -35,9 +35,11 @@ oracle_learn() {
   local content="${2:?Usage: oracle_learn <title> <content> [type]}"
   local type="${3:-learning}"
 
-  curl -s -X POST "${ORACLE_URL}/api/learn" \
+  local pattern="# $title\n\n$content"
+
+  curl.exe -s -X POST "${ORACLE_URL}/api/learn" \
     -H "Content-Type: application/json" \
-    -d "{\"title\": $(echo "$title" | jq -Rs .), \"content\": $(echo "$content" | jq -Rs .), \"type\": $(echo "$type" | jq -Rs .)}"
+    -d "$("$SCRIPT_DIR/jq.exe" -n --arg p "$pattern" '{"pattern": $p}')"
 }
 
 # ค้นหาความรู้ใน Oracle
@@ -47,18 +49,18 @@ oracle_search() {
   local mode="${2:-hybrid}"
   local limit="${3:-10}"
 
-  curl -s "${ORACLE_URL}/api/search?q=$(python3 -c "import urllib.parse; print(urllib.parse.quote('$query'))")&mode=${mode}&limit=${limit}" 2>/dev/null || \
-  curl -s "${ORACLE_URL}/api/search?q=$(echo "$query" | sed 's/ /%20/g')&mode=${mode}&limit=${limit}"
+  curl.exe -s "${ORACLE_URL}/api/search?q=$(python3 -c "import urllib.parse; print(urllib.parse.quote('$query'))")&mode=${mode}&limit=${limit}" 2>/dev/null || \
+  curl.exe -s "${ORACLE_URL}/api/search?q=$(echo "$query" | sed 's/ /%20/g')&mode=${mode}&limit=${limit}"
 }
 
 # เช็คสถานะ Oracle
 oracle_stats() {
-  curl -s "${ORACLE_URL}/api/stats"
+  curl.exe -s "${ORACLE_URL}/api/stats"
 }
 
 # เช็คสุขภาพระบบ
 oracle_health() {
-  curl -s "${ORACLE_URL}/api/health"
+  curl.exe -s "${ORACLE_URL}/api/health"
 }
 
 # บันทึก decision
@@ -82,7 +84,7 @@ oracle_pattern() {
 
 # Reflect — ทบทวน
 oracle_reflect() {
-  curl -s "${ORACLE_URL}/api/reflect"
+  curl.exe -s "${ORACLE_URL}/api/reflect"
 }
 
 # ═══════════════════════════════════════════
@@ -324,9 +326,9 @@ ask_agent() {
   local agent="${1:?Usage: ask_agent <agent> <message>}"
   local message="${2:?Usage: ask_agent <agent> <message>}"
 
-  curl -s -X POST "${MAW_URL}/api/asks" \
+  curl.exe -s -X POST "${MAW_URL}/api/asks" \
     -H "Content-Type: application/json" \
-    -d "{\"to\": \"${agent}\", \"message\": $(echo "$message" | jq -Rs .), \"from\": \"${CLAUDE_AGENT_NAME:-god}\"}"
+    -d "{\"to\": \"${agent}\", \"message\": $(echo "$message" | "$SCRIPT_DIR/jq.exe" -Rs .), \"from\": \"${CLAUDE_AGENT_NAME:-god}\"}"
 }
 
 # ═══════════════════════════════════════════
@@ -387,13 +389,13 @@ fleet_status() {
 
   # Oracle health
   echo "🧠 Oracle Core:"
-  oracle_health 2>/dev/null | jq -r '.status // "unreachable"' || echo "  unreachable"
+  oracle_health 2>/dev/null | "$SCRIPT_DIR/jq.exe" -r '.status // "unreachable"' || echo "  unreachable"
 
   echo ""
 
   # Maw health
   echo "🔧 Maw API:"
-  curl -s "${MAW_URL}/api/health" 2>/dev/null | jq -r '.status // "unreachable"' || echo "  unreachable"
+  curl.exe -s "${MAW_URL}/api/health" 2>/dev/null | "$SCRIPT_DIR/jq.exe" -r '.status // "unreachable"' || echo "  unreachable"
 
   echo ""
 
@@ -435,7 +437,7 @@ autonomous_check() {
 
   # 4. Oracle stats
   echo ""
-  oracle_stats 2>/dev/null | jq -r '"DB: \(.totalEntries // 0) entries, FTS: \(.vectorStatus // "unknown")"' || echo "Oracle: unreachable"
+  oracle_stats 2>/dev/null | "$SCRIPT_DIR/jq.exe" -r '"DB: \(.totalEntries // 0) entries, FTS: \(.vectorStatus // "unknown")"' || echo "Oracle: unreachable"
 }
 
 # ═══════════════════════════════════════════
