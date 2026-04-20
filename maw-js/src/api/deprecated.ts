@@ -9,9 +9,15 @@ const ORACLE_URL = process.env.ORACLE_URL || loadConfig().oracleUrl;
 async function oracleGet(path: string, fallback: any = {}) {
   try {
     const res = await fetch(`${ORACLE_URL}${path}`);
-    if (!res.ok) return fallback;
+    if (!res.ok) {
+      console.warn(`[oracle-proxy] ${path} → ${res.status} ${res.statusText}`);
+      return fallback;
+    }
     return await res.json();
-  } catch { return fallback; }
+  } catch (e: any) {
+    console.warn(`[oracle-proxy] ${path} → unreachable (${e.message})`);
+    return fallback;
+  }
 }
 
 // Helper: proxy POST to Oracle Core
@@ -26,6 +32,7 @@ async function oraclePost(path: string, body: any, set: any) {
     if (!res.ok) { set.status = res.status; return data; }
     return data;
   } catch (e: any) {
+    console.warn(`[oracle-proxy] POST ${path} → unreachable (${e.message})`);
     set.status = 502;
     return { error: `Oracle unreachable: ${e.message}` };
   }
@@ -134,4 +141,18 @@ export const deprecatedApi = new Elysia()
   .get("/oraclenet/status", () => oracleGet("/api/oraclenet/status", { connected: false, peers: 0 }))
 
   // 11. Maw-native: Forum/Threads (no Oracle equivalent yet)
-  .get("/threads", () => ({ threads: [] }));
+  .get("/threads", () => ({ threads: [] }))
+
+  // 12. Oracle proxy: Health check (frontend uses this to verify backend)
+  .get("/health", async () => {
+    try {
+      const res = await fetch(`${ORACLE_URL}/api/health`);
+      if (res.ok) {
+        const data = await res.json();
+        return { status: "ok", oracle: data, maw: "ok", port: 3456 };
+      }
+      return { status: "degraded", oracle: "error", maw: "ok" };
+    } catch {
+      return { status: "degraded", oracle: "unreachable", maw: "ok" };
+    }
+  });

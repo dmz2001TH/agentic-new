@@ -1,6 +1,7 @@
-import { readFileSync, writeFileSync } from "fs";
+import { readFileSync, writeFileSync, existsSync } from "fs";
 import { join } from "path";
 import { execSync } from "child_process";
+import { homedir } from "os";
 import { CONFIG_FILE } from "../core/paths";
 import { refreshContext } from "../lib/context";
 import { verbose, info } from "../cli/verbosity";
@@ -8,14 +9,32 @@ import type { MawConfig } from "./types";
 import { D } from "./types";
 import { validateConfig } from "./validate-ext";
 
+/** Detect ghq root — tries ghq CLI first, then common fallback paths. */
 function detectGhqRoot(): string {
+  // 1. Try ghq CLI
   try {
     const root = execSync("ghq root", { encoding: "utf-8" }).trim();
-    // ghq may store repos under <root>/github.com/... — prefer that if it exists
     const ghRoot = join(root, "github.com");
-    if (require("fs").existsSync(ghRoot)) return ghRoot;
-    return root;
-  } catch { return join(require("os").homedir(), "Code/github.com"); }
+    if (existsSync(ghRoot)) return ghRoot;
+    if (existsSync(root)) return root;
+  } catch { /* ghq not installed */ }
+
+  // 2. Try common paths
+  const home = homedir();
+  const candidates = [
+    join(home, "Code/github.com"),
+    join(home, "code"),
+    join(home, "projects"),
+    join(home, "repos"),
+    join(home, "src"),
+    process.cwd(),
+  ];
+  for (const p of candidates) {
+    if (existsSync(p)) return p;
+  }
+
+  // 3. Last resort: cwd
+  return process.cwd();
 }
 
 const DEFAULTS: MawConfig = {
