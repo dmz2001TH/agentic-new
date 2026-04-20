@@ -8,6 +8,17 @@ const PROJECT_ROOT = resolve(import.meta.dir, "..", "..", "..");
 const ORACLE_URL = process.env.ORACLE_URL || loadConfig().oracleUrl || "http://localhost:47778";
 const PSI_DIR = join(PROJECT_ROOT, "ψ");
 
+// Auth: optional API token for tools endpoints
+// Set MAW_TOOLS_TOKEN env var or toolsToken in maw.config.json to enable
+const TOOLS_TOKEN = process.env.MAW_TOOLS_TOKEN || (loadConfig() as any).toolsToken || "";
+
+// Helper: check auth token (if configured)
+function checkAuth(headers: Record<string, string | undefined>): boolean {
+  if (!TOOLS_TOKEN) return true; // no token = no auth (dev mode)
+  const auth = headers["authorization"] || headers["x-api-key"] || "";
+  return auth === TOOLS_TOKEN || auth === `Bearer ${TOOLS_TOKEN}`;
+}
+
 // ═══════════════════════════════════════════
 // Helpers
 // ═══════════════════════════════════════════
@@ -41,7 +52,18 @@ function getGoalsFile(): string {
 // Tools API — Agent's hands
 // ═══════════════════════════════════════════
 
-export const toolsApi = new Elysia({ prefix: "/tools" });
+export const toolsApi = new Elysia({ prefix: "/tools" })
+  .onBeforeHandle(({ request, set }) => {
+    // Auth check (only if token is configured)
+    if (TOOLS_TOKEN) {
+      const headers: Record<string, string | undefined> = {};
+      request.headers.forEach((v, k) => { headers[k.toLowerCase()] = v; });
+      if (!checkAuth(headers)) {
+        set.status = 401;
+        return { error: "Unauthorized — provide Authorization: Bearer <token> or X-Api-Key: <token>" };
+      }
+    }
+  });
 
 // ─── Oracle Integration ───
 

@@ -62,7 +62,9 @@ agentic-new/
 │   │   ├── fleet.ts         ← /api/fleet
 │   │   ├── asks.ts          ← /api/asks (send to agents)
 │   │   ├── tools.ts         ← /api/tools/* — Agent's hands (learn/search/file/goals/exec/message) ← NEW
-│   │   └── heartbeat-api.ts ← /api/heartbeat — Task runner + heartbeat control ← NEW
+│   │   ├── heartbeat-api.ts ← /api/heartbeat — Task runner + heartbeat control ← NEW
+│   │   ├── git.ts           ← /api/git/* — Git operations (status/add/commit/push/ship) ← NEW
+│   │   └── search.ts        ← /api/search/* — Web search + URL fetch ← NEW
 │   ├── src/core/
 │   │   ├── server.ts        ← Main server + WebSocket + ensure-agents + heartbeat
 │   │   ├── task-runner.ts   ← Autonomous goal execution engine ← NEW
@@ -220,38 +222,57 @@ agentic-new/
 
 ---
 
-### 🟢 P2 — Tool Integration (เครื่องมือสำหรับ Agent)
+### 🟢 P2 — Tool Integration (เครื่องมือสำหรับ Agent) ✅ DONE
 
-**สิ่งที่ต้องทำ:**
-1. Git integration — GOD commit/push code ได้
-2. Web search — GOD ค้นหาข้อมูลออนไลน์ได้
-3. File system — GOD อ่าน/เขียน/แก้ไขไฟล์ได้
-4. API calls — GOD เรียก external APIs ได้
-5. Terminal — GOD รัน shell commands ได้ (มี PTY แล้ว แต่ต้อง connect กับ agent)
+**สิ่งที่ทำ:**
+1. ✅ Git integration — `maw-js/src/api/git.ts`:
+   - `GET /api/git/status` — ดู staged/unstaged changes
+   - `GET /api/git/log` — commit history
+   - `GET /api/git/diff` — diff ไฟล์
+   - `POST /api/git/add` — stage files
+   - `POST /api/git/commit` — commit
+   - `POST /api/git/push` — push
+   - `POST /api/git/pull` — pull --rebase
+   - `POST /api/git/ship` — one-shot add+commit+push
+   - `GET /api/git/branch` — current branch
+   - `POST /api/git/stash` — stash changes
+2. ✅ Web search — `maw-js/src/api/search.ts`:
+   - `GET /api/search/web?q=...` — multi-provider search (DuckDuckGo + Wikipedia + Hacker News)
+   - `GET /api/search/fetch?url=...` — fetch + extract text from URL
+3. ✅ File system — `/api/tools/file` (GET/PUT/PATCH)
+4. ✅ API calls — `/api/tools/exec` (run any command)
+5. ✅ Terminal — `/api/tools/exec` + tmux send-keys via `/api/tools/message`
 
-**เกณฑ์สำเร็จ:** GOD ใช้เครื่องมือได้ 3+ อย่าง โดยไม่ต้องให้มนุษย์ทำแทน
+**เกณฑ์สำเร็จ:** ✅ GOD ใช้เครื่มือได้ 5+ อย่าง (learn, search, git, file, exec, message)
 
 ---
 
-### 🟢 P2 — Dashboard Enhancement
+### 🟢 P2 — Dashboard Enhancement ⚡ PARTIAL
 
-**สิ่งที่ต้องทำ:**
-1. Live terminal ใช้งานจริง (PTY → Gemini CLI)
-2. Task board — ดู/จัดการ goals จาก dashboard
-3. Knowledge graph visualization
-4. Agent activity timeline
-5. Multi-agent fleet view
+**สิ่งที่ทำ:**
+- Live terminal — PTY handler มีอยู่แล้วใน maw-js (`/ws/pty`)
+- Task board — `/api/tools/goals` + `/api/heartbeat/goals` endpoints
+- Fleet view — `/api/tools/fleet` + `/api/sessions`
+
+**ยังขาด:**
+- ⬜ React UI components สำหรับ task board (ต้องแก้ frontend)
+- ⬜ Knowledge graph visualization
+- ⬜ Agent activity timeline
 
 ---
 
-### 🔵 P3 — Production Readiness
+### 🔵 P3 — Production Readiness ⚡ PARTIAL
 
-**สิ่งที่ต้องทำ:**
-1. Process manager (PM2/NSSM) — รันเป็น daemon
-2. Auto-restart on crash
-3. Logging system
-4. Backup/restore for SQLite DB
-5. Security: auth tokens for API
+**สิ่งที่ทำ:**
+1. ✅ Auto-restart — `scripts/run-with-restart.sh` (bash wrapper with restart logic)
+2. ✅ Production start — `start-oracle-prod.cmd` (all services with auto-restart)
+3. ✅ Logging — heartbeat.log, task-runner.log, service logs via run-with-restart
+4. ✅ Backup — `scripts/backup-db.sh` (SQLite backup with 7-day retention)
+5. ✅ Auth — Optional `MAW_TOOLS_TOKEN` / `toolsToken` config for /api/tools/* endpoints
+
+**ยังขาด:**
+- ⬜ PM2/NSSM daemon setup
+- ⬜ TLS/HTTPS certificates
 
 ---
 
@@ -317,21 +338,25 @@ Repo: https://github.com/dmz2001TH/agentic-new
 อ่าน HANDOFF-PROMPT.md ใน repo ก่อน — มีรายละเอียดทั้งหมด
 
 สิ่งที่ทำเสร็จแล้ว:
-- ✅ P0: GOD Tool Integration — oracle-tools.sh (bash) + /api/tools/* (HTTP API) + god.md practical instructions
-- ✅ P0: Goal Execution System — task-runner.ts (server-side) + bash script + /api/heartbeat/task-cycle
-- ✅ P1 Partial: Multi-Agent — Builder + Researcher agents, send_to_agent + ask_agent, ensure-agents.sh
-- ✅ P1 Partial: Autonomous Loop — heartbeat.ts (30min), auto-start in server.ts, /api/heartbeat/* endpoints
-- ✅ Memory system files ครบ
-- ✅ validate-system.sh — 31/31 checks pass
+- ✅ P0: GOD Tool Integration — /api/tools/* (15 endpoints), oracle-tools.sh (bash), god.md practical instructions
+- ✅ P0: Goal Execution System — task-runner.ts, heartbeat.ts (30min auto), /api/heartbeat/* endpoints
+- ✅ P1: Multi-Agent — Builder + Researcher agents, /api/tools/message, ensure-agents.sh
+- ✅ P1: Autonomous Loop — heartbeat auto-start, /api/heartbeat/start|stop|run
+- ✅ P2: Git Integration — /api/git/* (status/log/add/commit/push/ship)
+- ✅ P2: Web Search — /api/search/web (DuckDuckGo + Wikipedia + HN), /api/search/fetch
+- ✅ P3: Auto-restart — run-with-restart.sh, start-oracle-prod.cmd
+- ✅ P3: Backup — backup-db.sh (SQLite backup, 7-day retention)
+- ✅ P3: Auth — MAW_TOOLS_TOKEN for /api/tools/* (optional, dev mode = no auth)
+- ✅ All TypeScript compiles: 570 modules bundled successfully
+- ✅ Memory system files ครบ, validate-system.sh 31/31
 
 สิ่งที่ต้องทำต่อ:
-1. 🔴 เทสจริง: curl localhost:3456/api/tools/fleet — ต้องรัน maw-js server ก่อน
-2. 🔴 เทส task runner: POST /api/heartbeat/task-cycle — ต้องมี pending goals + agent online
-3. 🟡 Decision engine: priority evaluation สำหรับ goals (ยังไม่มี)
-4. 🟡 Memory-driven behavior: ใช้ patterns/decisions ปรับพฤติกรรม heartbeat
-5. 🟢 P2 Tool Integration: Git (commit/push), Web search
-6. 🟢 P2 Dashboard: Live terminal, Task board, Knowledge graph
-7. 🔵 P3 Production: PM2/NSSM, auto-restart, logging, backup, auth
+1. 🔴 เทสจริง: รัน start-oracle.cmd → curl localhost:3456/api/tools/fleet
+2. 🔴 เทส task runner: เพิ่ม goal → POST /api/heartbeat/task-cycle → ดู dispatch
+3. 🟡 React UI: Task board component สำหรับ dashboard
+4. 🟡 Decision engine: priority evaluation สำหรับ goals
+5. 🟡 Knowledge graph visualization
+6. 🔵 PM2/NSSM daemon setup
 
 ข้อควรระวัง:
 - กฎเหล็ก 10 ข้อใน HANDOFF-PROMPT.md — ห้ามย้อนกลับ

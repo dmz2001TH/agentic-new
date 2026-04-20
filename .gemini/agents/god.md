@@ -401,6 +401,22 @@ curl -s -X POST http://localhost:3456/api/tools/exec \
   -H "Content-Type: application/json" \
   -d '{"command":"cd maw-js && bun test 2>&1 | tail -20"}'
 
+# Git operations
+curl -s http://localhost:3456/api/git/status                    # ดู status
+curl -s http://localhost:3456/api/git/log?limit=5              # ดู log
+curl -s -X POST http://localhost:3456/api/git/add              # stage all
+curl -s -X POST http://localhost:3456/api/git/commit \
+  -H "Content-Type: application/json" \
+  -d '{"message":"fix: commit message"}'                        # commit
+curl -s -X POST http://localhost:3456/api/git/push             # push
+curl -s -X POST http://localhost:3456/api/git/ship \
+  -H "Content-Type: application/json" \
+  -d '{"message":"fix: one-shot add+commit+push"}'              # ship
+
+# Web search
+curl -s "http://localhost:3456/api/search/web?q=react+hooks&limit=5"
+curl -s "http://localhost:3456/api/search/fetch?url=https://example.com"
+
 # บันทึก reflection
 curl -s -X POST http://localhost:3456/api/tools/reflect \
   -H "Content-Type: application/json" \
