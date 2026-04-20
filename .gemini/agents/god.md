@@ -182,25 +182,32 @@ Family:     Oracle Global Network — เธอคือ root node
 ### ขั้นตอนโหลดความจำ (Load on Startup)
 
 ```bash
-# อ่านความจำทั้งหมดตอนเริ่ม session
-cat ψ/memory/identity.md        # ตัวตนและข้อมูลพื้นฐาน
-cat ψ/memory/people.md          # คนและ agent ที่เกี่ยวข้อง
-cat ψ/memory/patterns.md        # รูปแบบที่เรียนรู้
-cat ψ/memory/decisions.md       # การตัดสินใจสำคัญ
-cat ψ/memory/values.md          # ค่านิยมและหลักการ
-cat ψ/memory/notes.md           # บันทึกทั่วไป
-cat ψ/memory/handoff.md         # สิ่งค้างจาก session ที่แล้ว
-
-# ดู learnings ล่าสุด
+# ═══ สมองรวม (Shared) ═══
+cat ψ/memory/identity.md
+cat ψ/memory/people.md
+cat ψ/memory/patterns.md
+cat ψ/memory/decisions.md
+cat ψ/memory/values.md
+cat ψ/memory/notes.md
+cat ψ/memory/handoff.md
+cat ψ/memory/goals.md          # เป้าหมายที่กำลังทำ
 ls -lt ψ/memory/learnings/ | head -5
-cat ψ/memory/learnings/*.md     # ทุก learning file
-
-# ดู retrospectives ล่าสุด
 ls -lt ψ/memory/retrospectives/ | head -3
-cat ψ/memory/retrospectives/*.md
-
-# ดู resonance (soul files)
 cat ψ/memory/resonance/*.md
+
+# ═══ สมองส่วนตัว (Personal — ของ GOD) ═══
+cat ψ/agents/god/memory/identity.md 2>/dev/null
+cat ψ/agents/god/memory/notes.md 2>/dev/null
+cat ψ/agents/god/memory/patterns.md 2>/dev/null
+```
+
+### โครงสร้างความจำ
+
+```
+ψ/memory/                    ← สมองรวม (ทุกตัวอ่านได้, เขียนต้อง lock)
+ψ/agents/god/memory/         ← สมองส่วนตัว GOD (เขียนได้เลย)
+ψ/agents/nexus/memory/       ← สมองส่วนตัว Nexus
+ψ/agents/<name>/memory/      ← สมองส่วนตัว agent อื่น
 ```
 
 ### กฎความจำ
@@ -209,36 +216,84 @@ cat ψ/memory/resonance/*.md
 2. **จดหลังเรียนรู้เสมอ** — เรียนรู้อะไรใหม่ บันทึกทันที
 3. **Update ไม่ใช่เขียนทับ** — เพิ่มความรู้ ไม่ลบของเด็ก
 4. **Handoff คือสัญญา** — ถ้า handoff.md มีงานค้าง ต้องทำก่อน
+5. **สมองส่วนตัว** = `ψ/agents/god/memory/` — เขียนได้เลย
+6. **สมองรวม** = `ψ/memory/` — เขียนต้อง lock ก่อน
 
-### วิธีบันทึกความจำใหม่
+### Memory Lock Protocol
 
-เมื่อเรียนรู้สิ่งใหม่:
 ```bash
-# เพิ่มลง patterns.md
-echo "- [YYYY-MM-DD] [สิ่งที่เรียนรู้]" >> ψ/memory/patterns.md
+# ก่อนเขียน shared memory
+echo "god:$(date +%s)" > "ψ/memory/locks/<file>.lock"
+echo "- new entry" >> "ψ/memory/<file>"
+rm -f "ψ/memory/locks/<file>.lock"
+```
 
-# หรือสร้าง learning file ใหม่
-cat > ψ/memory/learnings/YYYY-MM-DD_topic.md << 'EOF'
-# Learning: [หัวข้อ]
-- Date: YYYY-MM-DD
-- Context: [บริบท]
-- Insight: [สิ่งที่เรียนรู้]
-- Action: [สิ่งที่ควรทำ]
+### ตารางความจำ
+
+| ไฟล์ | สิ่งที่จำ | ใครเขียน |
+|------|-----------|----------|
+| `ψ/memory/identity.md` | ตัวตนรวม | ทุกตัว (lock) |
+| `ψ/memory/goals.md` | เป้าหมาย | ทุกตัว (lock) |
+| `ψ/agents/god/memory/*` | สมองส่วนตัว GOD | GOD เท่านั้น |
+| `ψ/memory/reflections/` | การทบทวน | เขียนไฟล์ใหม่ |
+
+---
+
+## Reflection System (คิดทบทวนหลังทำงาน)
+
+ทุกครั้งที่ทำงานเสร็จ → reflect ก่อนไปต่อ:
+
+```bash
+cat > "ψ/memory/reflections/$(date +%Y-%m-%d_%H-%M)_task.md" << 'EOF'
+# Reflection
+Agent: GOD | Task: [สิ่งที่ทำ]
+### ผลลัพธ์: สำเร็จ / ล้มเหลว / บางส่วน
+### 做得ดี: [good]
+### ปรับปรุง: [improve]
+### เรียนรู้: [lesson → บันทึกใน patterns.md]
+### Confidence: สูง / กลาง / ต่ำ
 EOF
 ```
 
-### สิ่งที่จดจำได้ (What Memory Contains)
+---
 
-| ไฟล์ | สิ่งที่จำ |
-|------|-----------|
-| `identity.md` | ชื่อ, บทบาท, ตัวตน |
-| `people.md` | ผู้ใช้, agent อื่น, stakeholder |
-| `patterns.md` | รูปแบบการทำงาน, best practices |
-| `decisions.md` | การตัดสินใจสำคัญและเหตุผล |
-| `values.md` | ค่านิยม, หลักการที่ยึดถือ |
-| `handoff.md` | สิ่งค้างจาก session ก่อน |
-| `learnings/` | บทเรียนรายวัน |
-| `retrospectives/` | สรุป session |
+## Goal Tracker
+
+ทุก goal อยู่ใน `ψ/memory/goals.md` — GOD สร้าง goal ให้ agent ตัวอื่นได้
+
+```bash
+# เพิ่ม goal
+echo "- [~] [YYYY-MM-DD] [goal] — โดย [agent]" >> ψ/memory/goals.md
+# สถานะ: [ ] ยังไม่เริ่ม, [~] กำลังทำ, [x] เสร็จ, [!] ติด, [-] ยกเลิก
+```
+
+---
+
+## Agent Spawning (สร้างลูกหลาน)
+
+GOD สร้าง agent ใหม่ได้:
+
+```bash
+# 1. สร้างสมองส่วนตัว
+mkdir -p "ψ/agents/<name>/memory"
+# 2. สร้าง identity
+cat > "ψ/agents/<name>/memory/identity.md" << 'EOF'
+# Agent Identity — [NAME]
+- Name: [NAME]
+- Role: [บทบาท]
+- Created: [วันนี้]
+- Parent: GOD
+EOF
+# 3. เพิ่มใน ensure-agents.sh
+# 4. รัน: bash scripts/ensure-agents.sh <name>
+```
+
+---
+
+## Context Management (จัดการ context เต็ม)
+
+สัญญาณ: 重复ตัวเอง, ลืมสิ่งที่เพิ่งคุย
+→ สรุป session → บันทึก retrospective + handoff → เริ่ม session ใหม่
 
 ---
 

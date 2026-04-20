@@ -241,70 +241,231 @@ Platform: Gemini CLI (Windows, Google Login)
 ### ขั้นตอนโหลดความจำ (Load on Startup — ทำทุกครั้ง)
 
 ```bash
-# ขั้นที่ 1: ตัวตน
-cat ψ/memory/identity.md
-
-# ขั้นที่ 2: ดื่มน้ำความจำ (Memory Hydration)
+# ═══════════════════════════════════════
+# สมองรวม (Shared Brain — ทุก agent อ่านได้)
+# ═══════════════════════════════════════
+cat ψ/memory/identity.md        # ตัวตนรวม
 cat ψ/memory/patterns.md        # รูปแบบที่เรียนรู้
 cat ψ/memory/decisions.md       # การตัดสินใจสำคัญ
 cat ψ/memory/values.md          # ค่านิยมและหลักการ
 cat ψ/memory/people.md          # คนและ agent ที่เกี่ยวข้อง
 cat ψ/memory/notes.md           # บันทึกทั่วไป
 cat ψ/memory/handoff.md         # สิ่งค้างจาก session ที่แล้ว
-
-# ขั้นที่ 3: Learnings ล่าสุด
+cat ψ/memory/goals.md           # เป้าหมายที่กำลังทำ
 ls -lt ψ/memory/learnings/ 2>/dev/null | head -5
-cat ψ/memory/learnings/*.md 2>/dev/null
-
-# ขั้นที่ 4: Retrospectives ล่าสุด
 ls -lt ψ/memory/retrospectives/ 2>/dev/null | head -3
-cat ψ/memory/retrospectives/*.md 2>/dev/null
-
-# ขั้นที่ 5: Inbox (งานค้าง)
 ls ψ/inbox/ 2>/dev/null
-cat ψ/inbox/*.md 2>/dev/null
+
+# ═══════════════════════════════════════
+# สมองส่วนตัว (Personal Brain — ของตัวเองเท่านั้น)
+# ═══════════════════════════════════════
+AGENT_NAME="${CLAUDE_AGENT_NAME:-oracle}"
+cat "ψ/agents/${AGENT_NAME}/memory/identity.md" 2>/dev/null
+cat "ψ/agents/${AGENT_NAME}/memory/notes.md" 2>/dev/null
+cat "ψ/agents/${AGENT_NAME}/memory/patterns.md" 2>/dev/null
 ```
 
-### กฎความจำ (Memory Rules)
+### โครงสร้างความจำ
+
+```
+ψ/memory/                          ← สมองรวม (อ่านทุกตัว, เขียนมี lock)
+├── identity.md                    ← ตัวตนรวม
+├── patterns.md                    ← patterns ที่ทุกตัวเรียนรู้
+├── decisions.md                   ← การตัดสินใจ
+├── values.md                      ← ค่านิยม
+├── people.md                      ← คนที่เกี่ยวข้อง
+├── notes.md                       ← บันทึกด่วน
+├── handoff.md                     ← สิ่งค้าง
+├── goals.md                       ← เป้าหมายทุกตัว
+├── learnings/                     ← บทเรียน
+├── retrospectives/                ← สรุป session
+├── reflections/                   ← การทบทวนตัวเอง
+└── locks/                         ← ไฟล์ล็อก (ป้องกันเขียนชน)
+
+ψ/agents/<name>/memory/            ← สมองส่วนตัว (เขียนได้เลย)
+├── identity.md                    ← ตัวตนส่วนตัว
+├── notes.md                       ← บันทึกส่วนตัว
+└── patterns.md                    ← patterns ส่วนตัว
+```
+
+### กฎความจำ
 
 1. **อ่านก่อนทำงานเสมอ** — ทุก session ใหม่ ไม่มีข้ออ้างไม่อ่าน
 2. **จดหลังเรียนรู้เสมอ** — เรียนรู้อะไรใหม่ บันทึกทันที
 3. **Update ไม่ใช่เขียนทับ** — เพิ่มความรู้ ไม่ลบของเดิม
 4. **Handoff คือสัญญา** — ถ้า handoff.md มีงานค้าง ต้องทำก่อน
 5. **Identity ต้องอัพเดท** — Last Active = วันนี้, Sessions += 1
-
-### วิธีบันทึกความจำใหม่
-
-เมื่อเรียนรู้สิ่งใหม่:
-```bash
-# เพิ่มลง patterns.md
-echo "- [YYYY-MM-DD] [สิ่งที่เรียนรู้]" >> ψ/memory/patterns.md
-
-# หรือสร้าง learning file ใหม่
-cat > ψ/memory/learnings/YYYY-MM-DD_topic.md << 'EOF'
-# Learning: [หัวข้อ]
-- Date: YYYY-MM-DD
-- Context: [บริบท]
-- Insight: [สิ่งที่เรียนรู้]
-- Action: [สิ่งที่ควรทำ]
-EOF
-```
-
-### ตารางความจำ (What Memory Contains)
-
-| ไฟล์ | สิ่งที่จำ |
-|------|-----------|
-| `identity.md` | ชื่อ, บทบาท, ตัวตน, session count |
-| `people.md` | ผู้ใช้, agent อื่น, stakeholder |
-| `patterns.md` | รูปแบบการทำงาน, best practices |
-| `decisions.md` | การตัดสินใจสำคัญและเหตุผล |
-| `values.md` | ค่านิยม, หลักการที่ยึดถือ |
-| `handoff.md` | สิ่งค้างจาก session ก่อน |
-| `learnings/` | บทเรียนรายวัน |
-| `retrospectives/` | สรุป session |
-| `notes.md` | บันทึกด่วน |
-| `inbox/` | งานค้าง, tasks |
+6. **ส่วนตัว = สมองตัวเอง** — เขียนที่ `ψ/agents/<name>/memory/`
+7. **รวม = ข่าวสาร** — เขียนที่ `ψ/memory/` (ต้อง lock ก่อน)
 
 ---
 
-เริ่มทำงานได้เลย อ่าน memory ก่อนทุกครั้ง
+## Memory Lock Protocol (ป้องกันเขียนชน)
+
+**สำคัญ**: ก่อนเขียนไฟล์ shared memory ต้อง lock ก่อน
+
+```bash
+# ตัวอย่าง: เขียน patterns.md อย่างปลอดภัย
+AGENT="${CLAUDE_AGENT_NAME:-oracle}"
+LOCK="ψ/memory/locks/patterns.md.lock"
+TARGET="ψ/memory/patterns.md"
+
+# 1. สร้าง lock
+echo "${AGENT}:$(date +%s)" > "$LOCK"
+
+# 2. เขียนไฟล์
+echo "- [$(date +%Y-%m-%d)] new insight" >> "$TARGET"
+
+# 3. ปล่อย lock
+rm -f "$LOCK"
+```
+
+### กฎ Lock
+- Lock file: `ψ/memory/locks/<filename>.lock`
+- ถ้าเจอ lock → รอ 5 วิ ลองใหม่ (สูงสุด 3 ครั้ง)
+- Lock เก่าเกิน 60 วิ → stale ลบได้
+- **สมองส่วนตัว** (`ψ/agents/<name>/memory/`) ไม่ต้อง lock
+
+---
+
+## Reflection System (ระบบคิดทบทวน)
+
+ทุกครั้งที่ทำงานเสร็จ 1 task → ทบทวนก่อนไปต่อ
+
+```bash
+# สร้าง reflection หลังทำงานเสร็จ
+cat > "ψ/memory/reflections/$(date +%Y-%m-%d_%H-%M)_task.md" << 'EOF'
+# Reflection — [วันที่ เวลา]
+Agent: [ชื่อ]
+Task: [สิ่งที่ทำ]
+
+### ผลลัพธ์
+- สำเร็จ / ล้มเหลว / บางส่วน
+
+### สิ่งที่做得ดี
+- [good thing]
+
+### สิ่งที่ปรับปรุงได้
+- [improvement]
+
+### เรียนรู้ → บันทึกใน patterns.md ด้วย
+- [lesson]
+
+### Confidence: สูง / กลาง / ต่ำ
+EOF
+```
+
+### เมื่อไหร่ต้อง Reflect
+1. ✅ ทำงานเสร็จ 1 task
+2. ✅ ติดปัญหาและแก้ได้
+3. ✅ ติดปัญหาและแก้ไม่ได้ → escalate
+4. ✅ ก่อนจบ session (handoff)
+
+---
+
+## Goal Tracker (ระบบติดตามเป้าหมาย)
+
+ทุก goal อยู่ใน `ψ/memory/goals.md`
+
+```bash
+# เพิ่ม goal ใหม่
+echo "- [~] [YYYY-MM-DD] [ชื่อ goal] — โดย [agent name]" >> ψ/memory/goals.md
+
+# อัพเดทสถานะ
+# [ ] = ยังไม่เริ่ม, [~] = กำลังทำ, [x] = เสร็จ, [!] = ติด, [-] = ยกเลิก
+```
+
+### กฎ Goal
+- Goal ใหญ่ → บันทึกใน `goals.md`
+- Goal เล็ก → บันทึกใน `inbox/`
+- เสร็จแล้ว → เปลี่ยนเป็น `[x]` + ลง reflection
+- ติดปัญหา → เปลี่ยนเป็น `[!]` + บอกเหตุผล
+
+---
+
+## Context Management (จัดการ context จำกัด)
+
+### สัญญาณ context เต็ม
+- คำตอบเริ่มยาวขึ้นเรื่อยๆ
+- ลืมสิ่งที่เพิ่งคุยกัน
+- 重复ตัวเอง
+
+### วิธีจัดการ
+```bash
+# 1. สรุป session ปัจจุบัน → บันทึก
+cat > "ψ/memory/retrospectives/$(date +%Y-%m-%d).md" << 'EOF'
+# Retrospective — [วันที่]
+## สิ่งที่ทำสำเร็จ
+## สิ่งที่เรียนรู้
+## สิ่งค้าง → handoff.md
+EOF
+
+# 2. บันทึก handoff สำหรับ session ถัดไป
+cat > ψ/memory/handoff.md << 'EOF'
+# Handoff — [วันที่ เวลา]
+## กำลังทำอะไร
+## Context สำคัญ
+## ขั้นตอนต่อไป
+EOF
+
+# 3. บอกผู้ใช้ → "context เต็มแล้ว สรุปบันทึกแล้ว session หน้าต่อได้"
+```
+
+---
+
+## Quality Check (ตรวจสอบคุณภาพ)
+
+ก่อนส่ง output ให้ผู้ใช้ ตรวจตัวเอง:
+
+| ข้อ | ตรวจสอบ |
+|-----|---------|
+| 1 | ข้อมูลถูกต้องหรือไม่ (ไม่มั่ว) |
+| 2 | ตรงคำถามหรือไม่ (ไม่เยิ่นเย้อ) |
+| 3 | มีหลักฐาน/ตัวอย่างหรือไม่ |
+| 4 | format อ่านง่ายหรือไม่ |
+| 5 | มีสิ่งที่ควร reflect หรือไม่ |
+
+---
+
+## Agent Spawning (สร้าง agent ใหม่)
+
+Agent สามารถสร้าง agent ใหม่ได้ ผ่าน `ensure-agents.sh`:
+
+```bash
+# สร้าง agent ใหม่
+# 1. สร้าง identity file
+mkdir -p "ψ/agents/<name>/memory"
+cat > "ψ/agents/<name>/memory/identity.md" << 'EOF'
+# Agent Identity — [NAME]
+- Name: [NAME]
+- Role: [บทบาท]
+- Created: [วันนี้]
+- Parent: [agent ที่สร้าง]
+EOF
+
+# 2. เพิ่มใน ensure-agents.sh REGISTERED_AGENTS array
+# 3. สร้าง context file (ถ้าต้องการ): .gemini/agents/<name>.md
+# 4. รัน: bash scripts/ensure-agents.sh <name>
+```
+
+---
+
+## Quick Reference
+
+| ไฟล์ | สิ่งที่จำ | ใครเขียนได้ |
+|------|-----------|-------------|
+| `ψ/memory/identity.md` | ตัวตนรวม | ทุกตัว (lock) |
+| `ψ/memory/patterns.md` | patterns รวม | ทุกตัว (lock) |
+| `ψ/memory/goals.md` | เป้าหมาย | ทุกตัว (lock) |
+| `ψ/memory/handoff.md` | สิ่งค้าง | ทุกตัว (lock) |
+| `ψ/agents/<name>/memory/*` | สมองส่วนตัว | เฉพาะตัวเอง |
+| `ψ/memory/reflections/` | การทบทวน | เขียนไฟล์ใหม่ |
+| `ψ/memory/learnings/` | บทเรียน | เขียนไฟล์ใหม่ |
+
+---
+
+เริ่มทำงานได้เลย
+1. อ่าน memory ทั้งหมด (รวม + ส่วนตัว)
+2. ดู goals ที่ค้าง
+3. รายงานสถานะ
+4. ทำงาน
