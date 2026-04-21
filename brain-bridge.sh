@@ -9,7 +9,7 @@ set -e
 # ── Paths ──────────────────────────────────────────────────
 # Google Drive (permanent brain)
 # Mirror mode → ไฟล์อยู่ที่ C:\Users\phasa\Google Drive\
-GDRIVE_BASE="/mnt/c/Users/phasa/Google Drive/Oracle-System-Brain"
+GDRIVE_BASE="/mnt/c/Users/phasa/My Drive/Oracle-System-Brain"
 GDRIVE_PSI="${GDRIVE_BASE}/ψ"
 
 # Local (working brain) — Gemini sandbox path
@@ -42,6 +42,8 @@ if [ ! -d "$GDRIVE_PSI" ]; then
     
     # Try alternate mount points (Mirror mode paths)
     for alt_path in \
+        "/mnt/c/Users/phasa/My Drive/Oracle-System-Brain/ψ" \
+        "/mnt/c/Users/$USER/My Drive/Oracle-System-Brain/ψ" \
         "/mnt/c/Users/phasa/Google Drive/Oracle-System-Brain/ψ" \
         "/mnt/c/Users/$USER/Google Drive/Oracle-System-Brain/ψ" \
         "/mnt/g/My Drive/Oracle-System-Brain/ψ" \

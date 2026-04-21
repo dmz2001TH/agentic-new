@@ -11,15 +11,15 @@ echo   🧠 Brain Bridge - Google Drive to Local
 echo ═══════════════════════════════════════════════
 echo.
 
-REM Check Google Drive (Mirror mode → C:\Users\phasa\Google Drive\)
-if not exist "C:\Users\phasa\Google Drive\Oracle-System-Brain\ψ" (
-    echo [ERROR] C:\Users\phasa\Google Drive\Oracle-System-Brain\ψ not found!
+REM Check Google Drive (Mirror mode → C:\Users\phasa\My Drive\)
+if not exist "C:\Users\phasa\My Drive\Oracle-System-Brain\ψ" (
+    echo [ERROR] C:\Users\phasa\My Drive\Oracle-System-Brain\ψ not found!
     echo.
     echo Possible fixes:
     echo   1. Make sure Google Drive Desktop is running
     echo   2. Settings -^> Preferences -^> Google Drive -^> "Mirror files" (not Stream)
     echo   3. Wait for sync to complete
-    echo   4. Check path: C:\Users\phasa\Google Drive\
+    echo   4. Check path: C:\Users\phasa\My Drive\
     echo.
     pause
     exit /b 1
@@ -39,14 +39,14 @@ if not exist "C:\Agentic\ψ" (
 REM Sync using robocopy (built-in Windows)
 echo [SYNC] Copying from G: to C:...
 
-robocopy "C:\Users\phasa\Google Drive\Oracle-System-Brain\ψ\memory" "C:\Agentic\ψ\memory" /MIR /XO /R:1 /W:1 /NFL /NDL /NJH /NJS /NC /NS /NP
-robocopy "C:\Users\phasa\Google Drive\Oracle-System-Brain\ψ\agents" "C:\Agentic\ψ\agents" /MIR /XO /R:1 /W:1 /NFL /NDL /NJH /NJS /NC /NS /NP
-robocopy "C:\Users\phasa\Google Drive\Oracle-System-Brain\ψ\vault" "C:\Agentic\ψ\vault" /MIR /XO /R:1 /W:1 /NFL /NDL /NJH /NJS /NC /NS /NP
+robocopy "C:\Users\phasa\My Drive\Oracle-System-Brain\ψ\memory" "C:\Agentic\ψ\memory" /MIR /XO /R:1 /W:1 /NFL /NDL /NJH /NJS /NC /NS /NP
+robocopy "C:\Users\phasa\My Drive\Oracle-System-Brain\ψ\agents" "C:\Agentic\ψ\agents" /MIR /XO /R:1 /W:1 /NFL /NDL /NJH /NJS /NC /NS /NP
+robocopy "C:\Users\phasa\My Drive\Oracle-System-Brain\ψ\vault" "C:\Agentic\ψ\vault" /MIR /XO /R:1 /W:1 /NFL /NDL /NJH /NJS /NC /NS /NP
 
 REM Sync individual files
 for %%f in (patterns.md notes.md decisions.md values.md goals.md people.md handoff.md) do (
-    if exist "C:\Users\phasa\Google Drive\Oracle-System-Brain\ψ\%%f" (
-        copy /Y "C:\Users\phasa\Google Drive\Oracle-System-Brain\ψ\%%f" "C:\Agentic\ψ\%%f" >nul 2>&1
+    if exist "C:\Users\phasa\My Drive\Oracle-System-Brain\ψ\%%f" (
+        copy /Y "C:\Users\phasa\My Drive\Oracle-System-Brain\ψ\%%f" "C:\Agentic\ψ\%%f" >nul 2>&1
     )
 )
 

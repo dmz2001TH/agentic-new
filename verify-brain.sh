@@ -9,7 +9,7 @@ YELLOW='\033[1;33m'
 CYAN='\033[0;36m'
 NC='\033[0m'
 
-GDRIVE_PSI="/mnt/c/Users/phasa/Google Drive/Oracle-System-Brain/ψ"
+GDRIVE_PSI="/mnt/c/Users/phasa/My Drive/Oracle-System-Brain/ψ"
 LOCAL_PSI="/mnt/c/Agentic/ψ"
 
 echo -e "${CYAN}═══════════════════════════════════════════════${NC}"
