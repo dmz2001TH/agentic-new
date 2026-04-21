@@ -338,24 +338,29 @@ Repo: https://github.com/dmz2001TH/agentic-new
 อ่าน HANDOFF-PROMPT.md ใน repo ก่อน — มีรายละเอียดทั้งหมด
 
 สิ่งที่ทำเสร็จแล้ว:
-- ✅ P0: GOD Tool Integration — /api/tools/* (15 endpoints), oracle-tools.sh (bash), god.md practical instructions
-- ✅ P0: Goal Execution System — task-runner.ts, heartbeat.ts (30min auto), /api/heartbeat/* endpoints
-- ✅ P1: Multi-Agent — Builder + Researcher agents, /api/tools/message, ensure-agents.sh
-- ✅ P1: Autonomous Loop — heartbeat auto-start, /api/heartbeat/start|stop|run
+- ✅ P0: GOD Tool Integration — /api/tools/* (15 endpoints), oracle-tools.sh, god.md
+- ✅ P0: Goal Execution System — task-runner.ts, heartbeat.ts (30min auto)
+- ✅ P1: Multi-Agent — Builder + Researcher agents, ensure-agents.sh
+- ✅ P1: Autonomous Loop — heartbeat auto-start, /api/heartbeat/*
 - ✅ P2: Git Integration — /api/git/* (status/log/add/commit/push/ship)
-- ✅ P2: Web Search — /api/search/web (DuckDuckGo + Wikipedia + HN), /api/search/fetch
+- ✅ P2: Web Search — /api/search/web (DuckDuckGo + Wikipedia + HN)
 - ✅ P3: Auto-restart — run-with-restart.sh, start-oracle-prod.cmd
-- ✅ P3: Backup — backup-db.sh (SQLite backup, 7-day retention)
-- ✅ P3: Auth — MAW_TOOLS_TOKEN for /api/tools/* (optional, dev mode = no auth)
-- ✅ All TypeScript compiles: 570 modules bundled successfully
-- ✅ Memory system files ครบ, validate-system.sh 31/31
+- ✅ P3: Backup — backup-db.sh (7-day retention)
+- ✅ P3: Auth — MAW_TOOLS_TOKEN
+- ✅ All TypeScript compiles: 570 modules
+- ✅ **Agent Enhancement System v3** — 8 modules, 41 tests, auto-middleware
+  - chain-of-thought, self-reflection, repetition-guard, prompt-templates
+  - memory-augmented-reasoning, multi-agent-debate, smart-retry, learning-feedback-loop
+  - agent-middleware: auto-hook into server.ts + handlers.ts + capture.ts
+  - API: 13 endpoints /api/enhance/*
+  - GEMINI.md auto-patch with CoT + anti-repetition rules
 
 สิ่งที่ต้องทำต่อ:
-1. 🔴 เทสจริง: รัน start-oracle.cmd → curl localhost:3456/api/tools/fleet
-2. 🔴 เทส task runner: เพิ่ม goal → POST /api/heartbeat/task-cycle → ดู dispatch
-3. 🟡 React UI: Task board component สำหรับ dashboard
-4. 🟡 Decision engine: priority evaluation สำหรับ goals
-5. 🟡 Knowledge graph visualization
+1. 🔴 เทส enhancement: curl localhost:3456/api/enhance/config → solve → guard → debate
+2. 🔴 เช็ค GEMINI.md auto-patch: grep ENHANCEMENT_RULES_V2 GEMINI.md
+3. 🟡 Integrate memory-augmented-reasoning กับ Oracle จริง (ต้องมีข้อมูลใน KB)
+4. 🟡 ทดสอบ learning-feedback-loop: รัน solve หลายครั้ง → learning-stats
+5. 🟢 React UI: Task board + enhancement stats visualization
 6. 🔵 PM2/NSSM daemon setup
 
 ข้อควรระวัง:
@@ -363,6 +368,7 @@ Repo: https://github.com/dmz2001TH/agentic-new
 - ห้ามใช้ 127.0.0.1 → ใช้ localhost
 - ห้าม hardcode path → ใช้ dynamic detection
 - agent ชื่อ GOD เท่านั้น
+- Enhancement modules อยู่ใน maw-js/src/enhancements/ — อย่าลบ
 
 เมื่อคุณทำงานเสร็จ:
 1. อัพเดท HANDOFF-PROMPT.md (สิ่งที่ทำเสร็จ + สิ่งที่เหลือ)

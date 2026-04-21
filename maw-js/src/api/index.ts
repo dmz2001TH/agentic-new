@@ -33,6 +33,7 @@ import { gitApi } from "./git";
 import { searchApi } from "./search";
 import { chatApi } from "./chat-api";
 import { schedulerApi } from "./scheduler-api";
+import { enhancementsApi } from "./enhancements";
 import { discoverPackages, invokePlugin } from "../plugin/registry";
 import { federationAuth } from "../lib/elysia-auth";
 
@@ -88,7 +89,8 @@ export const api = new Elysia({ prefix: "/api" })
   .use(gitApi)
   .use(searchApi)
   .use(chatApi)
-  .use(schedulerApi);
+  .use(schedulerApi)
+  .use(enhancementsApi);
 
 // Auto-mount plugin API surfaces from manifests
 const bundledPlugins = discoverPackages();

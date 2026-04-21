@@ -1,6 +1,7 @@
 import { sendKeys, selectWindow, hostExec, getPaneCommand } from "../transport/ssh";
 import { tmux } from "../transport/tmux";
 import { buildCommand } from "../../config";
+import { enhanceOutgoingMessage } from "../../enhancements/agent-middleware";
 import type { MawWS, Handler, MawEngine } from "../types";
 
 /** Run an async action with standard ok/error response */
@@ -40,9 +41,11 @@ const send: Handler = async (ws, data, engine) => {
       }
     } catch { /* pane check failed, proceed anyway */ }
   }
-  sendKeys(data.target, data.text)
+  // Auto-enhance outgoing message with CoT + anti-repetition rules
+  const enhancedText = enhanceOutgoingMessage(data.text);
+  sendKeys(data.target, enhancedText)
     .then(() => {
-      ws.send(JSON.stringify({ type: "sent", ok: true, target: data.target, text: data.text }));
+      ws.send(JSON.stringify({ type: "sent", ok: true, target: data.target, text: enhancedText }));
       setTimeout(() => engine.pushCapture(ws), 300);
     })
     .catch(e => ws.send(JSON.stringify({ type: "error", error: e.message })));

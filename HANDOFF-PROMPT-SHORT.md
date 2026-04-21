@@ -27,22 +27,38 @@ Repo: https://github.com/dmz2001TH/agentic-new
 - ✅ P3: Backup — scripts/backup-db.sh (SQLite backup, 7-day retention)
 - ✅ P3: Auth — MAW_TOOLS_TOKEN for /api/tools/* (optional, dev=no auth)
 - ✅ All TypeScript compiles: 570 modules bundled successfully
+- ✅ **Agent Enhancement System v3** — 8 modules, 41 tests passing, auto-middleware
+  - chain-of-thought.ts: บังคับคิดทีละ step
+  - self-reflection.ts: ตรวจงานตัวเอง + แก้ไข
+  - prompt-templates.ts: optimize prompt สำหรับ model กาก
+  - repetition-guard.ts: ตรวจจับ + ทำลาย ✦ repetition loop
+  - memory-augmented-reasoning.ts: ค้น Oracle ระหว่างคิด
+  - multi-agent-debate.ts: 2 perspective เถียงกัน แล้วสรุป
+  - smart-retry.ts: auto-retry 5 strategies ตอนทำงานพลาด
+  - learning-feedback-loop.ts: จำสิ่งที่เคยทำ แล้วนำกลับมาใช้
+  - agent-middleware.ts: auto-hook เข้า runtime (server.ts → handlers.ts → capture.ts)
+  - API: 13 endpoints /api/enhance/*
+  - GEMINI.md auto-patch with enhancement rules
 
 ## สิ่งที่ต้องทำต่อ (按ลำดับความสำคัญ)
 
-### 🔴 P0 — เทสจริง (Runtime Testing)
-- รัน start-oracle.cmd แล้วเทส: curl http://localhost:3456/api/tools/fleet
-- เทส task runner: เพิ่ม goal → POST /api/heartbeat/task-cycle → ดู dispatch
-- เทส GOD เรียก API: tmux attach -t god → สั่งให้ GOD เรียก curl /api/tools/*
+### 🔴 P0 — เทส Agent Enhancement จริง
+- รัน start-oracle.cmd → curl http://localhost:3456/api/enhance/config
+- เทส full pipeline: POST /api/enhance/solve กับ task จริง
+- เทส repetition guard: POST /api/enhance/guard กับ output ที่มี ✦ ซ้ำ
+- เทส debate: POST /api/enhance/debate กับคำถามยากๆ
+- เช็ค GEMINI.md ว่า auto-patch enhancement rules แล้ว
 
-### 🟡 P1 — Decision Engine
-- สร้าง priority evaluation สำหรับ goals
-- Memory-driven behavior: ใช้ patterns/decisions ปรับพฤติกรรม heartbeat
+### 🟡 P1 — Integrate Enhancement กับ Agent จริง
+- เชื่อม memory-augmented-reasoning กับ Oracle จริง (ต้องมีข้อมูลใน knowledge base)
+- ทดสอบ learning-feedback-loop: รัน solve หลายครั้ง → เช็ค learning-stats
+- ปรับ tuning: debateConfidenceThreshold, cotMaxSteps ตามผลจริง
 
 ### 🟢 P2 — Dashboard Enhancement
 - React UI components สำหรับ task board
 - Knowledge graph visualization
 - Agent activity timeline
+- Enhancement stats visualization
 
 ### 🔵 P3 — Production
 - PM2/NSSM daemon setup
