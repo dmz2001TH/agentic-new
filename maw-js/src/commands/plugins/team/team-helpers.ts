@@ -99,9 +99,74 @@ export function writeMessage(teamName: string, memberName: string, from: string,
   writeFileSync(inboxPath, JSON.stringify(messages, null, 2));
 }
 
-export function cleanupTeamDir(name: string) {
+/**
+ * Bridge: sync a team's config.json to the tool store (~/.claude/teams/<name>/config.json)
+ * so that ls, status, and shutdown can find CLI-created teams (#393 two-store split fix).
+ *
+ * Creates or updates the tool-store config from the vault manifest + member data.
+ * Safe to call multiple times — idempotent merge on members.
+ */
+export function syncToToolStore(
+  teamName: string,
+  opts: {
+    description?: string;
+    members?: Array<string | TeamMember>;
+    createdAt?: number;
+  } = {},
+) {
+  const toolDir = join(TEAMS_DIR, teamName);
+  mkdirSync(toolDir, { recursive: true });
+
+  const configPath = join(toolDir, "config.json");
+  let existing: TeamConfig | null = null;
+  if (existsSync(configPath)) {
+    try { existing = JSON.parse(readFileSync(configPath, "utf-8")); } catch { /* overwrite */ }
+  }
+
+  const incomingMembers: TeamMember[] = (opts.members ?? []).map(m => {
+    if (typeof m === "string") return { name: m };
+    return m;
+  });
+
+  // Merge: keep existing members, add/update incoming by name
+  const mergedByName = new Map<string, TeamMember>();
+  if (existing?.members) {
+    for (const m of existing.members) mergedByName.set(m.name, m);
+  }
+  for (const m of incomingMembers) {
+    const prev = mergedByName.get(m.name);
+    mergedByName.set(m.name, prev ? { ...prev, ...m } : m);
+  }
+
+  const config: TeamConfig = {
+    name: teamName,
+    description: opts.description ?? existing?.description ?? "",
+    members: Array.from(mergedByName.values()),
+    createdAt: opts.createdAt ?? existing?.createdAt ?? Date.now(),
+  };
+
+  writeFileSync(configPath, JSON.stringify(config, null, 2));
+}
+
+/**
+ * Clean up all stores for a team: tool store, vault, and task store.
+ * #393 — unified cleanup across all three stores.
+ *
+ * @param name - team name
+ * @param opts.vault - also remove vault manifest (default: false for backward compat;
+ *   set to true when shutting down CLI-created teams so they don't reappear in ls)
+ */
+export function cleanupTeamDir(name: string, opts: { vault?: boolean } = {}) {
   const teamDir = join(TEAMS_DIR, name);
   const tasksDir = join(TASKS_DIR, name);
   if (existsSync(teamDir)) { try { rmSync(teamDir, { recursive: true }); } catch {} }
   if (existsSync(tasksDir)) { try { rmSync(tasksDir, { recursive: true }); } catch {} }
+
+  // #393: Also clean up vault store so CLI-created teams don't reappear
+  if (opts.vault) {
+    try {
+      const vaultTeamDir = join(resolvePsi(), "memory", "mailbox", "teams", name);
+      if (existsSync(vaultTeamDir)) { rmSync(vaultTeamDir, { recursive: true }); }
+    } catch { /* best effort */ }
+  }
 }

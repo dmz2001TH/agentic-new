@@ -2,7 +2,8 @@ import { readdirSync, readFileSync, writeFileSync, existsSync, mkdirSync, copyFi
 import { join } from "path";
 import { tmux } from "../../../sdk";
 import { assertValidOracleName } from "../../../core/fleet/validate";
-import { TEAMS_DIR, loadTeam, resolvePsi, writeShutdownRequest, cleanupTeamDir } from "./team-helpers";
+import { TEAMS_DIR, loadTeam, resolvePsi, writeShutdownRequest, cleanupTeamDir, syncToToolStore } from "./team-helpers";
+import { buildEnhancedSpawnPrompt, scanProjectContext } from "./spawn-prompt-builder";
 
 const sleep = (ms: number) => new Promise<void>(r => setTimeout(r, ms));
 
@@ -73,7 +74,7 @@ export async function cmdTeamShutdown(name: string, opts: { force?: boolean; mer
     if (opts.merge) {
       mergeTeamKnowledge(name, teammates);
     }
-    cleanupTeamDir(name);
+    cleanupTeamDir(name, { vault: true });
     if (opts.merge) console.log(`\x1b[32m✓\x1b[0m team '${name}' cleaned up (knowledge merged)`);
     return;
   }
@@ -119,7 +120,7 @@ export async function cmdTeamShutdown(name: string, opts: { force?: boolean; mer
     mergeTeamKnowledge(name, teammates);
   }
 
-  cleanupTeamDir(name);
+  cleanupTeamDir(name, { vault: true });
   console.log(`\x1b[32m✓\x1b[0m team '${name}' shut down${opts.merge ? " (knowledge merged)" : ""}`);
 }
 
@@ -143,6 +144,12 @@ export function cmdTeamCreate(name: string, opts: { description?: string } = {})
     description: opts.description || "",
   };
   writeFileSync(join(teamDir, "manifest.json"), JSON.stringify(manifest, null, 2));
+
+  // Bridge: sync to tool store so ls/status/shutdown can find this team
+  syncToToolStore(name, {
+    description: opts.description,
+    createdAt: manifest.createdAt,
+  });
 
   console.log(`\x1b[32m✓\x1b[0m team '${name}' created`);
   console.log(`  \x1b[90m${teamDir}/manifest.json\x1b[0m`);
@@ -187,26 +194,66 @@ export async function cmdTeamSpawn(
     } catch { /* no findings */ }
   }
 
-  // Build spawn prompt
+  // Build enhanced spawn prompt (structured steps, validation, project context)
   const model = opts.model || "sonnet";
-  const parts: string[] = [];
-  parts.push(`You are '${role}' on team '${teamName}'.`);
-  if (opts.prompt) parts.push(opts.prompt);
-  if (standingOrders) parts.push(`## Standing Orders (from past life)\n${standingOrders}`);
-  if (latestFindings) parts.push(`## Last Known Findings\n${latestFindings}`);
 
-  const spawnPrompt = parts.join("\n\n");
+  // Detect project root for context scanning
+  let projectRoot: string | undefined;
+  try {
+    const cwd = process.cwd();
+    // Walk up looking for package.json or CLAUDE.md
+    let dir = cwd;
+    while (true) {
+      if (existsSync(join(dir, "package.json")) || existsSync(join(dir, "CLAUDE.md"))) {
+        projectRoot = dir;
+        break;
+      }
+      const parent = join(dir, "..");
+      if (parent === dir) break;
+      dir = parent;
+    }
+  } catch { /* no project root detected */ }
+
+  // Get teammate names for cross-agent communication hints
+  const manifest = JSON.parse(readFileSync(manifestPath, "utf-8"));
+  const teammates: string[] = manifest.members || [];
+
+  const spawnPrompt = buildEnhancedSpawnPrompt({
+    role,
+    teamName,
+    userPrompt: opts.prompt || `Complete your role as ${role} on team ${teamName}.`,
+    projectRoot,
+    standingOrders: standingOrders || undefined,
+    latestFindings: latestFindings || undefined,
+    teammates,
+    model,
+  });
 
   // Write prompt file for the user to use
   const promptPath = join(teamDir, `${role}-spawn-prompt.md`);
   writeFileSync(promptPath, spawnPrompt);
 
-  // Update manifest with new member
-  const manifest = JSON.parse(readFileSync(manifestPath, "utf-8"));
-  if (!manifest.members.includes(role)) {
-    manifest.members.push(role);
-    writeFileSync(manifestPath, JSON.stringify(manifest, null, 2));
+  // Update manifest with new member (re-read to avoid stale data)
+  const manifestUpdate = JSON.parse(readFileSync(manifestPath, "utf-8"));
+  if (!manifestUpdate.members.includes(role)) {
+    manifestUpdate.members.push(role);
+    writeFileSync(manifestPath, JSON.stringify(manifestUpdate, null, 2));
   }
+
+  // Bridge: sync member to tool store config.json
+  // Detect current tmux pane ID so shutdown can find this agent later
+  let currentPaneId: string | undefined;
+  if (process.env.TMUX) {
+    try {
+      const { hostExec } = await import("../../../sdk");
+      const paneOut = await hostExec("tmux display-message -p '#{pane_id}'");
+      currentPaneId = paneOut.trim() || undefined;
+    } catch { /* tmux detection failed — ok, no pane ID */ }
+  }
+
+  syncToToolStore(teamName, {
+    members: [{ name: role, model, ...(currentPaneId ? { tmuxPaneId: currentPaneId } : {}) }],
+  });
 
   console.log(`\x1b[32m✓\x1b[0m spawn prompt written for '${role}'`);
   console.log(`  \x1b[90mpast life: ${pastLife ? "yes" : "no"}\x1b[0m`);
@@ -228,8 +275,25 @@ export async function cmdTeamSpawn(
       const { hostExec } = await import("../../../sdk");
       const claudeCmd = `claude --model ${model} --prompt-file '${promptPath.replace(/'/g, "'\\''")}'`;
       await hostExec(`tmux split-window -h -l 50% '${claudeCmd.replace(/'/g, "'\\''")}'`);
-      console.log();
-      console.log(`  \x1b[32m✓ --exec\x1b[0m spawned ${role} in a new tmux pane (right, 50%)`);
+
+      // Capture the new pane ID for shutdown tracking
+      try {
+        const newPaneId = await hostExec("tmux display-message -p '#{pane_id}'");
+        const trimmed = newPaneId.trim();
+        if (trimmed) {
+          syncToToolStore(teamName, {
+            members: [{ name: role, model, tmuxPaneId: trimmed }],
+          });
+          console.log();
+          console.log(`  \x1b[32m✓ --exec\x1b[0m spawned ${role} in a new tmux pane (${trimmed})`);
+        } else {
+          console.log();
+          console.log(`  \x1b[32m✓ --exec\x1b[0m spawned ${role} in a new tmux pane`);
+        }
+      } catch {
+        console.log();
+        console.log(`  \x1b[32m✓ --exec\x1b[0m spawned ${role} in a new tmux pane`);
+      }
     } catch (e: any) {
       console.log();
       console.log(`  \x1b[33m⚠\x1b[0m --exec split failed: ${e?.message || e}`);
