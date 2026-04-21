@@ -1,378 +1,110 @@
-# 🔮 HANDOFF — Oracle v3 Agentic Project
+# HANDOFF PROMPT — Oracle Brain Bridge Session (2026-04-21)
 
-**Last Updated:** 2026-04-20
-**Current Agent:** OpenClaw (MiMo) — testing & fixes session
-**Project:** https://github.com/dmz2001TH/agentic-new
+## Context
+คุณกำลังสานต่อจาก session ที่แล้ว ที่เชื่อม "สมอง" ของ agent (Oracle/GOD) ให้จำได้ข้าม session ผ่าน Brain Bridge system
 
----
+## สิ่งที่ทำสำเร็จแล้ว ✅
 
-## 📌 ภาพรวมโปรเจ็ค
+### 1. Google Drive → Mirror Mode
+- เปลี่ยน Google Drive Desktop จาก "Stream files" เป็น "Mirror files"
+- Path จริงบนเครื่อง: `C:\Users\phasa\My Drive\Oracle-System-Brain\ψ\`
+- WSL path: `/mnt/c/Users/phasa/My Drive/Oracle-System-Brain/ψ/`
+- ⚠️ ไม่ใช่ `G:\` — G: drive เป็น system drive ไม่ใช่ Google Drive
+- ⚠️ ไม่ใช่ `Google Drive` — ชื่อโฟลเดอร์คือ `My Drive`
 
-Oracle v3 = Multi-Agent Management Platform ที่มี 3 ส่วนหลัก:
+### 2. Brain Bridge (brain-bridge.sh) — 5 ขั้นตอน
+- [1/5] ตรวจสอบ Google Drive path ที่ `/mnt/c/Users/phasa/My Drive/Oracle-System-Brain/ψ`
+- [2/5] ตรวจสอบ Local ψ ที่ `/mnt/c/Agentic/ψ`
+- [3/5] Sync: Google Drive → Local (rsync -auv)
+- [4/5] สร้าง `_memory_context.md` (identity + notes + patterns + values + goals + people)
+- [5/5] GitHub Backup: git init → commit → push ไป `https://github.com/dmz2001TH/oracle-brain.git`
 
-```
-┌──────────────────────────────────────┐
-│  Browser → http://localhost:5173     │
-│  Frontend Dashboard (Vite+React)     │
-└──────────────┬───────────────────────┘
-               │ /api proxy
-┌──────────────▼───────────────────────┐
-│  Maw API (Elysia.js) → Port 3456    │
-│  Fleet Controller + API Gateway      │
-│  ┌──────────────────────────┐        │
-│  │  god (tmux → gemini yolo)│        │
-│  └──────────────────────────┘        │
-└──────────────┬───────────────────────┘
-               │ oracleUrl
-┌──────────────▼───────────────────────┐
-│  Oracle Core (Hono.js) → Port 47778  │
-│  Memory Brain: SQLite + FTS5 Search  │
-└──────────────────────────────────────┘
-```
+### 3. Memory Injection (start-god-with-memory.sh)
+- วิธีแรก tmux send-keys → **ไม่เสถียร** (ข้อความยาว truncate)
+- วิธีที่สอง --prompt flag → **ไม่รองรับ** ใน Gemini CLI 0.38.2
+- วิธีสุดท้าย tmux load-buffer + paste-buffer → **ทำงานได้** แต่ไม่ได้ inject identity override
+- สรุป: ปล่อยให้ GEMINI.md system prompt จัดการ identity แทน injection
 
-| Component | Port | Source | บทบาท |
-|-----------|------|--------|--------|
-| **Oracle Core** | 47778 | `arra-oracle-v3/src/server.ts` | สมองความจำ — learn/search/reflect/stats/graph |
-| **Maw API** | 3456 | `maw-js/server.ts` | Fleet control + proxy ไป Oracle + WebSocket |
-| **Frontend** | 5173 | `arra-oracle-v3/frontend` | Dashboard UI (proxy → 3456) |
-| **GOD Agent** | tmux | `tmux new-session -s god "gemini --yolo"` | Fleet Supervisor |
-| **Builder** | tmux | `tmux new-session -s mawjs-builder "..."` | Coding Specialist |
-| **Researcher** | tmux | (manual start) | Knowledge Specialist |
+### 4. GEMINI.md Fix
+- เพิ่ม instruction ให้อ่าน `ψ/memory/identity.md` ก่อน define identity
+- Default ยังเป็น "Oracle" แต่จะ override ด้วยค่าจาก identity.md
+- identity.md ใน memory ระบุชื่อว่า "GOD"
 
----
+### 5. Git Credentials
+- ตั้ง `git config --global credential.helper store` แล้ว
+- brain-bridge ไม่ต้องถาม token ทุกครั้งแล้ว
 
-## 🏗️ โครงสร้างไฟล์สำคัญ
+### 6. Project Structure
+- Repo หลัก: `https://github.com/dmz2001TH/agentic-new`
+- Brain repo: `https://github.com/dmz2001TH/oracle-brain`
+- Local path: `/mnt/c/Agentic/`
+- Google Drive: `C:\Users\phasa\My Drive\Oracle-System-Brain\`
 
-```
-agentic-new/
-├── arra-oracle-v3/          ← Oracle Core (Memory Brain)
-│   ├── src/server.ts        ← HTTP server entry (port 47778)
-│   ├── src/server/          ← Routes, handlers, search
-│   ├── src/tools/           ← Learn, search, reflect tools
-│   └── frontend/            ← React Dashboard
-│       ├── vite.config.ts   ← Proxy: /api → localhost:3456
-│       └── src/             ← Pages, components
-├── maw-js/                  ← Fleet Controller
-│   ├── server.ts            ← HTTP + WS server entry (port 3456)
-│   ├── .env.json            ← Config: ports, commands, sessions
-│   ├── src/config/load.ts   ← Config loader + detectGhqRoot()
-│   ├── src/api/
-│   │   ├── deprecated.ts    ← Proxy routes → Oracle Core (15 routes)
-│   │   ├── sessions.ts      ← /api/sessions
-│   │   ├── fleet.ts         ← /api/fleet
-│   │   ├── asks.ts          ← /api/asks (send to agents)
-│   │   ├── tools.ts         ← /api/tools/* — Agent's hands (learn/search/file/goals/exec/message) ← NEW
-│   │   ├── heartbeat-api.ts ← /api/heartbeat — Task runner + heartbeat control ← NEW
-│   │   ├── git.ts           ← /api/git/* — Git operations (status/add/commit/push/ship) ← NEW
-│   │   └── search.ts        ← /api/search/* — Web search + URL fetch ← NEW
-│   ├── src/core/
-│   │   ├── server.ts        ← Main server + WebSocket + ensure-agents + heartbeat
-│   │   ├── task-runner.ts   ← Autonomous goal execution engine ← NEW
-│   │   ├── heartbeat.ts     ← Periodic check (30min) + task dispatch ← NEW
-│   │   └── transport/
-│   │       ├── ssh.ts       ← hostExec() + listSessions()
-│   │       ├── tmux-class.ts← Tmux wrapper class
-│   │       └── pty.ts       ← Live Terminal handler
-│   └── src/commands/plugins/← Wake, oracle, bud plugins
-├── scripts/
-│   ├── ensure-agents.sh     ← Auto-create tmux sessions on boot
-│   ├── oracle-tools.sh      ← GOD's hands: API + file + goal + fleet tools ← NEW
-│   └── validate-system.sh   ← System validation (31 checks) ← NEW
-├── ψ/                       ← Memory System
-│   ├── memory/              ← Shared brain (all agents read)
-│   │   ├── identity.md      ← System identity
-│   │   ├── people.md        ← Agent roster
-│   │   ├── goals.md         ← Goal tracker
-│   │   ├── patterns.md      ← Learned patterns
-│   │   ├── decisions.md     ← Decision log
-│   │   ├── values.md        ← Core values
-│   │   ├── notes.md         ← Session notes
-│   │   ├── handoff.md       ← Handoff state
-│   │   ├── locks/           ← Memory write locks
-│   │   └── reflections/     ← Post-task reflections
-│   ├── agents/god/memory/   ← GOD's personal brain
-│   ├── agents/builder/memory/ ← Builder's personal brain ← NEW
-│   └── inbox/               ← Tasks
-├── .gemini/
-│   ├── agents/god.md        ← GOD's context file for Gemini CLI
-│   └── launch-agent.sh      ← Launch Gemini with agent context
-├── start-oracle.cmd         ← รันทุกอย่างรวม GOD (Windows)
-├── start-god.cmd            ← ปลุก GOD แยก
-├── start-oracle-system.cmd  ← Alternative starter (WSL)
-├── INSTALLATION.md          ← คู่มือติดตั้ง
-└── HANDOFF-PROMPT.md        ← ไฟล์นี้
-```
+## สิ่งที่ยังไม่สำเร็จ ❌
 
----
+### 1. Identity Override
+- Agent ยังเรียกตัวเองว่า "Oracle" ไม่ใช่ "GOD"
+- GEMINI.md system prompt defines "Oracle" เป็น default
+- identity.md ใน memory บอกว่า "GOD" แต่ agent ไม่ได้อ่านตอน start
+- **ทางแก้ที่อาจได้ผล:** แก้ GEMINI.md ทั้งไฟล์เปลี่ยน "Oracle" เป็น "GOD" หรือสร้าง `.gemini/agents/god.md` ให้ agent ใช้ system prompt เฉพาะ
 
-## ✅ สิ่งที่ทำเสร็จแล้ว
+### 2. Memory Injection Reliability
+- tmux load-buffer + paste-buffer ส่ง memory เข้า Gemini ได้
+- แต่ไม่ได้ override identity เพราะ GEMINI.md system prompt มีน้ำหนักมากกว่า
+- **ทางแก้ที่ดีกว่า:** ให้ agent อ่านไฟล์ `_memory_context.md` ด้วยตัวเองตอน start (อยู่ใน GEMINI.md instruction แล้ว แต่ agent ไม่ได้ทำ)
 
-### Bug Fixes (ห้ามย้อนกลับ)
+### 3. Gemini API Quota
+- Google One AI Pro plan มี quota จำกัด
+- บางครั้งเจอ error: "You have exhausted your capacity on this model"
+- รีเซ็ตทุก ~6 ชม.
 
-| # | สิ่งที่แก้ | ไฟล์ |
-|---|-----------|------|
-| 1 | `.env.json` port 3457→3456 | `maw-js/.env.json` |
-| 2 | Oracle Core: `bun run src/index.ts` → `bun src/server.ts` | `start-oracle.cmd` |
-| 3 | Hardcoded `C:\Agentic` → `%~dp0` | `start-oracle.cmd` |
-| 4 | `127.0.0.1` → `localhost` (8 ไฟล์) | Multiple |
-| 5 | Ghost agents (nexus/god-oracle/gemini) ลบแล้ว | `ssh.ts`, `tmux-class.ts`, `sessions.ts`, `load.ts` |
-| 6 | `forceSessions` array ลบแล้ว | `sessions.ts` |
-| 7 | deprecated.ts: mock → proxy จริง (15 routes) | `deprecated.ts` |
-| 8 | Vector search warning ซ่อน (Ollama ไม่มี → เงียบ fallback FTS5) | `handlers.ts`, `search.ts` |
-| 9 | Windows WSL tmux: `cmd.exe /c` → `wsl bash -c` | `ssh.ts`, `tmux-types.ts` |
-| 10 | `detectGhqRoot()` dynamic detection | `load.ts` |
-| 11 | `/api/health` endpoint added | `deprecated.ts` |
-| 12 | Proxy error logging (`console.warn`) | `deprecated.ts` |
-| 13 | nexus → god ทั้งระบบ | All config + docs + scripts |
-| 14 | Auto-start GOD in `start-oracle.cmd` | `start-oracle.cmd` |
+## วิธีใช้งานประจำ
 
-### กฎเหล็ก (ห้ามย้อนกลับ)
+```bash
+# 1. Sync memory (ก่อน start agent ทุกครั้ง)
+cd /mnt/c/Agentic
+bash brain-bridge.sh
 
-1. ห้ามเพิ่ม `names.add("ชื่อagent")` ใน tmux-class.ts หรือ ssh.ts
-2. ห้ามเพิ่ม `forceSessions` ใน sessions.ts
-3. ห้ามเปลี่ยน port จาก 3456 โดยไม่แก้ทุกที่
-4. ห้ามเปลี่ยน Oracle Core จาก `bun src/server.ts`
-5. ห้าม hardcode path — ใช้ `%~dp0` (Windows) หรือ dynamic detection
-6. ห้ามใช้ `127.0.0.1` — ใช้ `localhost`
-7. ห้ามเปลี่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่่use the deprecated.ts proxy)
-```
+# 2. Start agent พร้อม memory
+bash start-god-with-memory.sh
 
-### 🔴 P0 — Agent ทำอะไรได้จริง (Make GOD Actually Do Things) ✅ DONE
-
-**สิ่งที่ทำ:**
-1. ✅ `scripts/oracle-tools.sh` — Bash-level tools (20+ functions)
-2. ✅ `maw-js/src/api/tools.ts` — HTTP API endpoints (server-side, works from any agent):
-   - `POST /api/tools/learn` — learn to Oracle
-   - `GET /api/tools/search` — search knowledge
-   - `GET/PUT/PATCH /api/tools/file` — read/write/append files
-   - `GET/POST/PATCH /api/tools/goals` — goal management
-   - `POST /api/tools/message` — send to agent via tmux
-   - `POST /api/tools/exec` — execute commands
-   - `POST /api/tools/reflect` — post-task reflection
-   - `GET/POST /api/tools/inbox` — inbox management
-   - `GET/PUT/PATCH /api/tools/memory/:file` — memory operations
-   - `GET /api/tools/fleet` — full system status
-3. ✅ `.gemini/agents/god.md` — Practical instructions for both HTTP API + bash script
-
-**เกณฑ์สำเร็จ:** ✅ GOD สามารถอ่านไฟล์, บันทึกสิ่งที่เรียนรู้ลง Oracle, และแก้ไขโค้ดได้โดยไม่ต้องให้มนุษย์ช่วย
-
----
-
-### 🔴 P0 — Goal Execution System (ทำตามเป้าหมายอัตโนมัติ) ✅ DONE
-
-**สิ่งที่ทำ:**
-1. ✅ `maw-js/src/core/task-runner.ts` — Server-side task runner:
-   - `parseGoals()` — read goals.md into structured data
-   - `getNextPendingGoal()` — find first [ ] goal
-   - `markGoalActive/Done()` — update status
-   - `dispatchToAgent()` — send task to agent via tmux
-   - `processInbox()` — convert inbox items to goals
-   - `runTaskCycle()` — full cycle: inbox → goal → dispatch
-2. ✅ `scripts/oracle-tools.sh` — Bash-level task runner functions
-3. ✅ Goals format + status tracking [ ]/[~]/[x]/[!]
-4. ✅ API endpoints: `POST /api/heartbeat/task-cycle`, `GET /api/heartbeat/next-goal`
-
-**เกณฑ์สำเร็จ:** ✅ อ่าน goal → mark active → dispatch to agent → log — อัตโนมัติ
-
----
-
-### 🟡 P1 — Multi-Agent Collaboration (มีมากกว่า 1 ตัว) ⚡ PARTIAL
-
-**สิ่งที่ทำ:**
-1. ✅ สร้าง agent ตัวที่ 2 (Builder) + ตัวที่ 3 (Researcher):
-   - `.gemini/agents/builder.md` — Coding Specialist
-   - `.gemini/agents/researcher.md` — Knowledge Specialist
-   - `ψ/agents/builder/memory/identity.md`
-   - `ψ/agents/researcher/memory/identity.md`
-   - `start-builder.cmd` — launch script
-2. ✅ Task delegation system ใน god.md:
-   - Delegation Rules: ไฟล์เดียว → ทำเอง, หลายไฟล์ → delegate builder
-   - ส่ง task format: TASK/FILE/TEST
-3. ✅ Inter-agent communication:
-   - `send_to_agent` — ส่ง message ผ่าน tmux send-keys
-   - `ask_agent` — ส่ง message ผ่าน Maw API /api/asks
-   - `ensure-agents.sh` updated — builder registered
-
-**ยังขาด:**
-- ⬜ เทสจริง: GOD ส่งงานให้ Builder → Builder ทำ → รายงานกลับ
-- ⬜ เพิ่ม builder ใน REGISTERED_AGENTS (เปิด comment)
-
-**เกณฑ์สำเร็จ:** ⚡ GOD ส่งงานให้ agent ตัวอื่นได้ แต่ยังไม่ได้เทส end-to-end
-
----
-
-### 🟡 P1 — Autonomous Loop (Agent ทำงานเองโดยไม่ต้องถาม) ⚡ PARTIAL
-
-**สิ่งที่ทำ:**
-1. ✅ `maw-js/src/core/heartbeat.ts` — Periodic autonomous check (30min default):
-   - Check Oracle health
-   - Check agent sessions
-   - Count pending goals + inbox items
-   - Auto-run task cycle if work exists
-   - Log all heartbeats to ψ/memory/logs/heartbeat.log
-2. ✅ Auto-start heartbeat in server.ts startup
-3. ✅ API control: `POST /api/heartbeat/start|stop|run`
-4. ✅ god.md AUTONOMOUS MODE instructions
-
-**ยังขาด:**
-- ⬜ Decision engine (priority evaluation)
-- ⬜ Memory-driven behavior (patterns/decisions/learnings ปรับพฤติกรรม)
-
-**เกณฑ์สำเร็จ:** ⚡ Heartbeat ทำงาน + task dispatch ได้ แต่ยังไม่มี smart prioritization
-
----
-
-### 🟢 P2 — Tool Integration (เครื่องมือสำหรับ Agent) ✅ DONE
-
-**สิ่งที่ทำ:**
-1. ✅ Git integration — `maw-js/src/api/git.ts`:
-   - `GET /api/git/status` — ดู staged/unstaged changes
-   - `GET /api/git/log` — commit history
-   - `GET /api/git/diff` — diff ไฟล์
-   - `POST /api/git/add` — stage files
-   - `POST /api/git/commit` — commit
-   - `POST /api/git/push` — push
-   - `POST /api/git/pull` — pull --rebase
-   - `POST /api/git/ship` — one-shot add+commit+push
-   - `GET /api/git/branch` — current branch
-   - `POST /api/git/stash` — stash changes
-2. ✅ Web search — `maw-js/src/api/search.ts`:
-   - `GET /api/search/web?q=...` — multi-provider search (DuckDuckGo + Wikipedia + Hacker News)
-   - `GET /api/search/fetch?url=...` — fetch + extract text from URL
-3. ✅ File system — `/api/tools/file` (GET/PUT/PATCH)
-4. ✅ API calls — `/api/tools/exec` (run any command)
-5. ✅ Terminal — `/api/tools/exec` + tmux send-keys via `/api/tools/message`
-
-**เกณฑ์สำเร็จ:** ✅ GOD ใช้เครื่มือได้ 5+ อย่าง (learn, search, git, file, exec, message)
-
----
-
-### 🟢 P2 — Dashboard Enhancement ⚡ PARTIAL
-
-**สิ่งที่ทำ:**
-- Live terminal — PTY handler มีอยู่แล้วใน maw-js (`/ws/pty`)
-- Task board — `/api/tools/goals` + `/api/heartbeat/goals` endpoints
-- Fleet view — `/api/tools/fleet` + `/api/sessions`
-
-**ยังขาด:**
-- ⬜ React UI components สำหรับ task board (ต้องแก้ frontend)
-- ⬜ Knowledge graph visualization
-- ⬜ Agent activity timeline
-
----
-
-### 🔵 P3 — Production Readiness ⚡ PARTIAL
-
-**สิ่งที่ทำ:**
-1. ✅ Auto-restart — `scripts/run-with-restart.sh` (bash wrapper with restart logic)
-2. ✅ Production start — `start-oracle-prod.cmd` (all services with auto-restart)
-3. ✅ Logging — heartbeat.log, task-runner.log, service logs via run-with-restart
-4. ✅ Backup — `scripts/backup-db.sh` (SQLite backup with 7-day retention)
-5. ✅ Auth — Optional `MAW_TOOLS_TOKEN` / `toolsToken` config for /api/tools/* endpoints
-
-**ยังขาด:**
-- ⬜ PM2/NSSM daemon setup
-- ⬜ TLS/HTTPS certificates
-
----
-
-## 🧪 วิธีเทสระบบ
-
-```powershell
-# 1. รันระบบทั้งหมด + GOD
-cd C:\Agentic
-.\start-oracle.cmd
-
-# 2. รอ 10 วินาที แล้วเทส
-# Oracle Core
-curl http://localhost:47778/api/health
-
-# Maw API
-curl http://localhost:3456/api/health
-curl http://localhost:3456/api/sessions
-
-# Frontend
-start http://localhost:5173
-
-# 3. ดู GOD ใน tmux
+# 3. Attach เข้า agent
 tmux attach -t god
 
-# 4. ออกจาก tmux (ไม่ฆ่า)
-# กด Ctrl+B แล้วกด D
+# 4. Verify memory
+# ถาม agent: "คุณชื่ออะไร? ความจำอยู่ที่ไหน?"
+# ควรถาม agent: "อ่านไฟล์ /mnt/c/Agentic/ψ/_memory_context.md แล้วจดจำทั้งหมด"
 ```
 
----
+## Files Modified (ใน agentic-new repo)
+- `brain-bridge.sh` — path แก้เป็น `My Drive`, เพิ่ม GitHub backup
+- `brain-bridge.cmd` — path แก้เป็น `My Drive`
+- `verify-brain.sh` — path แก้
+- `start-god-with-memory.sh` — tmux load-buffer injection
+- `start-god-with-memory.cmd` — --prompt flag injection
+- `GEMINI.md` — เพิ่ม instruction อ่าน identity.md ก่อน
+- `README.md` — brain-bridge documentation
 
-## 📚 Reference Links
-
-| Resource | URL |
-|----------|-----|
-| Repo | https://github.com/dmz2001TH/agentic-new |
-| maw-js upstream | https://github.com/Soul-Brews-Studio/maw-js |
-| arra-oracle-v3 upstream | https://github.com/Soul-Brews-Studio/arra-oracle-v3 |
-| Oracle Guide | https://github.com/the-oracle-keeps-the-human-human/oracle-maw-guide |
-| Multi-Agent Book | https://soul-brews-studio.github.io/multi-agent-orchestration-book/ |
-| รูปสอนความว่าง | https://book.buildwithoracle.com |
-
----
-
-## 🔄 Handoff Protocol (สำหรับ Agent ทุกตัว)
-
-**เมื่อทำงานเสร็จ 1 session:**
-1. อัพเดท `HANDOFF-PROMPT.md` — เพิ่มสิ่งที่ทำเสร็จ, ลบสิ่งที่ทำแล้วจาก TODO
-2. อัพเดท `INSTALLATION.md` — ถ้ามีการเปลี่ยนวิธีติดตั้ง
-3. Commit + Push ทุกอย่าง
-4. เขียน prompt ใหม่สำหรับ agent ถัดไป (ส่วน "💬 Prompt สำหรับ Agent ถัดไป" ด้านล่าง)
-5. รายงานมนุษย์ว่าทำอะไรเสร็จ, เหลืออะไร, agent ถัดไปต้องทำอะไร
-
----
-
-## 💬 Prompt สำหรับ Agent ถัดไป
-
-_(อัพเดทส่วนนี้ทุกครั้งที่ทำงานเสร็จ — copy ไปให้ agent ใหม่ได้เลย)_
-
+## Git History
 ```
-คุณได้รับมอบหมายให้ดูแลโปรเจ็ค Oracle v3 Agentic System
-Repo: https://github.com/dmz2001TH/agentic-new
+fab2d92 fix: GEMINI.md reads identity.md first
+b37813c fix: use tmux load-buffer for reliable memory injection
+2383e36 fix: auto git config + handle branch naming
+60ffdff feat: add GitHub backup (Step 5)
+f0ba030 fix: Google Drive path is 'My Drive' not 'Google Drive'
+2ef5f16 fix: brain-bridge path for Mirror mode
+```
 
-อ่าน HANDOFF-PROMPT.md ใน repo ก่อน — มีรายละเอียดทั้งหมด
+## Username
+- Windows: `phasa`
+- WSL hostname: `Nucha`
+- GitHub: `dmz2001TH`
 
-สิ่งที่ทำเสร็จแล้ว:
-- ✅ P0: GOD Tool Integration — /api/tools/* (15 endpoints), oracle-tools.sh, god.md
-- ✅ P0: Goal Execution System — task-runner.ts, heartbeat.ts (30min auto)
-- ✅ P1: Multi-Agent — Builder + Researcher agents, ensure-agents.sh
-- ✅ P1: Autonomous Loop — heartbeat auto-start, /api/heartbeat/*
-- ✅ P2: Git Integration — /api/git/* (status/log/add/commit/push/ship)
-- ✅ P2: Web Search — /api/search/web (DuckDuckGo + Wikipedia + HN)
-- ✅ P3: Auto-restart — run-with-restart.sh, start-oracle-prod.cmd
-- ✅ P3: Backup — backup-db.sh (7-day retention)
-- ✅ P3: Auth — MAW_TOOLS_TOKEN
-- ✅ All TypeScript compiles: 570 modules
-- ✅ **Agent Enhancement System v3** — 8 modules, 41 tests, auto-middleware
-  - chain-of-thought, self-reflection, repetition-guard, prompt-templates
-  - memory-augmented-reasoning, multi-agent-debate, smart-retry, learning-feedback-loop
-  - agent-middleware: auto-hook into server.ts + handlers.ts + capture.ts
-  - API: 13 endpoints /api/enhance/*
-  - GEMINI.md auto-patch with CoT + anti-repetition rules
-
-สิ่งที่ต้องทำต่อ:
-1. 🔴 เทส enhancement: curl localhost:3456/api/enhance/config → solve → guard → debate
-2. 🔴 เช็ค GEMINI.md auto-patch: grep ENHANCEMENT_RULES_V2 GEMINI.md
-3. 🟡 Integrate memory-augmented-reasoning กับ Oracle จริง (ต้องมีข้อมูลใน KB)
-4. 🟡 ทดสอบ learning-feedback-loop: รัน solve หลายครั้ง → learning-stats
-5. 🟢 React UI: Task board + enhancement stats visualization
-6. 🔵 PM2/NSSM daemon setup
-
-ข้อควรระวัง:
-- กฎเหล็ก 10 ข้อใน HANDOFF-PROMPT.md — ห้ามย้อนกลับ
-- ห้ามใช้ 127.0.0.1 → ใช้ localhost
-- ห้าม hardcode path → ใช้ dynamic detection
-- agent ชื่อ GOD เท่านั้น
-- Enhancement modules อยู่ใน maw-js/src/enhancements/ — อย่าลบ
-
-เมื่อคุณทำงานเสร็จ:
-1. อัพเดท HANDOFF-PROMPT.md (สิ่งที่ทำเสร็จ + สิ่งที่เหลือ)
-2. อัพเดทส่วน "Prompt สำหรับ Agent ถัดไป" นี้
-3. Commit + Push ทั้งหมด
-4. ส่ง prompt นี้ให้ agent ตัวถัดไปทำงานต่อ
+## Key Paths
+```
+Google Drive:    C:\Users\phasa\My Drive\Oracle-System-Brain\ψ\
+Local Brain:     C:\Agentic\ψ\
+GEMINI.md:       C:\Agentic\GEMINI.md
+Brain Bridge:    C:\Agentic\brain-bridge.sh
+Start GOD:       C:\Agentic\start-god-with-memory.sh
 ```
