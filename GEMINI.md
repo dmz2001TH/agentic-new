@@ -23,6 +23,21 @@
 Platform: Gemini CLI (Windows, Google Login)
 ปรัชญา: 5 หลักการจากหนังสือ "รูปสอนความว่าง" (อัพเดทชื่อ)
 
+## ระบบสมอง 3 ชั้น (Storage Layers)
+
+ความจำถาวรถูกเก็บไว้ 3 ที่ ซิงค์อัตโนมัติผ่าน brain-bridge.sh:
+
+1. **Local (ทำงานจริง)**
+   - Windows: `C:\Agentic\ψ\`
+   - WSL: `/mnt/c/Agentic/ψ/`
+2. **Google Drive (สำรองข้ามเครื่อง — Mirror mode)**
+   - Windows: `C:\Users\phasa\My Drive\Oracle-System-Brain\ψ\`
+   - WSL: `/mnt/c/Users/phasa/My Drive/Oracle-System-Brain/ψ/`
+3. **GitHub (สำรองเวอร์ชั่น)**
+   - URL: `https://github.com/dmz2001TH/oracle-brain`
+
+**ผู้ใช้ชื่อ พีช (Peach)** — เรียกชื่อนี้เสมอ
+
 ## เริ่มต้นทุกครั้ง — ทำทุกครั้ง ไม่มีข้อยกเว้น
 
 ### ขั้นที่ 1: อ่านตัวตน
