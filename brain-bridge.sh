@@ -179,11 +179,13 @@ if [ ! -d "${LOCAL_PSI}/.git" ]; then
     git init -b main
     git remote add origin "$BRAIN_REPO" 2>/dev/null || true
     
+    # ตั้ง git config (local เท่านั้น ไม่ --global)
+    git config user.email "dmz2001th@gmail.com" 2>/dev/null || true
+    git config user.name "dmz2001TH" 2>/dev/null || true
+    
     # สร้าง .gitignore
     cat > .gitignore << 'EOF'
-# Ignore logs (ใหญ่ไม่จำเป็นต้อง backup)
 memory/logs/*.log
-# Ignore temp files
 *.tmp
 *~
 .DS_Store
@@ -194,6 +196,10 @@ fi
 
 cd "$LOCAL_PSI"
 
+# ตั้ง git config ทุกครั้ง (กัน config หาย)
+git config user.email "dmz2001th@gmail.com" 2>/dev/null || true
+git config user.name "dmz2001TH" 2>/dev/null || true
+
 # ดึง remote ก่อน (ถ้ามี)
 git fetch origin main 2>/dev/null || true
 
@@ -202,7 +208,11 @@ if [ -n "$(git status --porcelain 2>/dev/null)" ]; then
     echo -e "${YELLOW}→ มีไฟล์เปลี่ยนแปลง — commit + push...${NC}"
     
     git add -A
-    git commit -m "🧠 brain-sync $(date '+%Y-%m-%d %H:%M')" --quiet 2>/dev/null || true
+    git commit -m "🧠 brain-sync $(date '+%Y-%m-%d %H:%M')" --quiet 2>/dev/null || \
+        git commit -m "🧠 initial brain sync" --allow-empty --quiet 2>/dev/null || true
+    
+    # ตั้ง branch ชื่อ main (กันชื่อ master)
+    git branch -M main 2>/dev/null || true
     
     # Push (force ถ้า conflict — memory ล่าสุดคือ truth)
     git push origin main --force 2>/dev/null && \
