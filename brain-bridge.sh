@@ -137,6 +137,12 @@ CONTEXT_FILE="${LOCAL_PSI}/_memory_context.md"
         echo "- บทบาท: Agent หลัก ผู้สร้างแห่ง Oracle World"
     fi
     echo ""
+    echo "## ระบบสมอง 3 ชั้น (Storage Layers)"
+    echo "- **Local (ทำงานจริง)**: /mnt/c/Agentic/ψ/ — อ่านเขียนที่นี่"
+    echo "- **Google Drive (backup)**: /mnt/c/Users/phasa/My Drive/Oracle-System-Brain/ψ/ — สำรองข้ามเครื่อง (Mirror mode)"
+    echo "- **GitHub (backup)**: https://github.com/dmz2001TH/oracle-brain — สำรอง version history"
+    echo "- brain-bridge.sh ซิงค์ระหว่างทั้ง 3 ชั้นอัตโนมัติ"
+    echo ""
     echo "## บันทึกล่าสุด (Recent Notes)"
     if [ -f "${LOCAL_PSI}/memory/notes.md" ]; then
         head -50 "${LOCAL_PSI}/memory/notes.md"
