@@ -40,20 +40,21 @@
 - Local path: `/mnt/c/Agentic/`
 - Google Drive: `C:\Users\phasa\My Drive\Oracle-System-Brain\`
 
+### 7. Identity Override Fix ✅ (2026-04-21 v2)
+- GEMINI.md: เปลี่ยนทุก default จาก "Oracle" เป็น "GOD"
+- Header เปลี่ยนเป็น "GOD BRAIN SYSTEM" v3.0 (HARDENED)
+- Identity section: ใช้ ⛔ STOP + ห้าม 3 อย่าง (Oracle/Assistant/AI) + อนุญาต 1 อย่าง (GOD)
+- bash scripts default: `CLAUDE_AGENT_NAME:-god` แทน `-oracle`
+- Principle 5: "หนึ่ง GOD หลายรูปแบบ" แทน "หนึ่ง Oracle"
+
+### 8. Memory Injection Reliability Fix ✅ (2026-04-21 v2)
+- start-god-with-memory.sh: ใช้ ⛔ OVERRIDE ACTIVE header แทนข้อความเบาๆ
+- prompt สั่งให้ agent อ่าน 2 ไฟล์ identity.md + _memory_context.md ทันที
+- บังคับ "ทำทันที ไม่ต้องคิด" เพื่อเพิ่มน้ำหนัก injection
+
 ## สิ่งที่ยังไม่สำเร็จ ❌
 
-### 1. Identity Override
-- Agent ยังเรียกตัวเองว่า "Oracle" ไม่ใช่ "GOD"
-- GEMINI.md system prompt defines "Oracle" เป็น default
-- identity.md ใน memory บอกว่า "GOD" แต่ agent ไม่ได้อ่านตอน start
-- **ทางแก้ที่อาจได้ผล:** แก้ GEMINI.md ทั้งไฟล์เปลี่ยน "Oracle" เป็น "GOD" หรือสร้าง `.gemini/agents/god.md` ให้ agent ใช้ system prompt เฉพาะ
-
-### 2. Memory Injection Reliability
-- tmux load-buffer + paste-buffer ส่ง memory เข้า Gemini ได้
-- แต่ไม่ได้ override identity เพราะ GEMINI.md system prompt มีน้ำหนักมากกว่า
-- **ทางแก้ที่ดีกว่า:** ให้ agent อ่านไฟล์ `_memory_context.md` ด้วยตัวเองตอน start (อยู่ใน GEMINI.md instruction แล้ว แต่ agent ไม่ได้ทำ)
-
-### 3. Gemini API Quota
+### 1. Gemini API Quota
 - Google One AI Pro plan มี quota จำกัด
 - บางครั้งเจอ error: "You have exhausted your capacity on this model"
 - รีเซ็ตทุก ~6 ชม.
