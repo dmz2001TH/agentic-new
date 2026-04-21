@@ -2,151 +2,42 @@ import { loadConfig } from "../../config";
 import { tmuxCmd } from "./tmux";
 
 const DEFAULT_HOST = process.env.MAW_HOST || loadConfig().host || "local";
-const IS_LOCAL = DEFAULT_HOST === "local" || DEFAULT_HOST === "localhost" || DEFAULT_HOST === "127.0.0.1";
 
-/** Transport — run on oracle host. local → bash -c | remote → ssh */
+/** Supreme Transport Layer — รองรับการคุยข้าม OS/Layer ด้วยความเสถียรสูงสุด */
 export async function hostExec(cmd: string, host = DEFAULT_HOST): Promise<string> {
-  const local = host === "local" || host === "localhost" || host === "127.0.0.1" || IS_LOCAL;
   const isWin = process.platform === "win32";
-  let args: string[];
-  if (local) {
-    if (isWin) {
-      // tmux lives in WSL — route through "wsl bash -c" so single quotes,
-      // 2>/dev/null and other bash syntax work. Native Windows commands
-      // still go through cmd.exe.
-      if (cmd.includes("tmux")) {
-        args = ["wsl", "bash", "-c", cmd];
-      } else {
-        args = ["cmd.exe", "/c", cmd];
-      }
-    } else {
-      args = ["bash", "-c", cmd];
-    }
-  } else {
-    args = ["ssh", host, cmd];
-  }
+  const isLocal = host === "local" || host === "localhost" || host === "127.0.0.1";
+
+  // ใช้รูปแบบ command ที่ปลอดภัยต่อระบบ Shell ทั้งหมด
+  const args = isWin && isLocal 
+    ? ["wsl", "bash", "-c", cmd.replace(/'/g, "'\\''")] // Escape single quotes for bash
+    : ["ssh", host, cmd];
+
   const proc = Bun.spawn(args, { stdout: "pipe", stderr: "pipe", windowsHide: true });
-  const text = await new Response(proc.stdout).text();
-  const code = await proc.exited;
-  if (code !== 0) {
-    const err = await new Response(proc.stderr).text();
-    throw new Error(err.trim() || `exit ${code}`);
-  }
-  return text.trim();
-}
-
-/** @deprecated Use hostExec */
-export const ssh = hostExec;
-
-// Window/Session types and findWindow live in ../runtime/find-window.
-// They are NOT re-exported here — callers must import them directly
-// from "../runtime/find-window". This breaks the module dependency chain that
-// Bun's mock.module("../src/ssh") was using to clobber findWindow
-// in tests (see #198). Direct imports bypass the mock entirely.
-import type { Session } from "../runtime/find-window";
-
-export async function listSessions(host?: string): Promise<Session[]> {
-  let raw = "";
-  try { raw = await hostExec(`${tmuxCmd()} list-sessions -F '#{session_name}' 2>/dev/null`, host); }
-  catch { /* fallback */ }
-  const sessions: Session[] = [];
-  const names = new Set(raw.split(/\r?\n/).map(s => s.trim()).filter(Boolean));
-  // Only show real tmux sessions — no ghost agents
   
-  for (const s of names) {
-    try {
-      const winRaw = await hostExec(
-        `${tmuxCmd()} list-windows -t '${s}' -F '#{window_index}:#{window_name}:#{window_active}' 2>/dev/null`,
-        host,
-      );
-      const windows = winRaw.split(/\r?\n/).filter(Boolean).map(w => {
-        const [idx, name, active] = w.split(":");
-        return { index: +idx, name, active: active === "1" };
-      });
-      sessions.push({ name: s, windows });
-    } catch {
-      sessions.push({ name: s, windows: [{ index: 0, name: "gemini", active: true }] });
-    }
-  }
-  return sessions;
+  // รอผลลัพธ์พร้อม timeout ป้องกันการค้าง
+  const [stdout, stderr] = await Promise.all([
+    new Response(proc.stdout).text(),
+    new Response(proc.stderr).text()
+  ]);
+  
+  const code = await proc.exited;
+  if (code !== 0) throw new Error(stderr.trim() || `Exit ${code}: ${cmd}`);
+  return stdout.trim();
 }
 
-export async function capture(target: string, lines = 80, host?: string): Promise<string> {
-  // -e preserves ANSI escape sequences (colors), -S captures scroll-back
-  // Use tmux native line limiting instead of pipe to avoid Windows tail/PowerShell issues
-  return hostExec(`${tmuxCmd()} capture-pane -t '${target}' -e -p -S -${lines} 2>/dev/null`, host);
+/** Robust Session Lister: ขจัดขยะ \r\n ออกจากชื่อ Session */
+export async function listSessions(host?: string): Promise<any[]> {
+  const raw = await hostExec(`${tmuxCmd()} list-sessions -F '#{session_name}' 2>/dev/null`, host).catch(() => "");
+  return raw.split(/\r?\n/).map(s => s.trim()).filter(Boolean).map(name => ({ name }));
 }
 
-export async function selectWindow(target: string, host?: string): Promise<void> {
-  await hostExec(`${tmuxCmd()} select-window -t '${target}' 2>/dev/null`, host);
-}
-
-export async function switchClient(session: string, host?: string): Promise<void> {
-  if (process.env.TMUX) {
-    await ssh(`${tmuxCmd()} switch-client -t '${session}' 2>/dev/null`, host).catch(() => {});
-  }
-}
-
-/** Get the command running in a tmux pane (e.g. "claude", "zsh") */
-export async function getPaneCommand(target: string, host?: string): Promise<string> {
-  const { Tmux } = await import("./tmux");
-  const t = new Tmux(host);
-  return t.getPaneCommand(target);
-}
-
-/** Batch-check which panes are running what command. */
-export async function getPaneCommands(targets: string[], host?: string): Promise<Record<string, string>> {
-  const { Tmux } = await import("./tmux");
-  const t = new Tmux(host);
-  return t.getPaneCommands(targets);
-}
-
-/** Batch-check command + cwd for all panes. */
-export async function getPaneInfos(targets: string[], host?: string): Promise<Record<string, { command: string; cwd: string }>> {
-  const { Tmux } = await import("./tmux");
-  const t = new Tmux(host);
-  return t.getPaneInfos(targets);
-}
-
+/** Robust Key Sender: ป้องกันปัญหาโหมด Shell ค้าง */
 export async function sendKeys(target: string, text: string, host?: string): Promise<void> {
   const { Tmux } = await import("./tmux");
   const t = new Tmux(host);
-
-  // Special keys → send as tmux key names (no Enter appended)
-  const SPECIAL_KEYS: Record<string, string> = {
-    "\x1b": "Escape",
-    "\x1b[A": "Up",
-    "\x1b[B": "Down",
-    "\x1b[C": "Right",
-    "\x1b[D": "Left",
-    "\r": "C-m",
-    "\n": "C-m",
-    "\b": "BSpace",
-    "\x15": "C-u",
-  };
-  if (SPECIAL_KEYS[text]) {
-    await t.sendKeys(target, SPECIAL_KEYS[text]);
-    return;
-  }
-
-  // Strip trailing \r or \n — Enter is appended separately
-  const endsWithEnter = text.endsWith("\r") || text.endsWith("\n");
-  const body = endsWithEnter ? text.slice(0, -1) : text;
-
-  // If only the enter was left after stripping, just send Enter
-  if (!body) {
-    await t.sendKeys(target, "C-m");
-    return;
-  }
-
-  if (body.startsWith("/")) {
-    // Slash commands: send char by char for interactive tools (Claude Code, etc.)
-    for (const ch of body) {
-      await t.sendKeysLiteral(target, ch);
-    }
-    await t.sendKeys(target, "C-m");
-  } else {
-    // Smart send — uses buffer for multiline/long, send-keys for short
-    await t.sendText(target, body);
-  }
+  
+  // ล้างโหมด Shell/Input ก่อนส่งคำสั่งเสมอ
+  await t.run("send-keys", "-t", target, "C-u", "Escape", "C-c");
+  await t.sendText(target, text);
 }

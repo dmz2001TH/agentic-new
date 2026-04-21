@@ -13,42 +13,55 @@ const classifyEmail = (sender, subject, snippet) => {
   const lowerSnippet = (snippet || '').toLowerCase();
   const fullText = `${lowerSender} ${lowerSubject} ${lowerSnippet}`;
 
-  // Priority Keywords
-  const highPriorityKeywords = ['urgent', 'action required', 'important', 'alert', 'security', 'password', 'reset'];
-  const midPriorityKeywords = ['meeting', 'question', 'update', 'review', 'follow-up', 'deploy', 'build failed'];
-
-  // Type Keywords
-  const actionKeywords = ['meeting', 'question', 'task', 'required', 'please', 'review', 'approve', 'action', 'deploy'];
-  const fyiKeywords = ['github', 'vercel', 'aws', 'google cloud', 'update', 'summary', 'report', 'notification', 'analytics'];
-  const promoKeywords = ['sale', 'offer', 'discount', 'limited time', 'newsletter', 'deals', 'save', 'subscription'];
-
-  let type = 'FYI'; // Default type
-  let priority = 'Low'; // Default priority
-
-  if (promoKeywords.some(kw => fullText.includes(kw))) {
-    type = 'Promo/Spam';
-    priority = 'Low';
-  } else if (actionKeywords.some(kw => fullText.includes(kw))) {
-    type = 'Action Item';
-    priority = 'Mid'; // Default for action items
-  } else if (fyiKeywords.some(kw => fullText.includes(kw))) {
-    type = 'FYI';
-    priority = 'Low';
-  }
-
-  // Override priority based on high/mid keywords
-  if (highPriorityKeywords.some(kw => fullText.includes(kw))) {
-    priority = 'High';
-  } else if (priority !== 'High' && midPriorityKeywords.some(kw => fullText.includes(kw))) {
-    priority = 'Mid';
-  }
+  // More specific keywords and sender-based rules
+  const actionSenders = ['github', 'gitlab', 'jira', 'asana', 'trello'];
+  const actionKeywords = [
+    'please review', 'action required', 'review request', 'approval needed',
+    'meeting request', 'invitation', 'due date', 'task assigned', 'deploy', 'build failed',
+    're:', 'question for',
+  ];
   
-  if (type === 'Action Item' && priority === 'Low') {
-      priority = 'Mid';
+  const fyiKeywords = [
+    'update', 'summary', 'report', 'notification', 'analytics', 'daily digest', 
+    'weekly status', 'merge successful', 'deployment successful'
+  ];
+  
+  const promoSenders = ['support@', 'no-reply@', 'newsletter@', 'deals@'];
+  const promoKeywords = [
+    'sale', 'offer', 'discount', 'limited time', 'newsletter', 'deals', 'save', 
+    'subscription', 'free trial', 'webinar', 'coupon', 'unsubscribe'
+  ];
+
+  const highPriorityKeywords = ['urgent', 'important', 'security', 'alert', 'password reset'];
+
+  // --- Classification Logic ---
+
+  // 1. Check for Promotions first (most likely to be ignorable)
+  if (promoSenders.some(s => lowerSender.includes(s)) || promoKeywords.some(kw => fullText.includes(kw))) {
+    return { type: 'Promo', priority: 'Low' };
   }
 
+  // 2. Check for high-priority Action Items
+  if (highPriorityKeywords.some(kw => fullText.includes(kw))) {
+    return { type: 'Action Item', priority: 'High' };
+  }
 
-  return { type, priority };
+  // 3. Check for standard Action Items
+  if (actionSenders.some(s => lowerSender.includes(s)) || actionKeywords.some(kw => fullText.includes(kw))) {
+      // Differentiate priority within Action Items
+      if (['deploy', 'build failed', 're:'].some(kw => lowerSubject.includes(kw))) {
+          return { type: 'Action Item', priority: 'Mid' };
+      }
+      return { type: 'Action Item', priority: 'Low' };
+  }
+
+  // 4. Check for FYI
+  if (fyiKeywords.some(kw => fullText.includes(kw))) {
+    return { type: 'FYI', priority: 'Low' };
+  }
+
+  // 5. Default classification
+  return { type: 'FYI', priority: 'Low' };
 };
 
 async function scanGmail() {
@@ -78,8 +91,7 @@ async function scanGmail() {
             
             const sender = senderEl ? senderEl.getAttribute('name') : 'Unknown Sender';
             const subject = subjectEl ? subjectEl.innerText.trim() : 'No Subject';
-            const snippet = snippetEl ? snippetEl.innerText.replace(/
-/g, ' ').trim() : '';
+            const snippet = snippetEl ? snippetEl.innerText.replace(/\n/g, ' ').trim() : '';
 
             return { sender, subject, snippet };
         });
@@ -108,18 +120,13 @@ async function scanGmail() {
     const today = new Date().toISOString().slice(0, 10);
     const reportPath = path.join(process.cwd(), 'ψ', 'memory', 'inbox', `gmail-report-${today}.md`);
     
-    let markdownContent = `# Gmail Report - ${today}
-
-`;
-    markdownContent += '| No. | Sender | Subject | Type | Priority |
-';
-    markdownContent += '|:----|:-------|:--------|:-----|:---------|
-';
+    let markdownContent = `# Gmail Report - ${today}\n\n`;
+    markdownContent += '| No. | Sender | Subject | Type | Priority |\n';
+    markdownContent += '|:----|:-------|:--------|:-----|:---------|\n';
     reportData.forEach(item => {
-      const cleanSender = item.sender.replace(/\|/g, '\|');
-      const cleanSubject = item.subject.replace(/\|/g, '\|');
-      markdownContent += `| ${item.num} | ${cleanSender} | ${cleanSubject} | ${item.type} | ${item.priority} |
-`;
+      const cleanSender = item.sender.replace(/\|/g, '\\|');
+      const cleanSubject = item.subject.replace(/\|/g, '\\|');
+      markdownContent += `| ${item.num} | ${cleanSender} | ${cleanSubject} | ${item.type} | ${item.priority} |\n`;
     });
     
     fs.mkdirSync(path.dirname(reportPath), { recursive: true });
@@ -128,8 +135,7 @@ async function scanGmail() {
     console.log('───────────────────────────────────────────────────────────');
     console.log(`✅ Report generated successfully!`);
     console.log(`📍 Location: ${reportPath}`);
-    console.log('───────────────────────────────────────────────────────────
-');
+    console.log('───────────────────────────────────────────────────────────');
 
 
   } catch (err) {
