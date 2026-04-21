@@ -1,21 +1,36 @@
 /**
- * task-runner.ts — Autonomous goal execution engine
+ * task-runner.ts — Autonomous goal execution engine (v2 — integrated)
  *
  * Runs as part of the Maw server. Processes inbox items and pending goals
  * by dispatching tasks to the appropriate agent via tmux send-keys.
  *
+ * Integrated modules:
+ *   - Circuit Breaker: auto-disable failing agents
+ *   - Git Auto-Snapshot: auto-commit before runs, rollback on failure
+ *   - Replanner: dynamic re-planning when scope changes
+ *   - Smart Retry: retry with different strategies on failure
+ *   - Alert: real-time notifications to dashboard
+ *
  * Flow:
  *   1. Check inbox/ for new task files
  *   2. Check goals.md for pending [ ] goals
- *   3. Mark goal as active [~]
- *   4. Send task to assigned agent
- *   5. Log activity
+ *   3. Circuit breaker check → is agent allowed to run?
+ *   4. Git snapshot → save workspace state
+ *   5. Create plan → break goal into steps
+ *   6. Mark goal as active [~]
+ *   7. Send task to assigned agent
+ *   8. On success: record success, keep snapshot
+ *   9. On failure: smart retry → replan → or rollback + circuit break
  */
 
 import { readFileSync, writeFileSync, existsSync, readdirSync, mkdirSync, appendFileSync, renameSync } from "fs";
 import { join, resolve } from "path";
 import { sendKeys, listSessions } from "../core/transport/ssh";
 import { loadConfig } from "../config";
+import { canExecute, recordSuccess, recordFailure } from "./circuit-breaker";
+import { createSnapshot, rollbackLatestForAgent } from "./git-auto-snapshot";
+import { createPlan, completeStep, shouldReplan, replan, getProgress } from "./replanner";
+import { fire } from "./alert";
 
 const PROJECT_ROOT = resolve(import.meta.dir, "..", "..", "..");
 const PSI_DIR = join(PROJECT_ROOT, "ψ");
@@ -184,6 +199,7 @@ export async function processInbox(): Promise<TaskResult[]> {
 
 /**
  * Run the next pending goal — dispatch to assigned agent
+ * with full integration: circuit breaker, snapshot, planning, retry, alerts
  */
 export async function runNextGoal(): Promise<TaskResult> {
   const goal = getNextPendingGoal();
@@ -192,15 +208,31 @@ export async function runNextGoal(): Promise<TaskResult> {
     return { type: "goal", action: "none", success: true, detail: "No pending goals" };
   }
 
-  // Mark as active
-  markGoalActive(goal);
-
-  // Check if agent is online
   const agent = goal.assignee || "god";
-  const online = await isAgentOnline(agent);
 
+  // ─── 1. Circuit Breaker Check ───
+  const circuit = canExecute(agent);
+  if (!circuit.allowed) {
+    log(`Goal "${goal.description}" blocked by circuit breaker: ${circuit.reason}`);
+    fire("task-failed", `Task blocked: ${goal.description.slice(0, 50)}`, circuit.reason, {
+      agent, severity: "warning",
+      metadata: { goalDescription: goal.description },
+    });
+    return {
+      type: "goal",
+      action: "circuit-open",
+      success: false,
+      detail: `Agent ${agent} circuit breaker: ${circuit.reason}`,
+    };
+  }
+
+  // ─── 2. Check agent online ───
+  const online = await isAgentOnline(agent);
   if (!online) {
-    log(`Goal "${goal.description}" assigned to ${agent} but agent is offline`);
+    log(`Goal "${goal.description}" — agent ${agent} is offline`);
+    fire("agent-down", `Agent ${agent} offline`, `Cannot dispatch: ${goal.description}`, {
+      agent, severity: "critical",
+    });
     return {
       type: "goal",
       action: "agent-offline",
@@ -209,22 +241,124 @@ export async function runNextGoal(): Promise<TaskResult> {
     };
   }
 
-  // Dispatch
-  const taskMessage = `TASK: ${goal.description}`;
+  // ─── 3. Git Auto-Snapshot ───
+  const snapshot = createSnapshot(agent, goal.description);
+  if (snapshot) {
+    log(`Snapshot created: ${snapshot.tag} before dispatching to ${agent}`);
+    fire("snapshot-created", `Snapshot: ${snapshot.tag}`, `Before: ${goal.description.slice(0, 60)}`, {
+      agent, severity: "info",
+      metadata: { snapshotId: snapshot.id, tag: snapshot.tag },
+    });
+  }
+
+  // ─── 4. Create Execution Plan ───
+  const plan = createPlan(`goal-${goal.lineNumber}`, agent, goal.description);
+  log(`Plan created: ${plan.id} with ${plan.steps.length} steps`);
+
+  // ─── 5. Mark as active ───
+  markGoalActive(goal);
+
+  // ─── 6. Dispatch ───
+  const taskMessage = `TASK: ${goal.description}\n\nPLAN_ID: ${plan.id}\nSTEPS:\n${plan.steps.map((s, i) => `${i + 1}. ${s.description}`).join("\n")}`;
   const dispatched = await dispatchToAgent(agent, taskMessage);
+
+  if (!dispatched) {
+    // Dispatch failed
+    recordFailure(agent, "dispatch-failed");
+    fire("task-failed", `Dispatch failed: ${goal.description.slice(0, 50)}`, `Could not send to ${agent}`, {
+      agent, severity: "critical",
+    });
+  }
 
   // Log
   const logDir = join(PSI_DIR, "memory", "logs");
   mkdirSync(logDir, { recursive: true });
   appendFileSync(join(logDir, "task-runner.log"),
-    `[${new Date().toISOString()}] ${dispatched ? "Dispatched" : "Failed"}: ${goal.description} → ${agent}\n`);
+    `[${new Date().toISOString()}] ${dispatched ? "Dispatched" : "Failed"}: ${goal.description} → ${agent} (plan=${plan.id}, snapshot=${snapshot?.tag || "none"})\n`);
 
   return {
     type: "goal",
     action: dispatched ? "dispatched" : "dispatch-failed",
     success: dispatched,
-    detail: `${goal.description} → ${agent}`,
+    detail: `${goal.description} → ${agent} (plan: ${plan.id})`,
   };
+}
+
+/**
+ * Report task outcome from agent feedback.
+ * Called when an agent reports completion or failure.
+ * Handles: success recording, circuit breaker, rollback, retry, replan.
+ */
+export async function reportOutcome(
+  agent: string,
+  planId: string,
+  stepId: number,
+  success: boolean,
+  result: string,
+): Promise<{ action: string; detail: string }> {
+
+  if (success) {
+    // ─── Success Path ───
+    recordSuccess(agent);
+    completeStep(planId, stepId, result);
+
+    const progress = getProgress(planId);
+    if (progress && progress.percent === 100) {
+      fire("plan-completed", `Plan completed: ${planId}`, `All ${progress.total} steps done`, {
+        agent, severity: "info",
+      });
+    }
+
+    log(`Task success: agent=${agent}, plan=${planId}, step=${stepId}`);
+    return { action: "success", detail: result };
+
+  } else {
+    // ─── Failure Path ───
+    const { circuitOpened } = recordFailure(agent, result);
+
+    if (circuitOpened) {
+      // Circuit tripped — rollback and alert
+      fire("circuit-opened", `Circuit OPENED: ${agent}`, `Too many failures. Agent disabled.`, {
+        agent, severity: "critical",
+        metadata: { error: result },
+      });
+
+      const rb = rollbackLatestForAgent(agent);
+      if (rb.success) {
+        fire("snapshot-rolled-back", `Rolled back: ${agent}`, rb.detail, {
+          agent, severity: "warning",
+        });
+      }
+
+      log(`Circuit opened for ${agent}, rolled back: ${rb.success}`);
+      return { action: "circuit-opened", detail: `Agent disabled, rolled back: ${rb.detail}` };
+    }
+
+    // Circuit still closed — check if replan is possible
+    const replanCheck = shouldReplan(planId);
+    if (replanCheck.needed) {
+      const trigger = replanCheck.triggers[0];
+      const newPlan = replan(planId, trigger);
+
+      if (newPlan) {
+        fire("replan-triggered", `Replan: ${planId}`, trigger.detail, {
+          agent, severity: "warning",
+          metadata: { triggerType: trigger.type, replanCount: newPlan.replanCount },
+        });
+
+        log(`Replanned: ${planId} (trigger: ${trigger.type})`);
+        return { action: "replanned", detail: `Replan #${newPlan.replanCount}: ${trigger.detail}` };
+      }
+    }
+
+    // No replan possible — mark plan as failed
+    fire("plan-failed", `Plan failed: ${planId}`, result, {
+      agent, severity: "critical",
+    });
+
+    log(`Task failed: agent=${agent}, plan=${planId}, step=${stepId}, error=${result}`);
+    return { action: "failed", detail: result };
+  }
 }
 
 /**
