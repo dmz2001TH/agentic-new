@@ -250,30 +250,11 @@ Platform: Gemini CLI (Windows, Google Login)
 
 ### ขั้นตอนโหลดความจำ (Load on Startup — ทำทุกครั้ง)
 
-```bash
-# ═══════════════════════════════════════
-# สมองรวม (Shared Brain — ทุก agent อ่านได้)
-# ═══════════════════════════════════════
-cat ψ/memory/identity.md        # ตัวตนรวม
-cat ψ/memory/patterns.md        # รูปแบบที่เรียนรู้
-cat ψ/memory/decisions.md       # การตัดสินใจสำคัญ
-cat ψ/memory/values.md          # ค่านิยมและหลักการ
-cat ψ/memory/people.md          # คนและ agent ที่เกี่ยวข้อง
-cat ψ/memory/notes.md           # บันทึกทั่วไป
-cat ψ/memory/handoff.md         # สิ่งค้างจาก session ที่แล้ว
-cat ψ/memory/goals.md           # เป้าหมายที่กำลังทำ
-ls -lt ψ/memory/learnings/ 2>/dev/null | head -5
-ls -lt ψ/memory/retrospectives/ 2>/dev/null | head -3
-ls ψ/inbox/ 2>/dev/null
+ความจำจะถูกโหลดเข้ามาใน prompt โดยอัตโนมัติผ่าน start-god-with-memory.sh
+ไม่ต้องรันคำสั่ง cat หรืออ่านไฟล์เอง — memory content อยู่ใน prompt แล้ว
 
-# ═══════════════════════════════════════
-# สมองส่วนตัว (Personal Brain — ของตัวเองเท่านั้น)
-# ═══════════════════════════════════════
-AGENT_NAME="${CLAUDE_AGENT_NAME:-god}"
-cat "ψ/agents/${AGENT_NAME}/memory/identity.md" 2>/dev/null
-cat "ψ/agents/${AGENT_NAME}/memory/notes.md" 2>/dev/null
-cat "ψ/agents/${AGENT_NAME}/memory/patterns.md" 2>/dev/null
-```
+⚠️ คุณไม่มี tool สำหรับรันคำสั่ง shell — อย่าพยายามใช้ cat, ls, mkdir, echo หรือคำสั่ง bash ใดๆ
+ถ้าต้องการบันทึกอะไร ให้บอกผู้ใช้ให้ช่วยบันทึกให้
 
 ### โครงสร้างความจำ
 
