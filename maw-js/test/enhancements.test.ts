@@ -60,10 +60,15 @@ describe("Self-Reflection", () => {
     expect(r.wasCorrected).toBe(false);
   });
   test("corrects bad answer", async () => {
-    let n = 0;
-    const c = { call: async (p: string) => { n++; if (/review/i.test(p)) return "QUALITY: 3\nISSUES:\n- [high] Bug\nFIX: Fix"; return "Fixed"; } };
-    const r = await runSelfReflection("T", "Bad", { maxIterations: 3, qualityThreshold: 7, modelCall: c.call, verbose: false });
+    let callN = 0;
+    const c = { call: async (p: string) => {
+      callN++;
+      if (/review|ตรวจ|rate/i.test(p)) return "QUALITY: 3\nISSUES:\n- [high] Bug\nFIX: Fix it";
+      return "Fixed answer with proper error handling";
+    } };
+    const r = await runSelfReflection("Write a function", "Bad code here", { maxIterations: 3, qualityThreshold: 7, modelCall: c.call, verbose: false });
     expect(r.wasCorrected).toBe(true);
+    expect(r.issuesFound.length).toBeGreaterThan(0);
   });
 });
 
