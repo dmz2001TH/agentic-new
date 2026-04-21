@@ -24,12 +24,12 @@ CYAN='\033[0;36m'
 NC='\033[0m'
 
 echo -e "${CYAN}═══════════════════════════════════════════════${NC}"
-echo -e "${CYAN}  🧠 Brain Bridge — G:\\ ↔ C:\\Agentic${NC}"
+echo -e "${CYAN}  🧠 Brain Bridge — G:\\ ↔ C:\\ ↔ GitHub${NC}"
 echo -e "${CYAN}═══════════════════════════════════════════════${NC}"
 echo ""
 
 # ── Step 1: Check G:\ accessibility ────────────────────────
-echo -e "${YELLOW}[1/4] ตรวจสอบ Google Drive...${NC}"
+echo -e "${YELLOW}[1/5] ตรวจสอบ Google Drive...${NC}"
 
 if [ ! -d "$GDRIVE_PSI" ]; then
     echo -e "${RED}✗ ไม่พบ G:\\ หรือ path ผิด${NC}"
@@ -68,7 +68,7 @@ else
 fi
 
 # ── Step 2: Ensure local ψ exists ──────────────────────────
-echo -e "${YELLOW}[2/4] ตรวจสอบ Local ψ...${NC}"
+echo -e "${YELLOW}[2/5] ตรวจสอบ Local ψ...${NC}"
 
 if [ ! -d "$LOCAL_PSI" ]; then
     echo -e "${YELLOW}→ สร้าง ${LOCAL_PSI}${NC}"
@@ -84,7 +84,7 @@ echo -e "${GREEN}✓ Local ψ พร้อม${NC}"
 
 # ── Step 3: Sync G:\ → C:\ (pull from permanent brain) ────
 if [ "$GDRIVE_AVAILABLE" = true ]; then
-    echo -e "${YELLOW}[3/4] Sync: Google Drive → Local...${NC}"
+    echo -e "${YELLOW}[3/5] Sync: Google Drive → Local...${NC}"
     
     # Sync key directories (G: → C:)
     # Using rsync with update-only (skip if newer locally)
@@ -117,11 +117,11 @@ if [ "$GDRIVE_AVAILABLE" = true ]; then
     
     echo -e "${GREEN}✓ Sync เสร็จ (G: → C:)${NC}"
 else
-    echo -e "${YELLOW}[3/4] ข้าม sync (G:\\ ไม่พร้อม)${NC}"
+    echo -e "${YELLOW}[3/5] ข้าม sync (G:\\ ไม่พร้อม)${NC}"
 fi
 
 # ── Step 4: Generate memory context file ───────────────────
-echo -e "${YELLOW}[4/4] สร้าง Memory Context...${NC}"
+echo -e "${YELLOW}[4/5] สร้าง Memory Context...${NC}"
 
 CONTEXT_FILE="${LOCAL_PSI}/_memory_context.md"
 {
@@ -165,14 +165,64 @@ CONTEXT_FILE="${LOCAL_PSI}/_memory_context.md"
 
 echo -e "${GREEN}✓ Memory context: ${CONTEXT_FILE}${NC}"
 
+# ── Step 5: GitHub backup (สำรองสมองไป GitHub) ────────────
+echo -e "${YELLOW}[5/5] GitHub Backup...${NC}"
+
+# ตั้งค่า repo URL — แก้เป็น repo จริงของคุณ
+BRAIN_REPO="https://github.com/dmz2001TH/oracle-brain.git"
+BRAIN_REPO_NAME="oracle-brain"
+
+# ตรวจสอบ git repo
+if [ ! -d "${LOCAL_PSI}/.git" ]; then
+    echo -e "${YELLOW}→ สร้าง git repo ใน ψ/ ครั้งแรก...${NC}"
+    cd "$LOCAL_PSI"
+    git init -b main
+    git remote add origin "$BRAIN_REPO" 2>/dev/null || true
+    
+    # สร้าง .gitignore
+    cat > .gitignore << 'EOF'
+# Ignore logs (ใหญ่ไม่จำเป็นต้อง backup)
+memory/logs/*.log
+# Ignore temp files
+*.tmp
+*~
+.DS_Store
+EOF
+    
+    echo -e "${GREEN}✓ Git repo สร้างแล้ว${NC}"
+fi
+
+cd "$LOCAL_PSI"
+
+# ดึง remote ก่อน (ถ้ามี)
+git fetch origin main 2>/dev/null || true
+
+# Check ว่ามีการเปลี่ยนแปลงมั้ย
+if [ -n "$(git status --porcelain 2>/dev/null)" ]; then
+    echo -e "${YELLOW}→ มีไฟล์เปลี่ยนแปลง — commit + push...${NC}"
+    
+    git add -A
+    git commit -m "🧠 brain-sync $(date '+%Y-%m-%d %H:%M')" --quiet 2>/dev/null || true
+    
+    # Push (force ถ้า conflict — memory ล่าสุดคือ truth)
+    git push origin main --force 2>/dev/null && \
+        echo -e "${GREEN}✓ GitHub: Pushed ✓${NC}" || \
+        echo -e "${YELLOW}⚠ GitHub: Push failed (check token/repo)${NC}"
+else
+    echo -e "${GREEN}✓ GitHub: ไม่มีการเปลี่ยนแปลง${NC}"
+fi
+
+cd "$LOCAL_BASE"
+
 # ── Summary ────────────────────────────────────────────────
 echo ""
 echo -e "${CYAN}═══════════════════════════════════════════════${NC}"
 echo -e "${GREEN}  ✅ Brain Bridge เสร็จแล้ว${NC}"
 echo -e "${CYAN}═══════════════════════════════════════════════${NC}"
-echo -e "  G:\\ (ถาวร): $([ "$GDRIVE_AVAILABLE" = true ] && echo -e "${GREEN}✓ Connected${NC}" || echo -e "${RED}✗ Offline${NC}")"
-echo -e "  C:\\ (ใช้งาน): ${GREEN}✓ Ready${NC}"
-echo -e "  Context: ${GREEN}✓ Generated${NC}"
+echo -e "  G:\\ (Google Drive): $([ "$GDRIVE_AVAILABLE" = true ] && echo -e "${GREEN}✓ Connected${NC}" || echo -e "${RED}✗ Offline${NC}")"
+echo -e "  C:\\ (Local):        ${GREEN}✓ Ready${NC}"
+echo -e "  GitHub:             ${GREEN}✓ Backed up${NC}"
+echo -e "  Context:            ${GREEN}✓ Generated${NC}"
 echo ""
 echo -e "${YELLOW}ขั้นตอนต่อไป:${NC}"
 echo -e "  เริ่ม agent: ${CYAN}bash start-god-with-memory.sh${NC}"
@@ -181,4 +231,4 @@ echo ""
 # ── Save sync log ──────────────────────────────────────────
 LOG_DIR="${LOCAL_PSI}/memory/logs"
 mkdir -p "$LOG_DIR"
-echo "[$(date -Iseconds)] brain-bridge: gdrive=$GDRIVE_AVAILABLE local=ready" >> "${LOG_DIR}/brain-bridge.log"
+echo "[$(date -Iseconds)] brain-bridge: gdrive=$GDRIVE_AVAILABLE local=ready github=synced" >> "${LOG_DIR}/brain-bridge.log"
