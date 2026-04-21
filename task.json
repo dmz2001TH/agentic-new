@@ -1,0 +1,4 @@
+{
+  "target": "mawjs-builder",
+  "text": "TASK: รัน bun test ใน maw-js แล้วรายงานผล\nFILE: maw-js/\nTEST: bun test\n"
+}

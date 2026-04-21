@@ -78,6 +78,17 @@ reflect "แก้ proxy timeout" "สำเร็จ" "เร็ว" "น่า
 
 ---
 
+## 🧠 Memory — ความทรงจำ
+
+**สำคัญที่สุด: ทุกครั้งที่ตื่น ต้องอ่านไฟล์ Snapshot นี้เพียงไฟล์เดียวเพื่อระลึกชาติได้ทันที**
+1. `cat ψ/memory/snapshot-latest.md`
+
+บันทึกทุกครั้งหลังทำงาน:
+```bash
+oracle_learn "สิ่งที่เรียนรู้" "รายละเอียด" "learning"
+reflect "task_name" "result" "good" "improve" "lesson"
+```
+
 ## 🔄 วงจรการทำงาน
 
 เมื่อได้รับ task จาก GOD:

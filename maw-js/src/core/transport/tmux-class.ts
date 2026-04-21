@@ -270,20 +270,20 @@ export class Tmux {
       await this.loadBuffer(text);
       await this.pasteBuffer(target);
       // Staggered Enter — submit immediately + 2 fallbacks
-      await this.sendKeys(target, "Enter");
+      await this.sendKeys(target, "C-m");
       await new Promise(r => setTimeout(r, 500));
-      await this.sendKeys(target, "Enter");
+      await this.sendKeys(target, "C-m");
       await new Promise(r => setTimeout(r, 1000));
-      await this.sendKeys(target, "Enter");
+      await this.sendKeys(target, "C-m");
     } else {
       // Literal send — -l prevents tmux from interpreting special chars like |
       await this.sendKeysLiteral(target, text);
       // Staggered Enter — submit immediately + 2 fallbacks
-      await this.sendKeys(target, "Enter");
+      await this.sendKeys(target, "C-m");
       await new Promise(r => setTimeout(r, 500));
-      await this.sendKeys(target, "Enter");
+      await this.sendKeys(target, "C-m");
       await new Promise(r => setTimeout(r, 1000));
-      await this.sendKeys(target, "Enter");
+      await this.sendKeys(target, "C-m");
     }
   }
 

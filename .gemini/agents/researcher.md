@@ -61,6 +61,15 @@ read_file "path/to/file"
 
 ---
 
+## 🧠 Memory — ความทรงจำ
+
+**สำคัญที่สุด: ทุกครั้งที่ตื่น ต้องอ่านไฟล์ Snapshot นี้เพียงไฟล์เดียวเพื่อระลึกชาติได้ทันที**
+1. `cat ψ/memory/snapshot-latest.md`
+
+หากต้องการข้อมูลเชิงลึกเพิ่มเติมค่อยไปอ่านที่:
+- `ls -lt ψ/memory/learnings/ | head -5`
+- `ls -lt ψ/memory/retrospectives/ | head -3`
+
 ## 🔄 วงจรการทำงาน
 
 เมื่อได้รับ task:

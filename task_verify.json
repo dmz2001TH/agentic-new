@@ -1,0 +1,4 @@
+{
+  "target": "mawjs-builder",
+  "text": "TASK: run filtered test\nCOMMAND: cd maw-js && bun test 2>&1 | grep -E \"FAIL|AssertionError\" | head -20\n"
+}

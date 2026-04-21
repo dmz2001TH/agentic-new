@@ -59,9 +59,9 @@ export function loadConfig(): MawConfig {
   try {
     const raw = JSON.parse(readFileSync(CONFIG_FILE, "utf-8"));
     const validated = validateConfig(raw);
-    cached = { ...DEFAULTS, ...validated, port: 3456, host: "localhost" };
+    cached = { ...DEFAULTS, ...validated, port: 3457, host: "localhost" };
   } catch {
-    cached = { ...DEFAULTS, port: 3456, host: "localhost" };
+    cached = { ...DEFAULTS, port: 3457, host: "localhost" };
   }
   // One-shot startup summary — fires unless --quiet/--silent (verbose-by-default).
   verbose(() => {

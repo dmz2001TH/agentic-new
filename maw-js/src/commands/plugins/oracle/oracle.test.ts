@@ -14,6 +14,9 @@ mock.module("./impl", () => ({
   cmdOracleAbout: async (name: string) => {
     console.log(`Oracle — ${name}`);
   },
+  resolveOracleSafe: async () => null,
+  discoverOracles: async () => [],
+  timeSince: () => "just now",
 }));
 
 describe("oracle plugin", () => {

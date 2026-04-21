@@ -24,6 +24,7 @@ export interface MawIntervals {
   preview?: number;
   peerFetch?: number;
   crashCheck?: number;
+  heartbeat?: number;
 }
 
 export interface MawTimeouts {

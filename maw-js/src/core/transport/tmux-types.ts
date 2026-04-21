@@ -6,12 +6,14 @@ export function resolveSocket(): string | undefined {
 }
 
 /** Build the `tmux` (or `tmux -S <socket>`) prefix for raw commands.
- * On Windows, tmux lives in WSL — prefix with "wsl" so hostExec routes
- * the command through WSL bash instead of cmd.exe.
+ * On Windows, tmux lives in WSL. We force the default socket path
+ * for the first WSL user (UID 1000) to ensure visibility across contexts.
  */
 export function tmuxCmd(): string {
-  const socket = resolveSocket();
-  const prefix = process.platform === "win32" ? "wsl " : "";
+  const isWin = process.platform === "win32";
+  const socket = resolveSocket() || (isWin ? "/tmp/tmux-1000/default" : undefined);
+  const prefix = isWin ? "wsl " : "";
+  
   return socket ? `${prefix}tmux -S '${socket}'` : `${prefix}tmux`;
 }
 
