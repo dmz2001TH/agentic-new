@@ -46,27 +46,32 @@ else
 fi
 
 # ── Step 3: Save prompt to temp file ───────────────────────
-PROMPT_FILE=$(mktemp /tmp/god-prompt-XXXXXX.txt)
+PROMPT_FILE="/tmp/god-memory-context.txt"
 echo "$FULL_PROMPT" > "$PROMPT_FILE"
 
 echo "✅ Memory loaded. Starting GOD..."
 echo ""
 
-# ── Step 4: Start Gemini with the prompt ───────────────────
+# ── Step 4: Start Gemini with tmux ─────────────────────────
 SESSION_NAME="god"
 
 # Kill old session if exists
 tmux kill-session -t "$SESSION_NAME" 2>/dev/null || true
 
-# Create new session — use --prompt flag for reliable injection
-tmux new-session -d -s "$SESSION_NAME" "gemini --yolo --prompt '$(cat "$PROMPT_FILE" | head -c 4000)'"
+# Start Gemini in tmux (plain, no --prompt flag)
+tmux new-session -d -s "$SESSION_NAME" "gemini --yolo"
+sleep 3
 
-sleep 2
+# Inject memory via pipe — น่าเชื่อถือกว่า send-keys
+cat "$PROMPT_FILE" | tmux load-buffer -t "$SESSION_NAME" -
+tmux paste-buffer -t "$SESSION_NAME"
+sleep 1
+tmux send-keys -t "$SESSION_NAME" Enter
 
 echo "🚀 GOD is running in tmux session: ${SESSION_NAME}"
 echo ""
 echo "Attach with:  tmux attach -t ${SESSION_NAME}"
 echo ""
 
-# Cleanup
-rm -f "$PROMPT_FILE"
+# Keep prompt file for reference (don't cleanup)
+echo "📝 Memory prompt saved at: ${PROMPT_FILE}"
