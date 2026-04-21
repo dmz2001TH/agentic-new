@@ -1,0 +1,10 @@
+export { runChainOfThought, detectTaskType, STEP_TEMPLATES } from "./chain-of-thought";
+export type { CoTStep, CoTResult, CoTConfig } from "./chain-of-thought";
+export { runSelfReflection } from "./self-reflection";
+export type { ReflectionResult, ReflectionIssue, ReflectionConfig } from "./self-reflection";
+export { optimizePrompt, SYSTEM_HINTS, CONSTRAINTS } from "./prompt-templates";
+export { createEnhancedAgent } from "./enhanced-agent";
+export type { EnhancedAgent, EnhancedAgentConfig, EnhancedResult } from "./enhanced-agent";
+export { detectRepetition, guardOutput } from "./repetition-guard";
+export type { RepetitionReport, GuardConfig } from "./repetition-guard";
+export { installMiddleware, enhanceOutgoingMessage, cleanAgentOutput, patchGeminiMd } from "./agent-middleware";

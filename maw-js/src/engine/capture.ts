@@ -1,5 +1,6 @@
 import { capture } from "../core/transport/ssh";
 import { tmux } from "../core/transport/tmux";
+import { cleanAgentOutput } from "../enhancements/agent-middleware";
 import type { MawWS } from "../core/types";
 
 type SessionInfo = { name: string; windows: { index: number; name: string; active: boolean }[] };
@@ -12,10 +13,12 @@ export async function pushCapture(
   if (!ws.data.target) return;
   try {
     const content = await capture(ws.data.target, 80);
+    // Auto-clean repetitive output before sending to client
+    const { cleaned, wasModified } = cleanAgentOutput(content);
     const prev = lastContent.get(ws);
-    if (content !== prev) {
-      lastContent.set(ws, content);
-      ws.send(JSON.stringify({ type: "capture", target: ws.data.target, content }));
+    if (cleaned !== prev) {
+      lastContent.set(ws, cleaned);
+      ws.send(JSON.stringify({ type: "capture", target: ws.data.target, content: cleaned, cleaned: wasModified }));
     }
   } catch (e: any) {
     ws.send(JSON.stringify({ type: "error", error: e.message }));
@@ -36,10 +39,11 @@ export async function pushPreviews(
   await Promise.allSettled([...targets].map(async (target) => {
     try {
       const content = await capture(target, 15);
+      const { cleaned } = cleanAgentOutput(content);
       const prev = prevMap.get(target);
-      if (content !== prev) {
-        prevMap.set(target, content);
-        changed[target] = content;
+      if (cleaned !== prev) {
+        prevMap.set(target, cleaned);
+        changed[target] = cleaned;
         hasChanges = true;
       }
     } catch { /* expected: capture may fail for inactive pane */ }
