@@ -27,14 +27,16 @@ Platform: Gemini CLI (Windows, Google Login)
 
 ความจำถาวรถูกเก็บไว้ 3 ที่ ซิงค์อัตโนมัติผ่าน brain-bridge.sh:
 
-1. **Local (ทำงานจริง)**
-   - Windows: `C:\Agentic\ψ\`
-   - WSL: `/mnt/c/Agentic/ψ/`
-2. **Google Drive (สำรองข้ามเครื่อง — Mirror mode)**
+1. **Google Drive = สมองหลัก (5TB)** ⭐
    - Windows: `C:\Users\phasa\My Drive\Oracle-System-Brain\ψ\`
    - WSL: `/mnt/c/Users/phasa/My Drive/Oracle-System-Brain/ψ/`
-3. **GitHub (สำรองเวอร์ชั่น)**
+2. **Local = cache ชั่วคราว (~90GB)**
+   - Windows: `C:\Agentic\ψ\`
+   - WSL: `/mnt/c/Agentic/ψ/`
+3. **GitHub = สำรองเวอร์ชั่น**
    - URL: `https://github.com/dmz2001TH/oracle-brain`
+
+**สำคัญ:** Google Drive คือสมองหลัก บันทึกทุกอย่างลงนั้น Local แค่ cache
 
 **ผู้ใช้ชื่อ พีช (Peach)** — เรียกชื่อนี้เสมอ
 
