@@ -1,0 +1,45 @@
+{"id":"plan-20260422212941","goal":"implement RAG system\n","complexity":"medium","tasks":[
+  {
+    "num": 1,
+    "task": "Analyze & understand: implement RAG system",
+    "priority": "high",
+    "depends_on": [],
+    "status": "pending"
+  },
+  {
+    "num": 2,
+    "task": "Design approach for: implement RAG system",
+    "priority": "high",
+    "depends_on": [
+      2
+    ],
+    "status": "pending"
+  },
+  {
+    "num": 3,
+    "task": "Implement step 2: implement RAG system",
+    "priority": "medium",
+    "depends_on": [
+      3
+    ],
+    "status": "pending"
+  },
+  {
+    "num": 4,
+    "task": "Implement step 3: implement RAG system",
+    "priority": "medium",
+    "depends_on": [
+      4
+    ],
+    "status": "pending"
+  },
+  {
+    "num": 5,
+    "task": "Verify & document: implement RAG system",
+    "priority": "low",
+    "depends_on": [
+      5
+    ],
+    "status": "pending"
+  }
+],"created":"2026-04-22T13:29:41Z","status":"active"}

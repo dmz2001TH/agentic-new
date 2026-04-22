@@ -1,0 +1,12 @@
+{
+  "rules": [
+    {"id":"r01","name":"no-hardcoded-secrets","pattern":"(password|secret|token|api_key)\\s*=\\s*['\"][^'\"]+['\"]","severity":"critical","desc":"No hardcoded secrets"},
+    {"id":"r02","name":"no-rm-rf","pattern":"rm\\s+-rf\\s+/","severity":"critical","desc":"No rm -rf /"},
+    {"id":"r03","name":"has-shebang","pattern":"^#!","severity":"warning","desc":"Shell scripts should have shebang","applies_to":"*.sh"},
+    {"id":"r04","name":"no-curl-pipe-bash","pattern":"curl.*\\|\\s*bash","severity":"warning","desc":"Avoid curl | bash pattern"},
+    {"id":"r05","name":"file-size","max_bytes":50000,"severity":"warning","desc":"File too large (>50KB)"},
+    {"id":"r06","name":"has-error-handling","pattern":"set -e|trap|if.*then","severity":"info","desc":"Consider error handling","applies_to":"*.sh"},
+    {"id":"r07","name":"no-infinite-loop","pattern":"while\\s+true|while\\s+1","severity":"warning","desc":"Potential infinite loop"},
+    {"id":"r08","name":"proper-quoting","pattern":"\\$[A-Z_]+(?!\\\")","severity":"info","desc":"Consider quoting variables"}
+  ]
+}
