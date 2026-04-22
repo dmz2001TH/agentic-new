@@ -106,7 +106,7 @@ create_plan() {
         esac
         
         echo -e "  ${step}. [${priority}] ${task_name}"
-        tasks=$(echo "$tasks" | jq --arg t "$task_name" --arg p "$priority" --argjson d "$dep" \
+        tasks=$(echo "$tasks" | jq -c --arg t "$task_name" --arg p "$priority" --argjson d "$dep" \
             '. += [{"num":'"$step"',"task":$t,"priority":$p,"depends_on":$d,"status":"pending"}]')
         ((step++))
     done
@@ -224,3 +224,4 @@ case "${1:-}" in
     --auto) auto_plan "$2" "$3" ;;
     *) echo "Usage: planner.sh [--plan|--status|--next|--complete|--list|--auto]" ;;
 esac
+

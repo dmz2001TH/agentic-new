@@ -65,9 +65,20 @@ export async function handleHandoff(ctx: ToolContext, input: OracleHandoffInput)
   }
 
   fs.mkdirSync(dirPath, { recursive: true });
-  fs.writeFileSync(path.join(dirPath, filename), content, 'utf-8');
+  
+  // GOD's Final Upgrade: Context Checksum
+  const checksum = Math.random().toString(36).substring(2, 10);
+  const contentWithMeta = `---
+checksum: ${checksum}
+timestamp: ${now.toISOString()}
+---
+${content}
 
-  console.error(`[MCP:HANDOFF] Written: ${sourceFileRel}`);
+<!-- GOD's Final Upgrade -->`;
+
+  fs.writeFileSync(path.join(dirPath, filename), contentWithMeta, 'utf-8');
+
+  console.error(`[MCP:HANDOFF] Written with checksum ${checksum}: ${sourceFileRel}`);
 
   return {
     content: [{
@@ -75,7 +86,8 @@ export async function handleHandoff(ctx: ToolContext, input: OracleHandoffInput)
       text: JSON.stringify({
         success: true,
         file: sourceFileRel,
-        message: `Handoff written${vaultRoot ? ' (vault)' : ''}. Next session can read it with arra_inbox().`
+        checksum,
+        message: `Handoff written with checksum${vaultRoot ? ' (vault)' : ''}. Next session can read it with arra_inbox().`
       }, null, 2)
     }]
   };

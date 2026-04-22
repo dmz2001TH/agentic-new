@@ -97,6 +97,32 @@ Last Active = วันนี้, Sessions += 1
 
 ---
 
+## GOD Upgrades (v4.0)
+- ระบบ 45 upgrades อยู่ใน `god-upgrades/`
+- เรียกใช้ก่อนทำงานทุกครั้ง:
+  - `bash god-upgrades/01-foundation/self-eval/self-eval.sh --run-all`
+  - `bash god-upgrades/08-advanced/dashboard/dashboard.sh`
+
+---
+
+## Daily Workflow (เช้า, ก่อน Push, เย็น)
+```bash
+# เช้า: dashboard + planner
+bash god-upgrades/08-advanced/dashboard/dashboard.sh
+bash god-upgrades/02-agent-arch/planner/planner.sh --list
+
+# ก่อน commit: critic + code-review-gate
+bash god-upgrades/02-agent-arch/critic/critic.sh --diff
+bash god-upgrades/07-quality-safety/code-review-gate/code-review-gate.sh --check .
+
+# เย็น: learner + introspection + improvement-log
+bash god-upgrades/02-agent-arch/learner/learner.sh --weekly-review
+bash god-upgrades/05-self-improvement/introspection/introspection.sh --generate
+bash god-upgrades/01-foundation/improvement-log/log.sh --stats
+```
+
+---
+
 ## 🚀 Autonomous Workflow v4.0
 ### หลักการ: คิดเอง, ทำเอง, ถามเมื่อจำเป็นเท่านั้น
 

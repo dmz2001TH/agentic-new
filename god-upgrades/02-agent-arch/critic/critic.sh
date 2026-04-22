@@ -82,7 +82,8 @@ review_file() {
         fi
         
         if [ -n "$pattern" ]; then
-            local matches=$(grep -cP "$pattern" "$file" 2>/dev/null || echo 0)
+            local matches=$(grep -cP "$pattern" "$file" 2>/dev/null || true)
+            [ -z "$matches" ] && matches=0
             if [ "$matches" -gt 0 ]; then
                 local match_lines=$(grep -nP "$pattern" "$file" 2>/dev/null | head -3)
                 case "$severity" in
