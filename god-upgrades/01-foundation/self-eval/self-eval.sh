@@ -53,20 +53,20 @@ run_all_tests() {
         echo -ne "  [$((i+1))] ${name}... "
         if [[ "$input" == ./* ]] || [[ "$input" == /* ]]; then
             if [ -e "$input" ]; then
-                echo -e "${GREEN}PASS${NC}"; ((passed++))
+                echo -e "${GREEN}PASS${NC}"; passed=$((passed+1))
             else
-                echo -e "${YELLOW}SKIP${NC} (not found)"; ((skipped++))
+                echo -e "${YELLOW}SKIP${NC} (not found)"; skipped=$((skipped+1))
             fi
         elif command -v "$input" &>/dev/null; then
-            echo -e "${GREEN}PASS${NC}"; ((passed++))
+            echo -e "${GREEN}PASS${NC}"; passed=$((passed+1))
         elif [ -d "$input" ]; then
-            echo -e "${GREEN}PASS${NC}"; ((passed++))
+            echo -e "${GREEN}PASS${NC}"; passed=$((passed+1))
         else
-            echo -e "${YELLOW}CHECK${NC} (manual)"; ((skipped++))
+            echo -e "${YELLOW}CHECK${NC} (manual)"; skipped=$((skipped+1))
         fi
     done
     echo -e "\n${CYAN}═══════════════════════════════════════${NC}"
-    echo -e "  ${GREEN}✓${passed}  ${RED}✗${failed}  ${YELLOW}⊘${skipped}${NC}  Score: $([ $total -gt 0 ] && echo $((passed * 100 / total)) || echo 0)%"
+    echo -e "  ${GREEN}✓${passed}  ${RED}✗${failed}  ${YELLOW}⊘${skipped}${NC}  Score: $([ "${total:-0}" -gt 0 ] && echo $((passed * 100 / total)) || echo 0)%"
     echo -e "${CYAN}═══════════════════════════════════════${NC}"
     record_result "test-run" "0" "${passed}/${total}" "passed=${passed} failed=${failed}"
 }

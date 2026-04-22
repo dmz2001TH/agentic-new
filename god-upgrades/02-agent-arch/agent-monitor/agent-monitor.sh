@@ -149,7 +149,7 @@ dashboard() {
     while IFS='|' read name pid last_hb status; do
         local hb_epoch=$(date -d "$last_hb" +%s 2>/dev/null || echo "0")
         local age=$((now - hb_epoch))
-        if [ "$age" -gt 600 ]; then ((stale++)); elif [ "$status" = "error" ]; then ((error++)); else ((active++)); fi
+        if [ "$age" -gt 600 ]; then stale=$((stale+1)); elif [ "$status" = "error" ]; then error=$((error+1)); else active=$((active+1)); fi
     done < <(jq -r '.agents | to_entries[] | "\(.key)|\(.value.pid)|\(.value.last_heartbeat)|\(.value.status)"' "$AGENTS_FILE" 2>/dev/null)
     
     echo -e "${CYAN}═══════════════════════════════════════${NC}"

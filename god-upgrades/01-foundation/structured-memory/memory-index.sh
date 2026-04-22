@@ -26,7 +26,7 @@ build_index() {
 
     # Index all markdown files in memory directory
     if [ -d "$MEMORY_DIR" ]; then
-        for file in "$MEMORY_DIR"/*.md "$MEMORY_DIR"/inbox/*.md "$MEMORY_DIR"/learnings/*.md "$MEMORY_DIR"/retrospective/*.md 2>/dev/null; do
+        for file in "$MEMORY_DIR"/*.md "$MEMORY_DIR"/inbox/*.md "$MEMORY_DIR"/learnings/*.md "$MEMORY_DIR"/retrospective/*.md; do
             [ -f "$file" ] || continue
             local rel_path="${file#$GOD_ROOT/}"
             local filename=$(basename "$file")
@@ -43,12 +43,12 @@ build_index() {
                 --argjson size "$size" --argjson lines "$lines" --arg modified "$mod_date" \
                 --arg first "$first_line" --arg tags "$tags" \
                 '. += [{"path":$path,"name":$name,"size":$size,"lines":$lines,"modified":$modified,"preview":$first,"tags":$tags}]')
-            ((count++))
+            count=$((count+1))
         done
     fi
 
     # Also index god-upgrades files
-    for file in "$GOD_ROOT"/god-upgrades/**/*.sh "$GOD_ROOT"/god-upgrades/**/*.json "$GOD_ROOT"/god-upgrades/**/*.md 2>/dev/null; do
+    for file in "$GOD_ROOT"/god-upgrades/**/*.sh "$GOD_ROOT"/god-upgrades/**/*.json "$GOD_ROOT"/god-upgrades/**/*.md; do
         [ -f "$file" ] || continue
         local rel_path="${file#$GOD_ROOT/}"
         local filename=$(basename "$file")
@@ -57,7 +57,7 @@ build_index() {
 
         entries=$(echo "$entries" | jq --arg path "$rel_path" --arg name "$filename" --argjson size "$size" --argjson lines "$lines" \
             '. += [{"path":$path,"name":$name,"size":$size,"lines":$lines,"type":"upgrade"}]')
-        ((count++))
+        count=$((count+1))
     done
 
     echo "{\"indexed_at\":\"$(date -u +%Y-%m-%dT%H:%M:%SZ)\",\"total\":${count},\"entries\":${entries}}" | jq '.' > "$INDEX_FILE"
