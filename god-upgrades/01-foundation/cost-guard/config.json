@@ -1,0 +1,10 @@
+{
+  "daily_token_limit": 500000,
+  "daily_cost_limit_usd": 10.00,
+  "cost_per_1k_prompt": 0.001,
+  "cost_per_1k_completion": 0.003,
+  "warning_threshold": 0.8,
+  "critical_threshold": 0.95,
+  "auto_pause_at": 1.0,
+  "tracking_since": "2026-04-22"
+}

@@ -1,0 +1,8 @@
+{"tests":[
+  {"name":"memory-files-exist","input":"./ψ/memory","expected":"exists","category":"foundation","added":"2026-04-22"},
+  {"name":"gemini-md-valid","input":"./GEMINI.md","expected":"GOD","category":"identity","added":"2026-04-22"},
+  {"name":"brain-bridge-script","input":"./brain-bridge.sh","expected":"#!/bin/bash","category":"foundation","added":"2026-04-22"},
+  {"name":"self-eval-script","input":"./god-upgrades/01-foundation/self-eval/self-eval.sh","expected":"#!/bin/bash","category":"foundation","added":"2026-04-22"},
+  {"name":"improvement-log","input":"./god-upgrades/01-foundation/improvement-log/log.jsonl","expected":"exists","category":"foundation","added":"2026-04-22"},
+  {"name":"structured-memory-index","input":"./god-upgrades/01-foundation/structured-memory/memory-index.json","expected":"exists","category":"foundation","added":"2026-04-22"}
+]}
