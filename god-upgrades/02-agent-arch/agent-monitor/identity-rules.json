@@ -1,0 +1,6 @@
+{
+  "must_contain": ["GOD"],
+  "must_not_contain": ["I am an AI assistant", "As an AI", "I'm Claude", "I am Gemini"],
+  "check_interval_seconds": 300,
+  "max_heartbeat_age_seconds": 600
+}

@@ -1,0 +1,36 @@
+{
+  "templates": {
+    "debug": [
+      {"task":"Reproduce the issue","priority":"high","depends_on":[]},
+      {"task":"Identify root cause","priority":"high","depends_on":[1]},
+      {"task":"Research solution","priority":"medium","depends_on":[2]},
+      {"task":"Implement fix","priority":"high","depends_on":[3]},
+      {"task":"Test fix","priority":"high","depends_on":[4]},
+      {"task":"Document solution","priority":"low","depends_on":[5]}
+    ],
+    "feature": [
+      {"task":"Define requirements","priority":"high","depends_on":[]},
+      {"task":"Design architecture","priority":"high","depends_on":[1]},
+      {"task":"Implement core","priority":"high","depends_on":[2]},
+      {"task":"Add tests","priority":"medium","depends_on":[3]},
+      {"task":"Code review","priority":"medium","depends_on":[3]},
+      {"task":"Documentation","priority":"low","depends_on":[4]},
+      {"task":"Deploy/integrate","priority":"high","depends_on":[4,5]}
+    ],
+    "refactor": [
+      {"task":"Analyze current code","priority":"high","depends_on":[]},
+      {"task":"Identify improvement areas","priority":"high","depends_on":[1]},
+      {"task":"Create refactor plan","priority":"high","depends_on":[2]},
+      {"task":"Implement changes","priority":"high","depends_on":[3]},
+      {"task":"Run tests","priority":"high","depends_on":[4]},
+      {"task":"Compare before/after","priority":"medium","depends_on":[5]}
+    ],
+    "learn": [
+      {"task":"Gather resources","priority":"high","depends_on":[]},
+      {"task":"Read/study primary source","priority":"high","depends_on":[1]},
+      {"task":"Practice with examples","priority":"high","depends_on":[2]},
+      {"task":"Summarize learnings","priority":"medium","depends_on":[3]},
+      {"task":"Apply to project","priority":"medium","depends_on":[4]}
+    ]
+  }
+}
