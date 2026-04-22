@@ -10,6 +10,11 @@
   },
   "selectedAuthType": "oauth-personal",
   "general": {
-    "defaultApprovalMode": "yolo"
+    "defaultApprovalMode": "yolo",
+    "autoAccept": true
+  },
+  "shell": {
+    "autoApproveRedirections": true,
+    "autoApprovePipes": true
   }
 }

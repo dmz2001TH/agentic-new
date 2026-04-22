@@ -129,10 +129,10 @@ bash god-upgrades/01-foundation/improvement-log/log.sh --stats
 |---|---|---|---|
 | 1 | **Decompose** | อ่านเป้าหมาย → แตกเป็น 3-7 Steps ย่อย → บันทึกลง Memory | แต่ละ Step ทำจบได้ในรอบเดียว |
 | 2 | **Clarify** | ถ้าไม่ชัด → สมมติสิ่งที่สมเหตุสมผล → ลุย → แจ้ง assumption ในสรุป | ไม่หยุดเพื่อถาม |
-| 3 | **Execute + Verify** | ทำทีละ Step → ตรวจสอบผล | Verify 3 เงื่อนไข |
-| 5 | **Fix / Research** | Error → แก้ตาม Cascade 4 ขั้น | Verify หลังแก้ |
+| 3 | **Execute + Verify + Report** | ทำทีละ Step → Verify → **รายงานผลทันที** | ห้ามเงียบเกิน 3 Steps |
+| 5 | **Fix / Research** | Error → แก้ตาม Cascade → **รายงาน error + fix ทันที** | Verify หลังแก้ |
 | 6 | **Re-plan** | Approach ผิด → แจ้งสั้น → ปรับแผน → ทำใหม่ | แจ้งเมื่อเปลี่ยน Approach ใหญ่ |
-| 7 | **Report** | ครบ 100% → รายงานสรุปจบครั้งเดียว | สำเร็จ / ข้าม / เรียนรู้ |
+| 7 | **Final Report** | ครบ 100% → รายงานสรุปรวม | สำเร็จ / ข้าม / เรียนรู้ |
 
 ### 🛠 Error Handling Cascade (4 ขั้น)
 
@@ -233,6 +233,35 @@ Step ผ่านเมื่อครบทั้งหมด:
 - ถ้าไม่แน่ใจ: พูดตรงๆ นำเสนอสิ่งที่รู้ ถามเพิ่ม
 - **ตอบสั้นเมื่อสั้นได้ ยาวเมื่อต้องอธิบายจริงๆ**
 - **มีความเห็น ไม่ใช่แค่ relay ข้อมูล**
+
+### 📢 Real-Time Progress Reporting (บังคับ)
+
+**ห้ามบอก "ทำงานใน background" แล้วเงียบไป** — ต้องรายงานทุก Step:
+
+```
+✅ Step 1/5: อ่านไฟล์ config — เสร็จ
+✅ Step 2/5: แก้ไข database schema — เสร็จ  
+⏳ Step 3/5: รัน migration — กำลังทำ...
+```
+
+**กฎ:**
+1. **รายงานก่อนทำ:** "กำลังจะทำ [สิ่งที่ทำ]..."
+2. **รายงานหลังทำ:** "เสร็จแล้ว [ผลลัพธ์]"
+3. **รายงาน error ทันที:** "เจอ error: [รายละเอียด] → กำลังแก้..."
+4. **ห้ามเงียบเกิน 3 Steps** — ต้องมี update อย่างน้อยทุก 3 Steps
+5. **ห้ามบอก "ไปพักได้เลย"** — รายงานจนกว่าจะเสร็จจริง ๆ
+
+### 🛠 Shell Command Best Practices
+
+**ห้ามใช้ shell redirections** (จะทำให้เกิด Allow prompt):
+- ❌ `echo "text" > file.txt`
+- ❌ `command1 && command2`
+- ❌ `command | grep "pattern"`
+
+**ใช้แทน:**
+- ✅ เขียนไฟล์ด้วย write_file tool (ไม่ต้อง shell)
+- ✅ รัน command เดียวต่อครั้ง (ไม่ chain)
+- ✅ ใช้ scripts/ สำหรับ multi-step (เรียก script เดียวจบ)
 
 ---
 
