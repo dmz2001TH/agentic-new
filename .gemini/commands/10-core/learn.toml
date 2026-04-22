@@ -1,34 +1,62 @@
-description = "ให้ Oracle เรียนรู้ repo/โปรเจ็ค แล้วสรุปให้"
+description = "ให้ Oracle เรียนรู้ — timed session with verification (ไม่ใช่แค่ summarize)"
 
 prompt = """
-เรียนรู้และสรุปสิ่งที่กำหนด
+เรียนรู้จริงๆ ด้วย verification
 
 เป้าหมาย: $ARGUMENTS
 
-## กระบวนการ:
-1. สำรวจโครงสร้าง — รายชื่อไฟล์, อ่าน README, ดู package config
-2. เจาะลึก — อ่าน source หลัก, เข้าใจ architecture
-3. ระบุ components, dependencies, patterns
+## ขั้นตอนที่ 1: Setup Session
 
-## บันทึกใน ψ/memory/learnings.md:
-```markdown
-## [วันนี้] — เรียนรู้: [ชื่อเป้าหมาย]
-- **บริบท**: ให้เรียนรู้เกี่ยวกับ [เป้าหมาย]
-- **ประเภท**: [ภาษา/เฟรมเวิร์ค/จุดประสงค์]
-- **Architecture**: [โครงสร้าง]
-- **Components หลัก**: [รายการพร้อมคำอธิบาย]
-- **Dependencies**: [dependencies หลัก]
-- **วิธีใช้**: [วิธีใช้พื้นฐาน]
-- **Patterns**: [design patterns ที่น่าสนใจ]
-- **วิธีใช้ความรู้นี้**: [จะเอาไปใช้ยังไง]
-- **แท็ก**: [tags]
+รัน:
+```bash
+bash scripts/learn/timed-learn.sh "<topic>" <minutes> <url1> [url2] ...
 ```
 
-## แสดงสรุป:
-- มันคืออะไร
-- ทำงานยังไง
-- มีประโยชน์ยังไง
-- สิ่งสำคัญที่ต้องจำ
+## ขั้นตอนที่ 2: Read & Extract Evidence
+
+อ่านทุกไฟล์ใน session_path/sources/ แล้วบันทึก evidence:
+```bash
+echo '{"source":"filename","type":"fact|code|quote|insight","content":"ข้อมูลจริง","confidence":"high|medium|low"}' >> <session_path>/evidence/log.jsonl
+```
+
+### กฎเหล็ก:
+- ทุก evidence ต้องมี source reference
+- Code ต้อง完整 ไม่ใช่ fragment
+- Facts ต้อง verifiable
+- Quotes ต้อง exact copy
+- ห้าม summarize ลอยๆ
+
+## ขั้นตอนที่ 3: Knowledge Quiz
+
+สร้าง quiz ใน <session_path>/quiz/quiz.md:
+- 3 factual questions (ตอบจาก evidence)
+- 2 code questions (เขียน code จากสิ่งที่เรียนรู้)
+- 1 synthesis question (เชื่อมหลาย source)
+- Self-assessment: ตอบได้กี่ข้อ, confidence, สิ่งที่ยังไม่รู้
+
+## ขั้นตอนที่ 4: Honest Report
+
+เขียน report.md:
+- Sources read (จริงๆ ไม่ใช่บอกว่าอ่าน)
+- Evidence summary (จำนวน facts/code/quotes)
+- What I actually learned (พร้อม source ref)
+- What I DON'T understand yet (ต้องซื่อสัตย์)
+- Honest assessment (เวลาจริง, confidence จริง)
+
+## ขั้นตอนที่ 5: Verify
+
+รัน:
+```bash
+bash scripts/learn/learn-verify.sh <session_id>
+```
+
+ต้องได้ grade ≥ B ถึงถือว่าเรียนเสร็จจริง
+
+## ⛔ ห้าม:
+- พูดว่า "เรียนรู้เสร็จ" ถ้ายังไม่ verify
+- summarize ลอยๆ โดยไม่มี evidence
+- สร้าง fake timeline
+- บอก "บันทึกแล้ว" ถ้ายังไม่ได้เขียนไฟล์
 
 ตอบเป็นภาษาไทย
 """

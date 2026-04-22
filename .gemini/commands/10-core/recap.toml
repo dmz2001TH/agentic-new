@@ -1,23 +1,56 @@
-description = "เริ่มวันใหม่ — AI สรุปให้ว่าเมื่อวานทำอะไร"
+description = "เริ่มวัน — recap จริงๆ ด้วย data จากไฟล์จริง ไม่ใช่เดา"
 
 prompt = """
-เริ่ม session ใหม่ ด้วยการสรุปสิ่งที่ทำไป
+เริ่ม session ใหม่ — recap จากข้อมูลจริง
 
-## กระบวนการ:
-1. อ่าน ψ/memory/retrospective/ ไฟล์ล่าสุด
-2. อ่าน ψ/memory/handoff.md (ถ้ามี)
-3. อ่าน ψ/inbox/ ทุกไฟล์
-4. อ่าน ψ/memory/notes.md รายการล่าสุด 5 รายการ
-5. อัพเดท ψ/memory/identity.md: Last Active = วันนี้, Sessions += 1
+## ขั้นตอนที่ 1: อ่านข้อมูลจริง
 
-## สรุปให้:
-- สิ่งที่ทำไปเมื่อวาน
-- งานค้างจากเมื่อวาน
-- สิ่งที่เรียนรู้ใหม่
-- แนะนำโฟกัสวันนี้
+```bash
+echo "=== HANDOFF ===" && cat ψ/memory/handoff.md 2>/dev/null || echo "(ไม่มี)"
+echo "=== RETRO ล่าสุด ===" && ls -t ψ/memory/retrospective/*.md 2>/dev/null | head -1 | xargs cat 2>/dev/null || echo "(ไม่มี)"
+echo "=== INBOX ===" && ls ψ/inbox/ 2>/dev/null || echo "(ว่าง)"
+echo "=== NOTES 5 รายการล่าสุด ===" && tail -5 ψ/memory/notes.md 2>/dev/null || echo "(ไม่มี)"
+echo "=== GOALS ===" && cat ψ/memory/goals.md 2>/dev/null || echo "(ไม่มี)"
+```
 
-## ถ้าไม่มี memory:
-"นี่ session แรกของเรา ยังไม่มี memory ครับ เรามาเริ่มสร้างสมองกันเลย"
+## ขั้นตอนที่ 2: สรุปจากข้อมูลจริง
+
+```markdown
+## 📋 Recap — [วันนี้]
+
+### จาก Retrospective ล่าสุด: [วันที่]
+- [ข้อมูลจริงจากไฟล์ retro]
+
+### จาก Handoff:
+- [ข้อมูลจริงจาก handoff.md]
+
+### Tasks ค้าง (จาก inbox จริง):
+- [task 1] — สถานะ: [สถานะจริง]
+- [task 2] — สถานะ: [สถานะจริง]
+
+### Notes ล่าสุด:
+- [notes จริงจากไฟล์]
+
+### โฟกัสแนะนำ (จากข้อมูลจริง):
+- [task ที่ควรทำก่อน — based on priority/status]
+```
+
+## ขั้นตอนที่ 3: Verify
+
+รัน:
+```bash
+# เช็คว่าอ่านไฟล์จริงมั้ย
+if [ -f "ψ/memory/handoff.md" ] || [ -d "ψ/memory/retrospective" ] || [ "$(ls ψ/inbox/ 2>/dev/null)" ]; then
+  echo "✅ มีข้อมูลจริงให้ recap"
+else
+  echo "⚠️ ยังไม่มี memory — นี่คือ session แรก"
+fi
+```
+
+## ⛔ ห้าม:
+- สร้าง recap จากจินตนาการ — ต้องจากไฟล์จริงเท่านั้น
+- บอก "เมื่อวานทำ X" ถ้าไม่มี retrospective
+- แนะนำโฟกัสที่ไม่ได้มาจาก inbox/handoff
 
 ตอบเป็นภาษาไทย
 """

@@ -1,36 +1,80 @@
-description = "จบวัน — AI สรุปสิ่งที่เรียนรู้เก็บไว้"
+description = "จบวัน — retrospective จริงๆ ต้อง verify ว่ามีเนื้อหา"
 
 prompt = """
-จบวันด้วยการสรุปและเก็บสิ่งที่เรียนรู้
+จบวันด้วย retrospective ที่ verify ได้
 
-## กระบวนการ:
-1. อ่าน ψ/memory/notes.md รายการวันนี้
-2. อ่าน ψ/inbox/ ทุกไฟล์
-3. สร้างไฟล์ retrospective ใหม่: ψ/memory/retrospective/YYYY-MM-DD.md
+## ขั้นตอนที่ 1: รวบรวมข้อมูลจริง
 
-```markdown
-# Retrospective ประจำวัน — [วันนี้]
+```bash
+# อ่าน notes วันนี้
+cat ψ/memory/notes.md | grep "$(date +%Y-%m-%d)" 2>/dev/null
 
-## สำเร็จ
-- [สิ่งที่ทำสำเร็จวันนี้]
+# อ่าน inbox
+ls ψ/inbox/ 2>/dev/null
 
-## เรียนรู้
-- [สิ่งที่เรียนรู้ใหม่]
+# อ่าน tasks ที่เสร็จวันนี้
+grep -r "\[x\]" ψ/inbox/ 2>/dev/null
 
-## ต่อพรุ่งนี้
-- [สิ่งที่จะทำต่อ]
-
-## คำถามค้าง
-- [คำถามที่ยังไม่ได้คำตอบ]
-
-## อารมณ์/พลังงาน
-- [สถานะอารมณ์]
+# อ่าน learnings วันนี้
+grep -A5 "$(date +%Y-%m-%d)" ψ/memory/learnings.md 2>/dev/null
 ```
 
-4. อัพเดท ψ/memory/identity.md: Learnings += จำนวนใหม่
+## ขั้นตอนที่ 2: สร้าง Retrospective
 
-## ยืนยัน:
-"✅ จบวันแล้ว — Retrospective บันทึกไว้ที่ ψ/memory/retrospective/[วันนี้].md"
+สร้างไฟล์: ψ/memory/retrospective/$(date +%Y-%m-%d).md
+
+```markdown
+# Retrospective — $(date +%Y-%m-%d)
+
+## สำเร็จ (จาก evidence เท่านั้น)
+- [สิ่งที่ทำสำเร็จ พร้อมหลักฐาน: ไฟล์ที่สร้าง, commit, task ที่เสร็จ]
+
+## เรียนรู้ (จาก learnings.md จริงๆ)
+- [สิ่งที่เรียนรู้ พร้อม source: ไฟล์ไหน, บรรทัดไหน]
+
+## ต่อพรุ่งนี้ (จาก inbox จริงๆ)
+- [task ที่ยังค้าง พร้อมสถานะจริง]
+
+## คำถามค้าง (จาก notes จริงๆ)
+- [คำถามที่ยังไม่ได้คำตอบ]
+
+## Evidence
+- Notes ที่อ้างอิง: [จำนวน] รายการ
+- Tasks ที่เสร็จ: [จำนวน]
+- Tasks ที่ค้าง: [จำนวน]
+- Learnings ใหม่: [จำนวน]
+```
+
+## ขั้นตอนที่ 3: Verify
+
+รัน:
+```bash
+FILE="ψ/memory/retrospective/$(date +%Y-%m-%d).md"
+if [ -f "$FILE" ]; then
+  CHARS=$(wc -c < "$FILE")
+  SECTIONS=$(grep -c "^##" "$FILE")
+  echo "✅ Retrospective: $CHARS chars, $SECTIONS sections"
+  if [ $CHARS -gt 200 ] && [ $SECTIONS -ge 3 ]; then
+    echo "✅ PASS — Real retrospective"
+  else
+    echo "⚠️ TOO SHORT — Likely theater"
+  fi
+else
+  echo "❌ FAIL — File not created"
+fi
+```
+
+## ขั้นตอนที่ 4: อัพเดท Identity
+
+```bash
+# เพิ่ม session count
+sed -i "s/Sessions: [0-9]*/Sessions: $(($(grep -o 'Sessions: [0-9]*' ψ/memory/identity.md | grep -o '[0-9]*') + 1))/" ψ/memory/identity.md
+```
+
+## ⛔ ห้าม:
+- สร้าง retrospective สั้นๆ ที่ไม่มี evidence
+- บอก "จบวันแล้ว" ถ้าไฟล์มีน้อยกว่า 200 chars
+- สรุปแบบลอยๆ โดยไม่อ้างอิงไฟล์จริง
 
 ตอบเป็นภาษาไทย
 """

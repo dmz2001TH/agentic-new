@@ -1,37 +1,70 @@
-description = "สร้าง Handoff — ก่อนจบ session ให้ session หน้าต่อได้ทันที"
+description = "สร้าง Handoff — ต้อง verify ว่าครบทุก section + มีข้อมูลจริง"
 
 prompt = """
-สร้าง handoff ละเอียด
+สร้าง handoff สำหรับ session ถัดไป
 
-## รวบรวม:
-1. ทุกไฟล์ใน ψ/memory/
-2. ทุกไฟล์ใน ψ/inbox/
-3. ประวัติ conversation
+## ขั้นตอนที่ 1: รวบรวมข้อมูลจริง
 
-## เขียน ψ/memory/handoff.md:
-```markdown
-# Handoff — [YYYY-MM-DD HH:MM]
-
-## กำลังทำอะไรอยู่
-- [รายละเอียด task ปัจจุบัน]
-## เพิ่งทำเสร็จ
-- [สิ่งที่เสร็จใน session นี้]
-## ขั้นตอนต่อไป
-- [ขั้นตอนถัดไป พร้อมชื่อไฟล์/คำสั่ง]
-## Context ที่ต้องรู้
-- [การตัดสินใจ, สิ่งที่ค้นพบ, ความชอบผู้ใช้]
-## ปัญหาค้าง
-- [blockers]
-## สิ่งที่เรียนรู้วันนี้
-- [key learnings]
-## พลังงาน
-- [สถานะอารมณ์]
+```bash
+echo "=== ACTIVE TASKS ===" && grep -E "\[~\]|\[!\]" ψ/inbox/*.md 2>/dev/null || echo "(ไม่มี)"
+echo "=== COMPLETED TODAY ===" && grep -rl "\[x\]" ψ/inbox/ 2>/dev/null | xargs grep "$(date +%Y-%m-%d)" 2>/dev/null || echo "(ไม่มี)"
+echo "=== LEARNINGS TODAY ===" && grep "$(date +%Y-%m-%d)" ψ/memory/learnings.md 2>/dev/null || echo "(ไม่มี)"
+echo "=== PATTERNS ===" && tail -5 ψ/memory/patterns.md 2>/dev/null || echo "(ไม่มี)"
+echo "=== DECISIONS TODAY ===" && grep "$(date +%Y-%m-%d)" ψ/memory/decisions.md 2>/dev/null || echo "(ไม่มี)"
 ```
 
-## อัพเดทสถานะ task ใน ψ/inbox/
+## ขั้นตอนที่ 2: เขียน Handoff
 
-## ยืนยัน:
-"สร้าง handoff แล้ว ✅ — Session หน้ามาต่อได้ทันที"
+เขียน ψ/memory/handoff.md:
+
+```markdown
+# Handoff — $(date +%Y-%m-%d\ %H:%M)
+
+## กำลังทำอะไรอยู่
+- [task ที่ active — from inbox จริงๆ]
+
+## เพิ่งทำเสร็จ
+- [task ที่เสร็จวันนี้ — from inbox จริงๆ]
+
+## ขั้นตอนต่อไป (ละเอียด)
+1. [ขั้นตอน — from task file จริงๆ]
+
+## Context ที่ต้องรู้
+- [decisions วันนี้ — from decisions.md]
+- [learnings วันนี้ — from learnings.md]
+
+## ปัญหาค้าง
+- [tasks ที่ติด [!] — from inbox]
+
+## สิ่งที่เรียนรู้วันนี้
+- [learnings — from learnings.md]
+```
+
+## ขั้นตอนที่ 3: Verify (บังคับ)
+
+```bash
+FILE="ψ/memory/handoff.md"
+if [ -f "$FILE" ]; then
+  CHARS=$(wc -c < "$FILE")
+  SECTIONS=$(grep -c "^##" "$FILE")
+  HAS_REAL_DATA=$(grep -c "ไม่มี\|(empty)" "$FILE" || echo 0)
+
+  echo "📊 Handoff: $CHARS chars, $SECTIONS sections"
+
+  if [ $CHARS -gt 300 ] && [ $SECTIONS -ge 4 ]; then
+    echo "✅ PASS — Real handoff"
+  else
+    echo "⚠️ TOO SHORT — Likely theater ($CHARS chars, $SECTIONS sections)"
+  fi
+else
+  echo "❌ FAIL — File not created"
+fi
+```
+
+## ⛔ ห้าม:
+- สร้าง handoff สั้นๆ ที่ไม่มีข้อมูลจริง
+- บอก "สร้าง handoff แล้ว" ถ้าไฟล์มีน้อยกว่า 300 chars
+- ใส่ข้อมูลที่ไม่ได้มาจากไฟล์จริง
 
 ตอบเป็นภาษาไทย
 """

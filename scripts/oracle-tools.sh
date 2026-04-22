@@ -1,12 +1,7 @@
 #!/usr/bin/env bash
 # ═══════════════════════════════════════════════════════════
 # oracle-tools.sh — GOD's hands: Oracle API + Task Runner
-#
-# Source this file to get all functions:
-#   source scripts/oracle-tools.sh
-#
-# Or call directly:
-#   bash scripts/oracle-tools.sh <command> [args...]
+# Cross-platform: works on Linux, macOS, WSL, Git Bash
 # ═══════════════════════════════════════════════════════════
 set -euo pipefail
 
@@ -15,6 +10,15 @@ PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 ORACLE_URL="${ORACLE_URL:-http://localhost:47778}"
 MAW_URL="${MAW_URL:-http://localhost:3456}"
 PSI_DIR="$PROJECT_ROOT/ψ"
+
+# ─── Cross-platform detection ───
+if [[ "$OSTYPE" == "msys" || "$OSTYPE" == "cygwin" ]]; then
+  CURL="curl.exe"
+  JQ="$SCRIPT_DIR/jq.exe"
+else
+  CURL="curl"
+  JQ="jq"
+fi
 
 # ─── Colors ───
 RED='\033[0;31m'
@@ -25,7 +29,7 @@ PURPLE='\033[0;35m'
 NC='\033[0m'
 
 # ═══════════════════════════════════════════
-# ORACLE API FUNCTIONS
+# ORACLE API FUNCTIONS (with verification)
 # ═══════════════════════════════════════════
 
 # บันทึกสิ่งที่เรียนรู้ลง Oracle
@@ -37,9 +41,20 @@ oracle_learn() {
 
   local pattern="# $title\n\n$content"
 
-  curl.exe -s -X POST "${ORACLE_URL}/api/learn" \
+  local response
+  response=$($CURL -s -X POST "${ORACLE_URL}/api/learn" \
     -H "Content-Type: application/json" \
-    -d "$("$SCRIPT_DIR/jq.exe" -n --arg p "$pattern" '{"pattern": $p}')"
+    -d "$($JQ -n --arg p "$pattern" '{"pattern": $p}')" 2>/dev/null) || true
+
+  if [ -n "$response" ] && echo "$response" | $JQ -e '.id // .success // .ok' >/dev/null 2>&1; then
+    echo -e "${GREEN}✓${NC} Learned: $title"
+    return 0
+  else
+    echo -e "${YELLOW}⚠${NC} Oracle API unreachable — saved locally only"
+    # Fallback: save to local file
+    echo -e "\n## $(date +%Y-%m-%d) — $title\n- Type: $type\n- Content: $content" >> "$PSI_DIR/memory/learnings.md"
+    return 0
+  fi
 }
 
 # ค้นหาความรู้ใน Oracle
@@ -49,18 +64,21 @@ oracle_search() {
   local mode="${2:-hybrid}"
   local limit="${3:-10}"
 
-  curl.exe -s "${ORACLE_URL}/api/search?q=$(python3 -c "import urllib.parse; print(urllib.parse.quote('$query'))")&mode=${mode}&limit=${limit}" 2>/dev/null || \
-  curl.exe -s "${ORACLE_URL}/api/search?q=$(echo "$query" | sed 's/ /%20/g')&mode=${mode}&limit=${limit}"
+  local encoded_query
+  encoded_query=$(python3 -c "import urllib.parse; print(urllib.parse.quote('$query'))" 2>/dev/null || echo "$query" | sed 's/ /%20/g')
+
+  $CURL -s "${ORACLE_URL}/api/search?q=${encoded_query}&mode=${mode}&limit=${limit}" 2>/dev/null || \
+    echo "{\"results\":[],\"error\":\"Oracle API unreachable\"}"
 }
 
 # เช็คสถานะ Oracle
 oracle_stats() {
-  curl.exe -s "${ORACLE_URL}/api/stats"
+  $CURL -s "${ORACLE_URL}/api/stats" 2>/dev/null || echo "{\"error\":\"unreachable\"}"
 }
 
 # เช็คสุขภาพระบบ
 oracle_health() {
-  curl.exe -s "${ORACLE_URL}/api/health"
+  $CURL -s "${ORACLE_URL}/api/health" 2>/dev/null || echo "{\"status\":\"unreachable\"}"
 }
 
 # บันทึก decision
@@ -84,11 +102,11 @@ oracle_pattern() {
 
 # Reflect — ทบทวน
 oracle_reflect() {
-  curl.exe -s "${ORACLE_URL}/api/reflect"
+  $CURL -s "${ORACLE_URL}/api/reflect" 2>/dev/null || echo "{\"error\":\"unreachable\"}"
 }
 
 # ═══════════════════════════════════════════
-# FILE OPERATIONS (safe wrappers)
+# FILE OPERATIONS (safe wrappers with verification)
 # ═══════════════════════════════════════════
 
 # อ่านไฟล์ (relative to project root)
@@ -104,7 +122,7 @@ read_file() {
   fi
 }
 
-# เขียนไฟล์ (relative to project root)
+# เขียนไฟล์ with verification
 # Usage: write_file "path/to/file" "content"
 write_file() {
   local path="${1:?Usage: write_file <path> <content>}"
@@ -112,21 +130,36 @@ write_file() {
   local full_path="$PROJECT_ROOT/$path"
   mkdir -p "$(dirname "$full_path")"
   echo "$content" > "$full_path"
-  echo "✓ Written: $path"
+
+  # Verify
+  if [ -f "$full_path" ] && [ -s "$full_path" ]; then
+    local chars=$(wc -c < "$full_path")
+    echo -e "${GREEN}✓${NC} Written: $path ($chars bytes)"
+  else
+    echo -e "${RED}✗${NC} FAILED to write: $path" >&2
+    return 1
+  fi
 }
 
-# เพิ่มบรรทัดท้ายไฟล์
+# เพิ่มบรรทัดท้ายไฟล์ with verification
 # Usage: append_file "path/to/file" "new line"
 append_file() {
   local path="${1:?Usage: append_file <path> <line>}"
   local line="${2:?Usage: append_file <path> <line>}"
   local full_path="$PROJECT_ROOT/$path"
   echo "$line" >> "$full_path"
-  echo "✓ Appended to: $path"
+
+  # Verify last line matches
+  if tail -1 "$full_path" | grep -qF "$line"; then
+    echo -e "${GREEN}✓${NC} Appended to: $path"
+  else
+    echo -e "${RED}✗${NC} FAILED to append: $path" >&2
+    return 1
+  fi
 }
 
 # ═══════════════════════════════════════════
-# GOAL MANAGEMENT
+# GOAL MANAGEMENT (with verification)
 # ═══════════════════════════════════════════
 
 # อ่าน goals ที่ยังไม่เสร็จ
@@ -158,7 +191,7 @@ list_goals() {
   esac
 }
 
-# เพิ่ม goal ใหม่
+# เพิ่ม goal ใหม่ with verification
 # Usage: add_goal "description"
 add_goal() {
   local desc="${1:?Usage: add_goal <description>}"
@@ -167,12 +200,17 @@ add_goal() {
   local line="- [ ] [$date] $desc — by $agent"
 
   echo "$line" >> "$PSI_DIR/memory/goals.md"
-  echo "✓ Goal added: $desc"
+
+  # Verify
+  if tail -1 "$PSI_DIR/memory/goals.md" | grep -qF "$desc"; then
+    echo -e "${GREEN}✓${NC} Goal added: $desc"
+  else
+    echo -e "${RED}✗${NC} Failed to add goal" >&2
+    return 1
+  fi
 }
 
-# อัพเดทสถานะ goal
-# Usage: update_goal <old_status_marker> <new_status_marker> <search_text>
-# Example: update_goal "[ ]" "[~]" "build the task runner"
+# อัพเดทสถานะ goal with verification
 update_goal() {
   local old_status="${1:?Usage: update_goal <old> <new> <search_text>}"
   local new_status="${2:?Usage: update_goal <old> <new> <search_text>}"
@@ -181,15 +219,22 @@ update_goal() {
 
   if grep -q "$search" "$goals_file"; then
     sed -i "s/^\(- \)${old_status//[/\\[}\(.*\)${search}/\1${new_status}\2${search}/" "$goals_file"
-    echo "✓ Goal updated: $old_status → $new_status ($search)"
+
+    # Verify
+    if grep -q "$new_status.*$search" "$goals_file"; then
+      echo -e "${GREEN}✓${NC} Goal updated: $old_status → $new_status ($search)"
+    else
+      echo -e "${RED}✗${NC} Update verification failed" >&2
+      return 1
+    fi
   else
-    echo "✗ Goal not found: $search" >&2
+    echo -e "${RED}✗${NC} Goal not found: $search" >&2
     return 1
   fi
 }
 
 # ═══════════════════════════════════════════
-# MEMORY OPERATIONS
+# MEMORY OPERATIONS (with verification)
 # ═══════════════════════════════════════════
 
 # Lock protocol for shared memory
@@ -207,8 +252,7 @@ memory_unlock() {
   rm -f "$lock_file"
 }
 
-# เขียนลง shared memory (with lock)
-# Usage: memory_write "identity.md" "- new line"
+# เขียนลง shared memory (with lock + verification)
 memory_write() {
   local file="${1:?Usage: memory_write <file> <content>}"
   local content="${2:?Usage: memory_write <file> <content>}"
@@ -217,7 +261,14 @@ memory_write() {
   memory_lock "$file"
   echo "$content" >> "$target"
   memory_unlock "$file"
-  echo "✓ Memory updated: $file"
+
+  # Verify
+  if tail -1 "$target" | grep -qF "$content"; then
+    echo -e "${GREEN}✓${NC} Memory updated: $file"
+  else
+    echo -e "${RED}✗${NC} Memory write failed: $file" >&2
+    return 1
+  fi
 }
 
 # อ่าน shared memory
@@ -237,16 +288,14 @@ memory_read() {
 # ═══════════════════════════════════════════
 
 # Run next pending goal
-# Usage: run_next_goal
 run_next_goal() {
   local goals_file="$PSI_DIR/memory/goals.md"
 
-  # Find first pending goal
   local goal_line
   goal_line=$(grep -n -m 1 -E '^\- \[ \]' "$goals_file" 2>/dev/null || true)
 
   if [ -z "$goal_line" ]; then
-    echo "✓ No pending goals — all done or none exist"
+    echo -e "${GREEN}✓${NC} No pending goals — all done or none exist"
     return 0
   fi
 
@@ -257,47 +306,54 @@ run_next_goal() {
   echo "🎯 Next Goal: $goal_text"
   echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 
-  # Mark as active [~]
   sed -i "${line_num}s/^\(- \)\[ \]/\1[~]/" "$goals_file"
-  echo "Status: [~] → Active"
 
-  # Log
-  local date=$(date +%Y-%m-%d_%H-%M)
-  echo "[$date] Started goal: $goal_text" >> "$PSI_DIR/memory/logs/task-runner.log"
+  # Verify
+  if grep -q "\[~\].*$(echo "$goal_text" | head -c 30)" "$goals_file"; then
+    echo -e "${GREEN}✓${NC} Status: [~] → Active"
+  else
+    echo -e "${RED}✗${NC} Failed to mark goal as active" >&2
+    return 1
+  fi
 
-  echo ""
-  echo "Goal marked as active. Execute the goal steps, then call:"
-  echo "  complete_goal \"$goal_text\"  (when done)"
-  echo "  block_goal \"$goal_text\" \"reason\"  (when stuck)"
+  mkdir -p "$PSI_DIR/memory/logs"
+  echo "[$(date +%Y-%m-%d_%H-%M)] Started goal: $goal_text" >> "$PSI_DIR/memory/logs/task-runner.log"
 }
 
 # Complete a goal
-# Usage: complete_goal "goal search text"
 complete_goal() {
   local search="${1:?Usage: complete_goal <search_text>}"
   local goals_file="$PSI_DIR/memory/goals.md"
 
   sed -i "s/^\(- \)\[~\]\(.*${search}\)/\1[x]\2/" "$goals_file"
-  echo "✓ Goal completed: $search"
 
-  # Auto-reflect
-  local date=$(date +%Y-%m-%d_%H-%M)
-  echo "[$date] Completed: $search" >> "$PSI_DIR/memory/logs/task-runner.log"
+  # Verify
+  if grep -q "\[x\].*$search" "$goals_file"; then
+    echo -e "${GREEN}✓${NC} Goal completed: $search"
+  else
+    echo -e "${YELLOW}⚠${NC} Goal may not have been updated — check manually"
+  fi
 
-  # Learn from completion
+  mkdir -p "$PSI_DIR/memory/logs"
+  echo "[$(date +%Y-%m-%d_%H-%M)] Completed: $search" >> "$PSI_DIR/memory/logs/task-runner.log"
+
   oracle_learn "Goal Completed" "$search — completed on $(date +%Y-%m-%d)" "goal-completion" 2>/dev/null || true
 }
 
 # Mark goal as blocked
-# Usage: block_goal "goal search text" "reason"
 block_goal() {
   local search="${1:?Usage: block_goal <search_text> <reason>}"
   local reason="${2:-no reason given}"
   local goals_file="$PSI_DIR/memory/goals.md"
 
   sed -i "s/^\(- \)\[~\]\(.*${search}\)/\1[!]\2/" "$goals_file"
-  echo "⚠ Goal blocked: $search"
-  echo "  Reason: $reason"
+
+  if grep -q "\[!\].*$search" "$goals_file"; then
+    echo -e "${YELLOW}⚠${NC} Goal blocked: $search"
+    echo "  Reason: $reason"
+  else
+    echo -e "${RED}✗${NC} Failed to mark goal as blocked" >&2
+  fi
 }
 
 # ═══════════════════════════════════════════
@@ -305,7 +361,6 @@ block_goal() {
 # ═══════════════════════════════════════════
 
 # ส่ง message ให้ agent ผ่าน tmux
-# Usage: send_to_agent <agent_name> <message>
 send_to_agent() {
   local agent="${1:?Usage: send_to_agent <agent> <message>}"
   local message="${2:?Usage: send_to_agent <agent> <message>}"
@@ -313,30 +368,28 @@ send_to_agent() {
 
   if tmux has-session -t "$session" 2>/dev/null; then
     tmux send-keys -t "$session" "$message" Enter
-    echo "✓ Sent to $agent: $message"
+    echo -e "${GREEN}✓${NC} Sent to $agent: $message"
   else
-    echo "✗ Agent $agent not found (session: $session)" >&2
+    echo -e "${RED}✗${NC} Agent $agent not found (session: $session)" >&2
     return 1
   fi
 }
 
 # ส่ง message ผ่าน Maw API
-# Usage: ask_agent <agent> <message>
 ask_agent() {
   local agent="${1:?Usage: ask_agent <agent> <message>}"
   local message="${2:?Usage: ask_agent <agent> <message>}"
 
-  curl.exe -s -X POST "${MAW_URL}/api/asks" \
+  $CURL -s -X POST "${MAW_URL}/api/asks" \
     -H "Content-Type: application/json" \
-    -d "{\"to\": \"${agent}\", \"message\": $(echo "$message" | "$SCRIPT_DIR/jq.exe" -Rs .), \"from\": \"${CLAUDE_AGENT_NAME:-god}\"}"
+    -d "{\"to\": \"${agent}\", \"message\": $(echo "$message" | $JQ -Rs .), \"from\": \"${CLAUDE_AGENT_NAME:-god}\"}" 2>/dev/null || \
+    echo "{\"error\":\"Maw API unreachable\"}"
 }
 
 # ═══════════════════════════════════════════
-# REFLECTION
+# REFLECTION (with verification)
 # ═══════════════════════════════════════════
 
-# สร้าง reflection หลังทำงาน
-# Usage: reflect "task_name" "result" "good" "improve" "lesson"
 reflect() {
   local task="${1:?Usage: reflect <task> <result> <good> <improve> <lesson>}"
   local result="${2:-partial}"
@@ -362,44 +415,61 @@ Date: $(date +%Y-%m-%d\ %H:%M)
 ## Lesson: ${lesson:-none noted}
 EOF
 
-  # Also learn the lesson if provided
+  # Verify
+  if [ -f "$file" ] && [ -s "$file" ]; then
+    echo -e "${GREEN}✓${NC} Reflection saved: $file"
+  else
+    echo -e "${RED}✗${NC} Failed to save reflection" >&2
+    return 1
+  fi
+
   if [ -n "$lesson" ]; then
     oracle_learn "Lesson: $task" "$lesson" "learning" 2>/dev/null || true
   fi
-
-  echo "✓ Reflection saved: $file"
 }
 
 # ═══════════════════════════════════════════
-# FLEET STATUS
+# FLEET STATUS (real checks, not theater)
 # ═══════════════════════════════════════════
 
-# ดูสถานะ fleet ทั้งหมด
 fleet_status() {
   echo "══ Fleet Status ══"
   echo ""
 
   # Tmux sessions
   echo "📡 Tmux Sessions:"
-  tmux list-sessions 2>/dev/null | while read -r line; do
-    echo "  $line"
-  done || echo "  (no sessions)"
+  local sessions=$(tmux list-sessions 2>/dev/null || true)
+  if [ -n "$sessions" ]; then
+    echo "$sessions" | while read -r line; do echo "  $line"; done
+  else
+    echo "  (no sessions)"
+  fi
 
   echo ""
 
-  # Oracle health
+  # Oracle health (real check)
   echo "🧠 Oracle Core:"
-  oracle_health 2>/dev/null | "$SCRIPT_DIR/jq.exe" -r '.status // "unreachable"' || echo "  unreachable"
+  local oracle_status=$(oracle_health 2>/dev/null | $JQ -r '.status // "unreachable"' 2>/dev/null || echo "unreachable")
+  if [ "$oracle_status" = "unreachable" ]; then
+    echo -e "  ${RED}unreachable${NC} (port 47778)"
+  else
+    echo -e "  ${GREEN}$oracle_status${NC}"
+  fi
 
   echo ""
 
-  # Maw health
+  # Maw health (real check)
   echo "🔧 Maw API:"
-  curl.exe -s "${MAW_URL}/api/health" 2>/dev/null | "$SCRIPT_DIR/jq.exe" -r '.status // "unreachable"' || echo "  unreachable"
+  local maw_status=$($CURL -s "${MAW_URL}/api/health" 2>/dev/null | $JQ -r '.status // "unreachable"' 2>/dev/null || echo "unreachable")
+  if [ "$maw_status" = "unreachable" ]; then
+    echo -e "  ${RED}unreachable${NC} (port 3456)"
+  else
+    echo -e "  ${GREEN}$maw_status${NC}"
+  fi
 
   echo ""
 
-  # Goals summary
+  # Goals summary (real count)
   echo "🎯 Goals:"
   local pending=$(grep -c -E '^\- \[ \]' "$PSI_DIR/memory/goals.md" 2>/dev/null || echo 0)
   local active=$(grep -c -E '^\- \[~\]' "$PSI_DIR/memory/goals.md" 2>/dev/null || echo 0)
@@ -408,36 +478,39 @@ fleet_status() {
 }
 
 # ═══════════════════════════════════════════
-# AUTONOMOUS CYCLE (called by heartbeat)
+# AUTONOMOUS CYCLE
 # ═══════════════════════════════════════════
 
-# เช็ค inbox + goals — ทำต่อถ้ามีงานค้าง
 autonomous_check() {
   echo "══ Autonomous Check $(date +%H:%M) ══"
 
-  # 1. Check inbox
+  # 1. Check inbox (real count)
   local inbox_count=$(ls "$PSI_DIR/inbox/" 2>/dev/null | wc -l || echo 0)
   echo "📥 Inbox: $inbox_count items"
-
   if [ "$inbox_count" -gt 0 ]; then
-    echo "Inbox items:"
-    ls -1 "$PSI_DIR/inbox/" 2>/dev/null | head -5
+    ls -1 "$PSI_DIR/inbox/" 2>/dev/null | head -5 | while read f; do echo "  - $f"; done
   fi
 
-  # 2. Check pending goals
+  # 2. Check pending goals (real count)
   local pending=$(grep -c -E '^\- \[ \]' "$PSI_DIR/memory/goals.md" 2>/dev/null || echo 0)
   echo "🎯 Pending goals: $pending"
 
-  # 3. Check active goals (stuck?)
+  # 3. Check active goals (real count)
   local active=$(grep -c -E '^\- \[~\]' "$PSI_DIR/memory/goals.md" 2>/dev/null || echo 0)
   if [ "$active" -gt 0 ]; then
-    echo "⚠ Active goals ($active) — may be stuck:"
-    grep -E '^\- \[~\]' "$PSI_DIR/memory/goals.md"
+    echo -e "${YELLOW}⚠${NC} Active goals ($active) — may be stuck:"
+    grep -E '^\- \[~\]' "$PSI_DIR/memory/goals.md" 2>/dev/null | while read l; do echo "  $l"; done
   fi
 
-  # 4. Oracle stats
+  # 4. Oracle stats (real check)
   echo ""
-  oracle_stats 2>/dev/null | "$SCRIPT_DIR/jq.exe" -r '"DB: \(.totalEntries // 0) entries, FTS: \(.vectorStatus // "unknown")"' || echo "Oracle: unreachable"
+  local stats=$(oracle_stats 2>/dev/null)
+  if echo "$stats" | $JQ -e '.totalEntries' >/dev/null 2>&1; then
+    local entries=$(echo "$stats" | $JQ -r '.totalEntries // 0')
+    echo "🧠 Oracle: $entries entries"
+  else
+    echo "🧠 Oracle: unreachable"
+  fi
 }
 
 # ═══════════════════════════════════════════
@@ -502,6 +575,8 @@ if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
       echo "System:"
       echo "  fleet                            — Fleet status"
       echo "  check                            — Autonomous check"
+      echo ""
+      echo "Platform: $(uname -s) | Curl: $CURL | JQ: $JQ"
       ;;
   esac
 fi

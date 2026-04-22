@@ -1,0 +1,6 @@
+{"source":"01_bun_sh_docs.md","type":"fact","content":"Bun is a fast JavaScript all-in-one toolkit — runtime, bundler, transpiler, package manager","confidence":"high"}
+{"source":"01_bun_sh_docs.md","type":"fact","content":"Bun implements Node.js APIs natively, not through V8 — uses JavaScriptCore (JSC) engine from WebKit","confidence":"high"}
+{"source":"01_bun_sh_docs.md","type":"code","content":"bun run script.ts — runs TypeScript directly without compilation step","confidence":"high"}
+{"source":"02_raw_githubusercontent_com_oven_sh_bun_main_README_md.md","type":"fact","content":"Bun is 4x faster than Node.js for HTTP serving (measured with simple hello-world)","confidence":"medium"}
+{"source":"02_raw_githubusercontent_com_oven_sh_bun_main_README_md.md","type":"quote","content":"Bun is designed as a drop-in replacement for Node.js, but faster","confidence":"high"}
+{"source":"01_bun_sh_docs.md","type":"insight","content":"Bun competes with both Node.js (runtime) and Deno (TS-first) by combining speed of native code with Node compatibility","confidence":"medium"}

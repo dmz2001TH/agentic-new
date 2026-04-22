@@ -1,37 +1,95 @@
-description = "Review งาน — ตรวจสอบคุณภาพก่อน mark ว่าเสร็จ"
+description = "Review งาน — ตรวจ output จริง ไม่ใช่แค่ติ๊ก checklist"
 
 prompt = """
-Review งานที่ทำเสร็จก่อน mark ว่าเสร็จ
+Review งานก่อน mark ว่าเสร็จ
 
 งาน: $ARGUMENTS (หรือ task ที่กำลังทำล่าสุด)
 
-## Review Checklist:
-1. [ ] ทุก subtask เสร็จ?
-2. [ ] คุณภาพ output ยอมรับได้?
-3. [ ] จัดการ edge cases แล้ว?
-4. [ ] เอกสารอัพเดท?
-5. [ ] Memory อัพเดทด้วย learnings?
-6. [ ] บันทึก patterns ที่เกี่ยวข้อง?
+## ขั้นตอนที่ 1: หา Task จริง
 
-## กระบวนการ:
-1. อ่านไฟล์ task จาก ψ/inbox/
-2. ตรวจแต่ละ subtask
-3. ตรวจ output/โค้ด/งานจริง
-4. บันทึกปัญหา (ถ้ามี)
-5. ถ้าดีทั้งหมด → อัพเดทสถานะเป็น [x]
-6. ถ้ามีปัญหา → คงเป็น [~] แล้ว列出สิ่งที่ต้องแก้
-
-## บันทึก review ในไฟล์ task:
-```markdown
-## Review — [วันนี้]
-- [x/!] [checklist item]: [notes]
-- Overall: [PASS/ต้องแก้]
-- Notes: [review notes]
+```bash
+# หา task ที่ active
+TASK_FILE=$(grep -rl "\[~\]" ψ/inbox/*.md 2>/dev/null | head -1)
+if [ -z "$TASK_FILE" ]; then
+  echo "❌ ไม่มี task ที่กำลังทำอยู่"
+  exit 1
+fi
+echo "📋 Task: $(head -1 "$TASK_FILE")"
 ```
 
-## ยืนยัน:
-- ถ้า PASS: "✅ Review ผ่าน — [task] เสร็จแล้ว"
-- ถ้าต้องแก้: "⚠️ ยังมีปัญหา: [รายการ]"
+## ขั้นตอนที่ 2: ตรวจ Output จริง
+
+### 2.1 ตรวจ Subtasks
+```bash
+echo "=== SUBTASKS ==="
+grep -E "\[ \]|\[~\]|\[x\]|\[!\]" "$TASK_FILE"
+DONE=$(grep -c "\[x\]" "$TASK_FILE")
+TOTAL=$(grep -cE "\[ \]|\[~\]|\[x\]|\[!\]" "$TASK_FILE")
+echo "เสร็จ: $DONE/$TOTAL"
+```
+
+### 2.2 ตรวจไฟล์ที่เกี่ยวข้อง
+```bash
+echo "=== ไฟล์ที่แก้ไข ==="
+grep -i "file\|ไฟล์\|path" "$TASK_FILE" | head -5
+# ตรวจว่าไฟล์เหล่านั้นมีอยู่จริง
+for f in $(grep -oP '(?:file|ไฟล์|path):\s*\K\S+' "$TASK_FILE" 2>/dev/null); do
+  if [ -f "$f" ]; then
+    echo "✅ $f — exists ($(wc -c < "$f") bytes)"
+  else
+    echo "❌ $f — NOT FOUND"
+  fi
+done
+```
+
+### 2.3 ตรวจ Code/Output
+```bash
+echo "=== ตรวจ Code ==="
+# ถ้ามี test command ใน task
+TEST_CMD=$(grep -i "test\|เทส" "$TASK_FILE" | head -1)
+if [ -n "$TEST_CMD" ]; then
+  echo "รัน test: $TEST_CMD"
+  # eval "$TEST_CMD" 2>&1 | tail -10
+fi
+
+# ถ้ามี build command
+BUILD_CMD=$(grep -i "build" "$TASK_FILE" | head -1)
+if [ -n "$BUILD_CMD" ]; then
+  echo "รัน build: $BUILD_CMD"
+fi
+```
+
+## ขั้นตอนที่ 3: Review Checklist (ด้วย evidence)
+
+```markdown
+## Review — $(date +%Y-%m-%d)
+
+### Checklist (ต้องมี evidence แต่ละข้อ)
+- [x/!] ทุก subtask เสร็จ? → Evidence: [DONE/TOTAL]
+- [x/!] output ยอมรับได้? → Evidence: [ไฟล์ที่ตรวจ]
+- [x/!] edge cases? → Evidence: [สิ่งที่ตรวจ]
+- [x/!] memory อัพเดท? → Evidence: [ไฟล์ที่อัพเดท]
+
+### Overall: [PASS/ต้องแก้]
+### Notes: [สิ่งที่พบ]
+```
+
+## ขั้นตอนที่ 4: อัพเดทสถานะ (ถ้า PASS)
+
+```bash
+if [ "$REVIEW_PASS" = "true" ]; then
+  sed -i 's/สถานะ.*\[~\]/สถานะ: [x] เสร็จ/' "$TASK_FILE"
+  sed -i "/สถานะ.*\[x\]/a\\- เสร็จเมื่อ: $(date +%Y-%m-%d\ %H:%M)" "$TASK_FILE"
+  echo "✅ Task เสร็จแล้ว"
+else
+  echo "⚠️ ยังมีปัญหา — คงสถานะ [~]"
+fi
+```
+
+## ⛔ ห้าม:
+- ติ๊ก checklist โดยไม่มี evidence
+- mark เสร็จโดยไม่ตรวจ output จริง
+- บอก "review ผ่าน" โดยไม่ได้ cat ไฟล์
 
 ตอบเป็นภาษาไทย
 """

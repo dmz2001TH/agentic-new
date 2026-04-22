@@ -1,27 +1,66 @@
-description = "เริ่มทำงาน — เปลี่ยนสถานะ task เป็น in progress"
+description = "เริ่มทำงาน — เปลี่ยนสถานะจริง + verify ว่าเปลี่ยนแล้ว"
 
 prompt = """
 เริ่มทำงานกับ task
 
-งาน: $ARGUMENTS (หรือถ้าว่าง เลือก task ที่ priority สูงสุด)
+งาน: $ARGUMENTS (หรือ task priority สูงสุด)
 
-## กระบวนการ:
-1. หา task ใน ψ/inbox/
-2. อัพเดทสถานะเป็น [~] กำลังทำ
-3. อ่าน memory ที่เกี่ยวข้องทั้งหมด (patterns, learnings, notes)
-4. เริ่มทำงาน
-5. บันทึก progress ในไฟล์ task
+## ขั้นตอนที่ 1: หา Task จริง
 
-## ระหว่างทำงาน:
-- อัพเดทสถานะ subtask เมื่อเสร็จ
-- เพิ่ม progress notes
-- ถ้าเจอข้อมูลใหม่ → บันทึกใน memory ที่เหมาะสม
-- ถ้าติด → อัพเดทสถานะเป็น [!] แล้วอธิบาย
+```bash
+# ถ้าไม่ได้ระบุงาน หา priority สูงสุด
+if [ -z "$ARGUMENTS" ]; then
+  echo "=== Tasks ที่พร้อมทำ ==="
+  grep -l "สถานะ.*\[ \]" ψ/inbox/*.md 2>/dev/null | head -5
+  echo "เลือก task ที่ priority สูงสุด"
+else
+  echo "=== ค้นหา: $ARGUMENTS ==="
+  grep -rl "$ARGUMENTS" ψ/inbox/*.md 2>/dev/null
+fi
+```
 
-## ยืนยัน:
-"🔧 เริ่มทำงาน: [ชื่อ task]"
-"📋 Subtasks: [X] ขั้นตอน"
-"⏱️ เริ่มเลย..."
+## ขั้นตอนที่ 2: เปลี่ยนสถานะจริง
+
+```bash
+TASK_FILE="[ไฟล์ task ที่เจอ]"
+
+# เปลี่ยน [ ] → [~]
+sed -i 's/สถานะ.*\[ \]/สถานะ: [~] กำลังทำ/' "$TASK_FILE"
+
+# เพิ่ม timestamp เริ่ม
+sed -i "/สถานะ.*\[~\]/a\\- เริ่มเมื่อ: $(date +%Y-%m-%d\ %H:%M)" "$TASK_FILE"
+
+# Verify
+if grep -q "\[~\]" "$TASK_FILE"; then
+  echo "✅ เปลี่ยนสถานะเป็น [~] แล้ว"
+  echo "ไฟล์: $TASK_FILE"
+else
+  echo "❌ เปลี่ยนสถานะไม่สำเร็จ"
+fi
+```
+
+## ขั้นตอนที่ 3: อ่าน Context จริง
+
+```bash
+echo "=== MEMORY ที่เกี่ยวข้อง ==="
+grep -l "$(head -1 "$TASK_FILE" | sed 's/# Task: //')" ψ/memory/*.md 2>/dev/null
+echo "=== PATTERNS ===" && cat ψ/memory/patterns.md 2>/dev/null | tail -5
+echo "=== LEARNINGS ===" && cat ψ/memory/learnings.md 2>/dev/null | tail -5
+```
+
+## รายงาน:
+
+```
+🔧 เริ่มทำงาน: [ชื่อ task จากไฟล์จริง]
+📋 Subtasks: [จำนวน จากไฟล์จริง]
+📁 ไฟล์: [path จริง]
+⏱️ เริ่มเมื่อ: [timestamp จริง]
+```
+
+## ⛔ ห้าม:
+- บอก "เริ่มทำงาน" โดยไม่เปลี่ยนสถานะในไฟล์
+- บอก "อ่าน memory แล้ว" โดยไม่ได้ cat ไฟล์จริง
+- เปลี่ยนสถานะแล้วไม่ verify
 
 ตอบเป็นภาษาไทย
 """
