@@ -10,7 +10,9 @@
 #   bash critic.sh --reject "review_id" "reason"
 
 set -e
-CRITIC_DIR="$(cd "$(dirname "$0")" && pwd)"
+# Detect Root
+GIT_ROOT=$(git rev-parse --show-toplevel 2>/dev/null || echo "$(cd "$(dirname "$0")/../../.." && pwd)")
+CRITIC_DIR="${GIT_ROOT}/god-upgrades/02-agent-arch/critic"
 REVIEWS_FILE="${CRITIC_DIR}/reviews.jsonl"
 RULES_FILE="${CRITIC_DIR}/rules.json"
 SCORES_FILE="${CRITIC_DIR}/scores.json"
@@ -137,7 +139,7 @@ review_file() {
 
 review_dir() {
     local dir="$1"
-    [ ! -d "$dir" ] && echo "Directory not found: $dir" && return 1
+    [ ! -d "$dir" ] && echo -e "${RED}Directory not found:${NC} $dir" && return 1
     
     echo -e "${CYAN}Reviewing directory: ${dir}${NC}\n"
     local total=0 passed=0 failed=0
@@ -151,7 +153,7 @@ review_dir() {
             failed=$((failed+1))
         fi
         echo ""
-    done < <(find "$dir" -maxdepth 1 -type f \( -name "*.sh" -o -name "*.py" -o -name "*.js" -o -name "*.json" -o -name "*.md" \) -print0 2>/dev/null)
+    done < <(find "$dir" -maxdepth 5 -type f \( -name "*.sh" -o -name "*.py" -o -name "*.js" -o -name "*.json" -o -name "*.md" \) -print0 2>/dev/null)
     
     echo -e "${CYAN}═══════════════════════════════════════${NC}"
     echo -e "  Total: ${total}  ${GREEN}Passed: ${passed}${NC}  ${RED}Failed: ${failed}${NC}"

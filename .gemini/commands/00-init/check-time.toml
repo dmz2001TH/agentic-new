@@ -1,0 +1,7 @@
+# Time Sentinel Active
+# Command to check system time accuracy
+
+[command]
+name = "check-time"
+description = "Sync and check system clock accuracy."
+run = "/mnt/c/Agentic/agentic-new/god-upgrades/01-foundation/time-sync.sh && date +'%Y-%m-%d %H:%M:%S.%3N'"

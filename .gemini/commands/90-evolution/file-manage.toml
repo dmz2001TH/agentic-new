@@ -1,0 +1,2 @@
+description = "จัดการไฟล์ด้วยพลังจาก File Browser"
+prompt = "เรียกใช้เครื่องมือจัดการไฟล์เพื่อ: $ARGUMENTS"

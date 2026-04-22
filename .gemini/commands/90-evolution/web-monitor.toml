@@ -1,0 +1,2 @@
+description = "ติดตามสถานะเว็บไซต์หรือ Trend ใหม่ๆ ด้วย World Monitor"
+prompt = "รัน World Monitor เพื่ออัปเดตข้อมูล Trend ล่าสุดตามหัวข้อ: $ARGUMENTS"
