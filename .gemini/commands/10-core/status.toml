@@ -1,0 +1,49 @@
+description = "แสดง/อัพเดท GOD status bar — real-time agent activity + countdown"
+
+prompt = """
+อัพเดท GOD status bar
+
+คำสั่ง: $ARGUMENTS
+
+## รูปแบบ:
+- `learn <topic> [deadline]` — แสดงว่ากำลังเรียน
+- `edit <file> [deadline]` — แสดงว่ากำลังแก้ไฟล์
+- `report <topic> [deadline]` — แสดงว่ากำลังรายงาน
+- `idle` — แสดงว่าว่าง
+- `show` — แสดง status ปัจจุบัน
+- `clear` — ล้าง status
+
+## รันคำสั่ง:
+
+```bash
+# ตัวอย่าง: กำลังเรียน Bun Runtime ถึง 01:10
+bash scripts/god-status.sh update god Learn "Bun Runtime" 01:10
+
+# ตัวอย่าง: builder กำลังแก้ไฟล์
+bash scripts/god-status.sh update builder Edit "agentic-new/GEMINI.md" 01:05
+
+# ตัวอย่าง: กำลังรายงาน มี deadline
+bash scripts/god-status.sh update god Report "สรุปผล" 01:00
+
+# แสดง status ปัจจุบัน
+bash scripts/god-status.sh show
+
+# ล้าง status
+bash scripts/god-status.sh clear
+```
+
+## แสดงผลลัพธ์:
+```
+╭───────────────────────────────────────────────────────────────────────────────────────╮
+ │ ≡ Running Agent... (ctrl+o to expand)
+ │ 🧠 god · Learn Bun Runtime  10:00 นับเวลาถอยหลัง
+╰───────────────────────────────────────────────────────────────────────────────────────╯
+```
+
+## ⛔ ห้าม:
+- ตั้ง status แล้วไม่ update เมื่อเปลี่ยนงาน
+- ตั้ง deadline ที่ไม่จริง
+- ปล่อย status ค้างเมื่อทำงานเสร็จ
+
+ตอบเป็นภาษาไทย
+"""
