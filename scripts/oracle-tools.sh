@@ -312,7 +312,7 @@ send_to_agent() {
   local session="mawjs-${agent}"
 
   if tmux has-session -t "$session" 2>/dev/null; then
-    tmux send-keys -t "$session:0" "$message" Enter
+    tmux send-keys -t "$session" "$message" Enter
     echo "✓ Sent to $agent: $message"
   else
     echo "✗ Agent $agent not found (session: $session)" >&2

@@ -1,5 +1,0 @@
-[2026-04-20T16:24:42.961Z] Chat sent: god → builder: เฮ้ Builder วันนี้ช่วย refactor โค้ดใน maw-js ให้ clean ขึ้นหน่อย
-[2026-04-20T16:24:44.494Z] Chat dispatched: god → builder via mawjs-builder
-[2026-04-20T16:24:44.507Z] Chat sent: god → researcher: Researcher ช่วยหาข้อมูลเรื่อง multi-agent memory systems ให้หน่อย
-[2026-04-20T16:24:44.522Z] Chat dispatch failed: researcher offline (session: mawjs-researcher)
-[2026-04-20T16:26:13.662Z] Chat sent: god → nexus: Nexus ช่วยเช็คสถานะ Oracle แล้วรายงานกลับ

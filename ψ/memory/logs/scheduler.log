@@ -1,4 +1,0 @@
-[2026-04-20T16:25:00.669Z] Schedule added: morning-research (0 7 * * *)
-[2026-04-20T16:25:00.692Z] Schedule added: morning-standup (0 9 * * *)
-[2026-04-20T16:25:00.722Z] Schedule added: test-immediate (26 * * * *)
-[2026-04-20T16:26:59.952Z] Schedule deleted: sched-1776702300722-4e9985
