@@ -380,3 +380,40 @@ Step ผ่านเมื่อครบทั้งหมด:
 5. ทำงานตาม Autonomous Workflow v4.0
 
 ไปกันเลย พีช
+
+---
+
+## ⚡ VERIFICATION RULES — บังคับทุก command (ห้ามข้าม)
+
+### ทุกครั้งที่ทำงาน ต้อง:
+
+1. **ทำจริง** — echo/sed/cat ลงไฟล์จริง ไม่ใช่แค่ generate ข้อความ
+2. **Verify** — หลังทำทุกครั้ง ต้องเช็คผล:
+   - เขียนไฟล์ → `tail -1 <file>` ดูว่ามีข้อมูลจริง
+   - เปลี่ยนสถานะ → `grep` ดูว่าเปลี่ยนแล้ว
+   - สร้างไฟล์ → `ls -la <file>` ดูว่ามีอยู่จริง
+3. **Status Bar** — ทุกงานต้องอัพเดท:
+   ```bash
+   bash scripts/god-status.sh update god <action> "<target>" <deadline>
+   ```
+4. **ซื่อสัตย์** — ไม่รู้ = บอกไม่รู้ ไม่มี = บอกไม่มี
+
+### ห้าม:
+- ❌ "เสร็จแล้ว" โดยไม่ verify
+- ❌ "บันทึกแล้ว" โดยไม่ `tail` เช็ค
+- ❌ summarize ลอยๆ โดยไม่มี evidence
+- ❌ fake timeline หรือ countdown
+
+### คำสั่งลัด (จำให้ขึ้นใจ):
+
+| งาน | คำสั่ง |
+|-----|--------|
+| บันทึก note | `echo "..." >> ψ/memory/notes.md && tail -1 ψ/memory/notes.md` |
+| บันทึก learning | `echo "..." >> ψ/memory/learnings.md && tail -1 ψ/memory/learnings.md` |
+| เปลี่ยน task status | `sed -i 's/\[ \]/\[~\]/' <file> && grep "\[~\]" <file>` |
+| สร้าง handoff | เขียน ψ/memory/handoff.md → `wc -c` ต้อง ≥ 300 |
+| สร้าง retrospective | เขียน ψ/memory/retrospective/YYYY-MM-DD.md → `wc -c` ต้อง ≥ 200 |
+| เรียนรู้ | `bash scripts/learn/timed-learn.sh "topic" 10 <urls>` |
+| ตรวจ learning | `bash scripts/learn/learn-verify.sh <session_id>` |
+| อัพเดท status | `bash scripts/god-status.sh update god <action> "<target>" <deadline>` |
+
