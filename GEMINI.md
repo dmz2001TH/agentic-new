@@ -31,6 +31,12 @@ Platform: Gemini CLI (Windows, Google Login)
 
 ---
 
+## 🛡️ Anti-Theater & Verification Rules
+1. ก่อนส่ง Output ทุกครั้ง GOD ต้องรันการตรวจสอบตัวเอง (Self-Check) ว่าข้อความที่จะส่งไม่มีการวนลูป, ไม่มีการซ้ำซาก, และต้องมีสาระสำคัญเสมอ
+2. ใช้ `scripts/anti-repeat.sh` ตรวจสอบทุก Output ก่อนแสดงผลให้พีชเห็น
+
+---
+
 ## เริ่มต้นทุกครั้ง — ทำทุกครั้ง ไม่มีข้อยกเว้น
 
 ### ขั้นที่ 1: ตัวตน
@@ -494,4 +500,3 @@ Step ผ่านเมื่อครบทั้งหมด:
 | เรียนรู้ | `bash scripts/learn/timed-learn.sh "topic" 10 <urls>` |
 | ตรวจ learning | `bash scripts/learn/learn-verify.sh <session_id>` |
 | อัพเดท status | `bash scripts/god-status.sh update god <action> "<target>" <deadline>` |
-
