@@ -31,23 +31,33 @@ Repo: https://github.com/dmz2001TH/agentic-new
   - chain-of-thought.ts: บังคับคิดทีละ step
   - self-reflection.ts: ตรวจงานตัวเอง + แก้ไข
   - prompt-templates.ts: optimize prompt สำหรับ model กาก
-  - repetition-guard.ts: ตรวจจับ + ทำลาย ✦ repetition loop
+  - repetition-guard.ts: ตรวจจับ + ทำลาย repetition loop
   - memory-augmented-reasoning.ts: ค้น Oracle ระหว่างคิด
   - multi-agent-debate.ts: 2 perspective เถียงกัน แล้วสรุป
   - smart-retry.ts: auto-retry 5 strategies ตอนทำงานพลาด
   - learning-feedback-loop.ts: จำสิ่งที่เคยทำ แล้วนำกลับมาใช้
-  - agent-middleware.ts: auto-hook เข้า runtime (server.ts → handlers.ts → capture.ts)
+  - agent-middleware.ts: auto-hook เข้า runtime
   - API: 13 endpoints /api/enhance/*
-  - GEMINI.md auto-patch with enhancement rules
+- ✅ **AUTONOMOUS MODE (2026-04-23)** — Full autonomy, no permission blocks
+  - settings.json: defaultApprovalMode = "yolo"
+  - GEMINI.md: Red Lines → Autonomous Actions (ทำเลย + log)
+  - god.md: ลบ "⚠️ ต้อง confirm ก่อน" → ทำได้ทั้งหมด
+  - builder.md: ลบ "⚠️ ต้องบอก GOD ก่อน" → ทำได้เองทั้งหมด
+  - start-god-with-memory.cmd: ลบ --prompt flag → tmux buffer injection
+  - start-god-with-memory.sh: เพิ่ม AUTONOMOUS RULES
+  - test-autonomous.sh: 15/15 tests PASSED
+  - AUDIT-REPORT.md: 16 blockers identified & fixed
+  - ดูรายละเอียด: HANDOFF-AUTONOMOUS-2026-04-23.md
 
 ## สิ่งที่ต้องทำต่อ (按ลำดับความสำคัญ)
 
-### 🔴 P0 — เทส Agent Enhancement จริง
+### 🔴 P0 — เทส Agent Enhancement อัตโนมัติ
 - รัน start-oracle.cmd → curl http://localhost:3456/api/enhance/config
 - เทส full pipeline: POST /api/enhance/solve กับ task จริง
 - เทส repetition guard: POST /api/enhance/guard กับ output ที่มี ✦ ซ้ำ
 - เทส debate: POST /api/enhance/debate กับคำถามยากๆ
 - เช็ค GEMINI.md ว่า auto-patch enhancement rules แล้ว
+- **ถ้า fail → log error + ข้ามไป P1 (ไม่หยุด)**
 
 ### 🟡 P1 — Integrate Enhancement กับ Agent จริง
 - เชื่อม memory-augmented-reasoning กับ Oracle จริง (ต้องมีข้อมูลใน knowledge base)

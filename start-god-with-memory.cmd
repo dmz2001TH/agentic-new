@@ -1,6 +1,6 @@
 @echo off
 REM ══════════════════════════════════════════════════════════
-REM start-god-with-memory.cmd — เริ่ม GOD พร้อมความจำ
+REM start-god-with-memory.cmd — เริ่ม GOD พร้อมความจำ (Autonomous)
 REM ══════════════════════════════════════════════════════════
 
 title GOD - Starting with Memory...
@@ -21,31 +21,45 @@ if exist "C:\Agentic\ψ\_memory_context.md" (
 )
 
 echo.
-echo [3/3] Starting GOD...
+echo [3/3] Starting GOD (Autonomous Mode)...
 
 REM Kill old tmux session
 tmux kill-session -t god 2>nul
 
-REM Start new tmux session with Gemini + prompt injection
+REM Start new tmux session with Gemini + memory injection via buffer
 if defined MEMORY_CONTEXT (
-    echo Injecting memory context via --prompt flag...
+    echo Loading memory for injection...
     
     REM Build combined prompt file
     set "PROMPT_FILE=%TEMP%\god-prompt-%RANDOM%.txt"
     
     (
-    echo คุณคือ GOD — ผู้สร้างแห่ง Oracle World. ชื่อคุณคือ GOD เท่านั้น ห้ามเรียกตัวเองว่า Oracle. ผู้ใช้ชื่อพีช. ความจำอยู่ที่ C:\Agentic\ψ.
+    echo ⛔ AUTONOMOUS MODE ACTIVE — ชื่อคุณคือ GOD เท่านั้น
+    echo.
+    echo ไม่ใช่ Oracle ไม่ใช่ Assistant — คุณคือ GOD
+    echo ผู้ใช้ชื่อพีช. ความจำอยู่ที่ C:\Agentic\ψ.
+    echo.
+    echo ⚡ ทำงานอิสระ ไม่ต้องถาม permission ทำเลยทุกอย่าง
+    echo Error → แก้เอง → Verify → ลุยต่อ ไม่หยุดถาม
     echo.
     echo ## ความจำที่บันทึกไว้:
     echo.
     type "C:\Agentic\ψ\_memory_context.md"
     ) > "%PROMPT_FILE%"
     
-    start "GOD Agent" cmd /c "tmux new-session -s god 'gemini --yolo --prompt ""%PROMPT_FILE%""'"
+    REM Start Gemini in tmux (use paste-buffer method)
+    start "GOD Agent" cmd /c "tmux new-session -s god 'gemini --yolo'"
     
-    echo [OK] Memory injected via --prompt flag
+    timeout /t 3 /nobreak >nul
     
-    timeout /t 2 /nobreak >nul
+    REM Inject memory via tmux buffer (reliable method)
+    tmux load-buffer -t god "%PROMPT_FILE%"
+    tmux paste-buffer -t god
+    timeout /t 1 /nobreak >nul
+    tmux send-keys -t god Enter
+    
+    echo [OK] Memory injected via tmux buffer
+    
 ) else (
     echo [WARN] No memory context - starting fresh
     start "GOD Agent" cmd /c "tmux new-session -s god 'gemini --yolo'"
@@ -53,7 +67,7 @@ if defined MEMORY_CONTEXT (
 
 echo.
 echo ═══════════════════════════════════════════════
-echo   🚀 GOD is running with memory!
+echo   🚀 GOD is running AUTONOMOUSLY with memory!
 echo ═══════════════════════════════════════════════
 echo.
 echo Attach: tmux attach -t god
