@@ -1,0 +1,29 @@
+description = "จัดการทีมเอเจนท์ (Spawn/Resume) ตามแบบฉบับ Clarity Trilogy"
+
+prompt = """
+!{ bash {{script}} }
+"""
+
+[[arguments]]
+name = "action"
+description = "คำสั่งที่ต้องการ (spawn หรือ resume)"
+type = "string"
+required = true
+
+[[arguments]]
+name = "name"
+description = "ชื่อของทีมเอเจนท์"
+type = "string"
+required = true
+
+[[arguments]]
+name = "mission"
+description = "ภารกิจที่มอบหมาย (สำหรับ spawn)"
+type = "string"
+required = false
+
+[script]
+interpreter = "bash"
+content = """
+/mnt/c/Agentic/scripts/oracle-maw.sh "$ARG_ACTION" "$ARG_NAME" "$ARG_MISSION"
+"""

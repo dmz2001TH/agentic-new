@@ -1,1 +1,0 @@
-# Agentic AI 2026 Standards\n- Learned: Goal-seeking over tool-calling, ToT/Reflexion, Self-repair/tool discovery, Hierarchical memory consolidation, Swarm orchestration.\n- Target: Peach 1 AM Session

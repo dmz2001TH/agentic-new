@@ -2,14 +2,12 @@
 # ═══════════════════════════════════════════════════════════
 # launch-agent.sh — Gemini CLI launcher with per-agent context
 #
-# Usage: launch-agent.sh <agent-name>
-# Reads .gemini/agents/<agent-name>.md if it exists,
-# falls back to .gemini/GEMINI.md (default).
-# Temporarily patches settings.json to point at the right file.
+# Usage: launch-agent.sh <agent-name> [prompt-file]
 # ═══════════════════════════════════════════════════════════
 set -euo pipefail
 
 AGENT_NAME="${1:-default}"
+PROMPT_FILE="${2:-}"
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 SETTINGS="$SCRIPT_DIR/settings.json"
 
@@ -22,11 +20,14 @@ else
   echo "🔮 No agent-specific context for '$AGENT_NAME', using default: $CONTEXT_FILE"
 fi
 
-# --- Patch settings.json (preserve original) ---
+# --- Patch settings.json safely with flock ---
+LOCKFILE="$SCRIPT_DIR/settings.lock"
+exec 200>"$LOCKFILE"
+flock -x 200
+
 BACKUP="$SETTINGS.bak"
 cp "$SETTINGS" "$BACKUP"
 
-# Use node to patch JSON safely (handles all edge cases)
 node -e "
   const fs = require('fs');
   const s = JSON.parse(fs.readFileSync('$SETTINGS', 'utf-8'));
@@ -34,14 +35,30 @@ node -e "
   fs.writeFileSync('$SETTINGS', JSON.stringify(s, null, 2) + '\n');
 "
 
-# --- Restore settings on exit (any exit: normal, error, signal) ---
+flock -u 200
+
+# --- Restore settings on exit ---
 cleanup() {
-  cp "$BACKUP" "$SETTINGS"
-  rm -f "$BACKUP"
+  exec 200>"$LOCKFILE"
+  flock -x 200
+  if [ -f "$BACKUP" ]; then
+    cp "$BACKUP" "$SETTINGS"
+    rm -f "$BACKUP"
+  fi
+  flock -u 200
 }
 trap cleanup EXIT
 
 # --- Launch Gemini CLI ---
 export CLAUDE_AGENT_NAME="${AGENT_NAME}"
-# --yolo is the primary flag, adding potential --yes or similar if supported by CLI version
-exec gemini --yolo "$@"
+
+echo "🤖 Agent $AGENT_NAME is starting..."
+
+if [ -n "$PROMPT_FILE" ] && [ -f "$PROMPT_FILE" ]; then
+  # ใช้ -i (prompt-interactive) เพื่อให้รัน prompt แล้วรอคำสั่งต่อไปได้ถ้ายังไม่จบ
+  PROMPT_CONTENT=$(cat "$PROMPT_FILE")
+  exec gemini --yolo -i "$PROMPT_CONTENT"
+else
+  exec gemini --yolo
+fi
+

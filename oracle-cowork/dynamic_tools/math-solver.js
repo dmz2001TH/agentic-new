@@ -1,0 +1,1 @@
+const args = process.argv.slice(2); console.log('🔧 [math-solver] Calculating: ' + args.join(' ')); console.log('✅ Result: ' + eval(args.join(' ')));

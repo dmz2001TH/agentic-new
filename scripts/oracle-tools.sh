@@ -17,6 +17,7 @@ GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
 PURPLE='\033[0;35m'
+WHITE='\033[1;37m'
 NC='\033[0m'
 
 # ═══════════════════════════════════════════
@@ -54,7 +55,15 @@ ot-hey() {
 }
 
 ot-compress() {
-  grep -E "Action:|Result:|Error:|🎯 Goal:" "$1" > "$1.compressed"
+  local file="${1:?Usage: ot-compress <file>}"
+  local dest="${file}.compressed"
+  echo "🗜️ Compressing $file (RTK/Caveman style)..."
+  # กรองเฉพาะสัญญาณ (Signal) สำคัญและยุบบรรทัดที่ซ้ำกัน (Deduplication)
+  grep -iE "error|fail|warn|fatal|exception|action:|result:|goal:|summary" "$file" \
+    | grep -vE "^\s*$" \
+    | uniq -c \
+    | awk '{$1=$1;print}' > "$dest"
+  echo "✓ Compressed saved to $dest"
 }
 
 ot-extract-skill() {
@@ -70,23 +79,66 @@ $3
 ot-pulse() {
   local agent="${CLAUDE_AGENT_NAME:-god}"
   mkdir -p "ψ/memory/pulse"
-  echo "{"agent": "$agent", "status": "$1", "timestamp": "$(date +%H:%M:%S)"}" > "ψ/memory/pulse/${agent}.status"
+  echo "{\"agent\": \"$agent\", \"status\": \"$1\", \"timestamp\": \"$(date +%H:%M:%S)\"}" > "ψ/memory/pulse/${agent}.status"
 }
 
 ot-status() {
-  echo -e "${PURPLE}══ 🚀 ORACLE FLEET DASHBOARD ══${NC}"
-  echo "Time: $(date +%H:%M:%S) | User: Peach"
-  echo ""
-  echo -e "${BLUE}📡 LIVE PULSE:${NC}"
-  ls ψ/memory/pulse/*.status 2>/dev/null | while read -r f; do
-    local a=$(basename "$f" .status)
-    local s=$(grep -oP '"status": "\K[^"]+' "$f")
-    local t=$(grep -oP '"timestamp": "\K[^"]+' "$f")
-    echo -e "  [${GREEN}$a${NC}]: $s ($t)"
-  done || echo "  (no pulses)"
-  echo ""
-  echo -e "${YELLOW}🎯 GOALS:${NC}"
-  grep -c -E '^\- \[~\]' ψ/memory/goals.md 2>/dev/null || echo 0
+  local ROOT_DIR="${PROJECT_ROOT:-/mnt/c/Agentic}"
+  clear
+  echo -e "${BLUE}🌌───────────────────────────────────────────────────────────────────🌌${NC}"
+  echo -e "  ${WHITE}👑 ORACLE MASTER SYSTEM${NC}  |  ${YELLOW}v4.2 Supreme${NC}  |  ${PURPLE}$(date +'%Y-%m-%d %H:%M:%S')${NC}"
+  echo -e "${BLUE}─────────────────────────────────────────────────────────────────────${NC}"
+  
+  # 1. Background Fleet Section
+  echo -e "\n${GREEN}🛰️  FLEET COMMAND (Active Sessions):${NC}"
+  local tmux_sessions=$(tmux ls 2>/dev/null | grep -E "^(oracle-|team-|god)")
+  if [ -n "$tmux_sessions" ]; then
+     echo "$tmux_sessions" | while read -r line; do
+       local sname=$(echo "$line" | cut -d':' -f1)
+       echo -e "  ${GREEN}●${NC} @${sname}"
+     done
+  else
+     echo -e "  ${RED}○${NC} No background sessions found."
+  fi
+  
+  # 2. Flight Status (Live Sub-tasks)
+  echo -e "\n${YELLOW}✈️  FLIGHT STATUS (Live Sub-tasks):${NC}"
+  local task_files=$(ls "$ROOT_DIR/ψ/memory/tasks/"*.task 2>/dev/null)
+  if [ -n "$task_files" ]; then
+    echo "$task_files" | while read -r f; do
+      local a=$(basename "$f" .task)
+      local msg=$(grep -oP '"task": "\K[^"]+' "$f")
+      local ctx=$(grep -oP '"ctx": "\K[^"]+' "$f")
+      local t=$(grep -oP '"timestamp": "\K[^"]+' "$f")
+      echo -e "  ${BLUE}*${NC} ${WHITE}${msg}${NC}"
+      echo -e "    ${PURPLE}↳${NC} ${GREEN}@${a}${NC} (ctx: ${ctx}) [${YELLOW}$t${NC}]"
+    done
+  else
+    echo -e "  ${RED}○${NC} No active task reports found."
+  fi
+
+  # 3. Blackboard Section
+  echo -e "\n${BLUE}📋 STIGMERGIC BLACKBOARD (Shared Intelligence):${NC}"
+  if [ -f "$ROOT_DIR/oracle-cowork/blackboard.json" ]; then
+     node -e '
+       try {
+         const b = require("'"$ROOT_DIR"'/oracle-cowork/blackboard.json");
+         if(b.tasks && b.tasks.length > 0) {
+           b.tasks.slice(-5).forEach(t => {
+             const icon = t.status === "pending" ? "🟡" : "🟢";
+             console.log(`  ${icon} [Pheromone: ${t.pheromone.toString().padStart(3)}] ${t.task} (${t.publisher})`);
+           });
+         } else { console.log("  ○ Blackboard is empty."); }
+       } catch(e) { console.log("  ○ Cannot read blackboard."); }
+     ' 2>/dev/null || echo "  ○ Parse error."
+  else
+     echo -e "  ○ No blackboard found."
+  fi
+
+  # 4. Intelligence Footer
+  echo -e "\n${BLUE}─────────────────────────────────────────────────────────────────────${NC}"
+  echo -e "  ${YELLOW}🎯 Goals:${NC} $(grep -c -E '^\- \[~\]' "$ROOT_DIR/ψ/memory/goals.md" 2>/dev/null || echo 0) Active  |  ${PURPLE}📍 Vault:${NC} ψ/ (Connected)"
+  echo -e "${BLUE}🌌───────────────────────────────────────────────────────────────────🌌${NC}"
 }
 
 ot-safe-write() {
@@ -182,6 +234,24 @@ ot-slack-scan() {
 }
 
 
+ot-task() {
+  local agent="${CLAUDE_AGENT_NAME:-god}"
+  local task_msg="${1:?Usage: ot-task <message>}"
+  local ctx_usage="${2:-0%}"
+  mkdir -p "ψ/memory/tasks"
+  # บันทึกเป็นไฟล์ json ขนาดเล็กเพื่อให้ Dashboard อ่านง่าย
+  echo "{\"agent\": \"$agent\", \"task\": \"$task_msg\", \"ctx\": \"$ctx_usage\", \"timestamp\": \"$(date +%H:%M:%S)\"}" > "ψ/memory/tasks/${agent}.task"
+  echo -e "  ${GREEN}✓ Task Reported:${NC} $task_msg (@$agent)"
+}
+
+ot-view-supreme() {
+  echo -e "${PURPLE}🎨 Configuring Supreme Layout...${NC}"
+  # แบ่งหน้าจอ: บนโชว์ Dashboard (รันเป็นคำสั่งเริ่มต้น), ล่างว่างไว้ให้พิมพ์
+  # ใช้ -l 25 เพื่อระบุความสูง 25 บรรทัด
+  tmux split-window -v -l 25 "watch -n 5 -c source /mnt/c/Agentic/scripts/oracle-tools.sh && ot-status"
+  echo -e "${GREEN}✅ Supreme Layout Ready!${NC}"
+}
+
 # ═══════════════════════════════════════════
 # CLI ENTRY POINT
 # ═══════════════════════════════════════════
@@ -190,6 +260,8 @@ COMMAND="${1:-help}"
 shift || true
 
 case "$COMMAND" in
+    task) ot-task "$@" ;;
+    view) ot-view-supreme ;;
     verify)      ot-verify "$@" ;;
     pre-flight)  ot-pre-flight ;;
     edit)        ot-edit-surgical "$@" ;;

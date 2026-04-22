@@ -1,0 +1,70 @@
+{
+  "tasks": [
+    {
+      "id": "1776835906734",
+      "publisher": "User",
+      "task": "Refactor Frontend",
+      "pheromone": 90,
+      "status": "processing",
+      "timestamp": "2026-04-22T05:31:46.734Z",
+      "consumer": "Builder"
+    },
+    {
+      "id": "1776835906921",
+      "publisher": "User",
+      "task": "Update Docs",
+      "pheromone": 70,
+      "status": "pending",
+      "timestamp": "2026-04-22T05:31:46.921Z"
+    },
+    {
+      "id": "1776838912706",
+      "publisher": "researcher",
+      "task": "RESEARCH DONE: Smart Human Behavior (Decisions, Curiosity, Evolution) - See learnings/2026-04-22_...",
+      "pheromone": 100,
+      "status": "pending",
+      "timestamp": "2026-04-22T06:21:52.706Z"
+    },
+    {
+      "id": "1776841200000",
+      "publisher": "researcher",
+      "task": "DEEP DIVE COMPLETE: The Feedback Loop of Growth (Turning Failures into Protocols) - See learnings/2026-04-22_researcher-human-behavior-phase2.md",
+      "pheromone": 100,
+      "status": "pending",
+      "timestamp": "2026-04-22T07:00:00.000Z"
+    },
+    {
+      "id": "1776839835634",
+      "publisher": "Clarity-Alpha",
+      "task": "Fixing the Brain MISSION COMPLETE: Fixed tools, scripts, and started all agents.",
+      "pheromone": 100,
+      "status": "pending",
+      "timestamp": "2026-04-22T06:37:15.634Z"
+    },
+    {
+      "id": "1776840405968",
+      "publisher": "Clarity-Alpha",
+      "task": "Deploying MAW v2.0 to all nodes",
+      "pheromone": 100,
+      "status": "pending",
+      "timestamp": "2026-04-22T06:46:45.969Z"
+    },
+    {
+      "id": "1776840499405",
+      "publisher": "User",
+      "task": "Check Disk Space & Update Wiki",
+      "pheromone": 100,
+      "status": "pending",
+      "timestamp": "2026-04-22T06:48:19.405Z"
+    },
+    {
+      "id": "1776844794000",
+      "publisher": "GOD",
+      "task": "MISSION: backend-api - Creating DB and REST API (Delegated to Builder)",
+      "pheromone": 100,
+      "status": "processing",
+      "timestamp": "2026-04-22T07:59:54Z",
+      "consumer": "Builder"
+    }
+  ]
+}

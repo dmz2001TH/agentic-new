@@ -35,17 +35,17 @@ ensure_agent() {
     echo "  ✓ session exists"
   else
     tmux new-session -d -s "$session_name" -c "$AGENTS_DIR"
-    tmux rename-window -t "$session_name:0" "$window_name"
+    tmux rename-window -t "$session_name" "$window_name"
     echo "  + created session"
   fi
 
   # 2. Set CLAUDE_AGENT_NAME in tmux environment (persists across commands)
   tmux set-environment -t "$session_name" CLAUDE_AGENT_NAME "$agent_name" 2>/dev/null || true
-  tmux send-keys -t "$session_name:0" "export CLAUDE_AGENT_NAME=$agent_name" Enter 2>/dev/null || true
+  tmux send-keys -t "$session_name" "export CLAUDE_AGENT_NAME=$agent_name" Enter 2>/dev/null || true
 
   # 3. Check if Gemini CLI is already running in the pane
   local pane_cmd
-  pane_cmd=$(tmux list-panes -t "$session_name:0" -F "#{pane_current_command}" 2>/dev/null | head -1)
+  pane_cmd=$(tmux list-panes -t "$session_name" -F "#{pane_current_command}" 2>/dev/null | head -1)
 
   if echo "$pane_cmd" | grep -qiE "^(bash|sh|zsh|fish)$"; then
     # 4. Launch Gemini CLI with proper agent context
@@ -55,7 +55,7 @@ ensure_agent() {
     #    - Export CLAUDE_AGENT_NAME to the Gemini process
     #    - Both contexts include MEMORY SYSTEM instructions
     echo "  + launching Gemini CLI as '$agent_name'..."
-    tmux send-keys -t "$session_name:0" "cd '$AGENTS_DIR' && bash '$GEMINI_DIR/launch-agent.sh' $agent_name" Enter
+    tmux send-keys -t "$session_name" "cd '$AGENTS_DIR' && bash '$GEMINI_DIR/launch-agent.sh' $agent_name" Enter
   else
     echo "  ✓ Gemini already running (command: $pane_cmd)"
   fi

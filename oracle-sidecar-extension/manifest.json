@@ -1,0 +1,26 @@
+{
+  "manifest_version": 3,
+  "name": "Oracle World Supreme (Debugger)",
+  "version": "1.1",
+  "description": "Autonomous Agent with Low-level Browser Control",
+  "permissions": [
+    "sidePanel",
+    "tabs",
+    "activeTab",
+    "scripting",
+    "storage",
+    "debugger"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "side_panel": {
+    "default_path": "sidepanel.html"
+  },
+  "action": {
+    "default_title": "Open Oracle Sidecar"
+  },
+  "host_permissions": [
+    "<all_urls>"
+  ]
+}

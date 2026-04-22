@@ -27,3 +27,4 @@ Thumbs.db
 # Vault export files (generated dynamically)
 ψ/vault/*.db.export-*.csv
 ψ/vault/*.db.export-*.json
+Archive/arra-oracle-v3-archive.tar.gz

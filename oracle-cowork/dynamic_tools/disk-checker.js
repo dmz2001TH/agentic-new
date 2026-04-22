@@ -1,0 +1,1 @@
+const { execSync } = require('child_process'); console.log('📊 Checking Drive C...'); const out = execSync('df -h /mnt/c', {encoding:'utf8'}); console.log(out);
