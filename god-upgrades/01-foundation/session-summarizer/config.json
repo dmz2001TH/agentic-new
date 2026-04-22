@@ -1,0 +1,8 @@
+{
+  "max_messages_per_session": 100,
+  "context_warning_pct": 60,
+  "context_critical_pct": 80,
+  "auto_summarize_at": 80,
+  "max_summary_tokens": 2000,
+  "keep_last_n_messages": 10
+}
