@@ -57,14 +57,14 @@ fi
 echo -e "${YELLOW}[2/5] สร้างโครงสร้างโฟลเดอร์...${NC}"
 
 if [ "$GDRIVE_AVAILABLE" = true ]; then
-  for dir in memory agents inbox vault writing shared lab; do
+  for dir in memory agents inbox vault writing shared lab lessons; do
     mkdir -p "${GDRIVE_PSI}/${dir}"
   done
   echo -e "${GREEN}✓ Google Drive ψ/ พร้อม${NC}"
 fi
 
 mkdir -p "${LOCAL_PSI}"
-for dir in memory agents inbox vault; do
+for dir in memory agents inbox vault lessons; do
   mkdir -p "${LOCAL_PSI}/${dir}"
 done
 echo -e "${GREEN}✓ Local cache พร้อม${NC}"
@@ -73,7 +73,7 @@ echo -e "${GREEN}✓ Local cache พร้อม${NC}"
 if [ "$GDRIVE_AVAILABLE" = true ]; then
   echo -e "${YELLOW}[3/5] Sync: Google Drive → Local...${NC}"
 
-  sync_dirs=("memory" "agents" "vault" "writing" "shared")
+  sync_dirs=("memory" "agents" "vault" "writing" "shared" "lessons")
 
   for dir in "${sync_dirs[@]}"; do
     src="${GDRIVE_PSI}/${dir}"
@@ -97,6 +97,27 @@ if [ "$GDRIVE_AVAILABLE" = true ]; then
   done
 
   echo -e "${GREEN}✓ Sync เสร็จ${NC}"
+
+  # ── Step 3.5: Sync Project Agents & Lessons → Google Drive ──
+  echo -e "${YELLOW}[3.5/5] Sync: Project agents/ & lessons/ → Google Drive...${NC}"
+  
+  PROJECT_ROOT="/mnt/c/Agentic/agentic-new"
+  GDRIVE_ROOT="/mnt/c/Users/${USER}/My Drive/Oracle-System-Brain"
+
+  # Sync project agents
+  if [ -d "$PROJECT_ROOT/agents" ]; then
+    mkdir -p "$GDRIVE_ROOT/agents"
+    rsync -auv "$PROJECT_ROOT/agents/" "$GDRIVE_ROOT/agents/" 2>/dev/null || cp -ru "$PROJECT_ROOT/agents/"* "$GDRIVE_ROOT/agents/" 2>/dev/null || true
+    echo -e "  ${GREEN}✓${NC} Project agents/ -> GDrive"
+  fi
+
+  # Sync project lessons
+  if [ -d "$PROJECT_ROOT/lessons" ]; then
+    mkdir -p "$GDRIVE_ROOT/lessons"
+    rsync -auv "$PROJECT_ROOT/lessons/" "$GDRIVE_ROOT/lessons/" 2>/dev/null || cp -ru "$PROJECT_ROOT/lessons/"* "$GDRIVE_ROOT/lessons/" 2>/dev/null || true
+    echo -e "  ${GREEN}✓${NC} Project lessons/ -> GDrive"
+  fi
+
 else
   echo -e "${YELLOW}[3/5] ข้าม sync (ไม่มี Google Drive)${NC}"
 fi
