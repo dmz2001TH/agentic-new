@@ -31,7 +31,6 @@ SESSION_PATH="$SESSION_DIR/$SESSION_ID"
 mkdir -p "$SESSION_PATH/sources" "$SESSION_PATH/evidence" "$SESSION_PATH/quiz"
 
 START_TIME=$(date +%s)
-END_TIME=$((START_TIME + DURATION_MIN * 60))
 
 # ─── Session Manifest ───
 cat > "$SESSION_PATH/manifest.json" << EOF
@@ -40,7 +39,6 @@ cat > "$SESSION_PATH/manifest.json" << EOF
   "topic": "$TOPIC",
   "started_at": "$(date -Iseconds)",
   "duration_minutes": $DURATION_MIN,
-  "deadline": "$(date -d @$END_TIME -Iseconds 2>/dev/null || date -r $END_TIME -Iseconds 2>/dev/null || echo $END_TIME)",
   "urls_to_study": $(printf '%s\n' "${URLS[@]}" | jq -R . | jq -s .),
   "status": "in_progress"
 }
@@ -51,7 +49,6 @@ echo -e "${BOLD}${CYAN}  🧠 REAL LEARNING SESSION${NC}"
 echo -e "${BOLD}${CYAN}═══════════════════════════════════════════════${NC}"
 echo -e "  Topic:    ${BOLD}$TOPIC${NC}"
 echo -e "  Duration: ${BOLD}${DURATION_MIN} minutes${NC}"
-echo -e "  Deadline: ${BOLD}$(date -d @$END_TIME '+%H:%M:%S' 2>/dev/null || date -r $END_TIME '+%H:%M:%S' 2>/dev/null || echo "$END_TIME")${NC}"
 echo -e "  Session:  ${CYAN}$SESSION_ID${NC}"
 echo -e "  Sources:  ${BOLD}${#URLS[@]} URLs${NC}"
 echo -e "${CYAN}═══════════════════════════════════════════════${NC}"
@@ -63,7 +60,6 @@ TIMER_PID_FILE="$SESSION_PATH/.timer_pid"
 start_timer() {
     while true; do
         NOW=$(date +%s)
-        REMAINING=$((END_TIME - NOW))
         if [ $REMAINING -le 0 ]; then
             echo -e "\r${RED}${BOLD}  ⏰ TIME'S UP!${NC}                    "
             break
@@ -99,8 +95,8 @@ EVIDENCE_LOG="$SESSION_PATH/evidence/log.jsonl"
 touch "$SOURCES_LOG" "$EVIDENCE_LOG"
 
 log_source() {
-    local url="$1"
-    local status="$2"
+    local url=""${1:-default}""
+    local status=""${2:-10}""
     local chars="${3:-0}"
     local timestamp=$(date -Iseconds)
     echo "{\"url\":\"$url\",\"status\":\"$status\",\"chars_fetched\":$chars,\"timestamp\":\"$timestamp\"}" >> "$SOURCES_LOG"
@@ -108,9 +104,9 @@ log_source() {
 }
 
 log_evidence() {
-    local source="$1"
-    local type="$2"  # quote, code, fact, insight
-    local content="$3"
+    local source=""${1:-default}""
+    local type=""${2:-10}""  # quote, code, fact, insight
+    local content=""${3:-}""
     local timestamp=$(date -Iseconds)
     # Escape content for JSON
     local escaped=$(echo "$content" | jq -Rs .)
@@ -126,7 +122,6 @@ SOURCES_FETCHED=0
 
 for url in "${URLS[@]}"; do
     NOW=$(date +%s)
-    if [ $NOW -ge $END_TIME ]; then
         echo -e "  ${RED}⏰ Time's up — stopping source fetch${NC}"
         break
     fi

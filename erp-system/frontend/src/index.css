@@ -1,0 +1,16 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Satoshi", "Inter", "sans-serif";
+  --color-brand-primary: #f97316; /* ส้มแนวร้านอาหาร */
+  --color-brand-dark: #1e293b;
+}
+
+:root {
+  background-color: #f8fafc;
+  color: #1e293b;
+}
+
+body {
+  margin: 0;
+}

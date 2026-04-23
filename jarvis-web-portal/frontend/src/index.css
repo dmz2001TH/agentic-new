@@ -1,0 +1,19 @@
+@import "tailwindcss";
+
+@theme {
+  --color-jarvis-blue: #00f2ff;
+  --color-jarvis-gold: #ffcc00;
+  --color-glass-bg: rgba(255, 255, 255, 0.05);
+  --color-glass-border: rgba(255, 255, 255, 0.1);
+}
+
+:root {
+  background-color: #0a0a0a;
+  color: white;
+  font-family: 'Inter', system-ui, sans-serif;
+}
+
+body {
+  margin: 0;
+  overflow: hidden;
+}

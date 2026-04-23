@@ -1,0 +1,10 @@
+{
+  "session_id": "2026-04-23_02-47_$1",
+  "topic": "$1",
+  "started_at": "2026-04-23T02:47:45+07:00",
+  "duration_minutes": $2,
+  "urls_to_study": [
+  "$3"
+],
+  "status": "in_progress"
+}
