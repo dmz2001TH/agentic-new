@@ -46,7 +46,7 @@ show() {
     
     # Calculate % free space on C:
     # df -h /mnt/c returns: Filesystem Size Used Avail Use% Mounted on
-    local df_output=$(df -h /mnt/c | awk 'NR==2 {print $5}')
+    local df_output=$(df -h /mnt/c 2>/dev/null | awk 'NR==2 {print $5}' || echo "0%")
     local used_percent=${df_output%?}
     local free_percent=$((100 - used_percent))
     
@@ -58,6 +58,8 @@ show() {
     fi
     
     echo -e "${CYAN}║${NC}   Drive C: ${color}${free_percent}% free${NC} (${df_output} used)"
+    # System
+    echo -e "${CYAN}║${NC}   Disk: $(df -h / | awk 'NR==2 {print $3 "/" $2 " (" $5 ")"}')"
     echo -e "${CYAN}║${NC}   Uptime: $(uptime -p 2>/dev/null || uptime | cut -d',' -f1)"
     
     echo -e "${CYAN}╠══════════════════════════════════════════════════════╣${NC}"
