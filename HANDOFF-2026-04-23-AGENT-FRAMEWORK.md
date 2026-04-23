@@ -37,8 +37,14 @@ agents/
 ├── CONSTITUTION.md             ✅ กฎกลางของ agent system ทั้งหมด
 ├── god/
 │   └── SOUL.md                 ✅ ตัวตน GOD agent — Orchestrator
-├── oracle/                     📁 สร้างไว้ ยังไม่มี SOUL.md
-└── jarvis/                     📁 สร้างไว้ ยังไม่มี SOUL.md
+├── oracle/
+│   └── SOUL.md                 ✅ ตัวตน Oracle agent — Worker
+├── jarvis/
+│   └── SOUL.md                 ✅ ตัวตน JARVIS agent — Gateway
+├── researcher/
+│   └── SOUL.md                 ✅ ตัวตน Researcher agent — Research
+└── reviewer/
+    └── SOUL.md                 ✅ ตัวตน Reviewer agent — Quality
 ```
 
 ### 3. Lessons System
