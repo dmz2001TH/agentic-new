@@ -9,7 +9,7 @@ Review งานก่อน mark ว่าเสร็จ
 
 ```bash
 # หา task ที่ active
-TASK_FILE=$(grep -rl "\[~\]" ψ/inbox/*.md 2>/dev/null | head -1)
+TASK_FILE=$(grep -rl "\\[~\\]" ψ/inbox/*.md 2>/dev/null | head -1)
 if [ -z "$TASK_FILE" ]; then
   echo "❌ ไม่มี task ที่กำลังทำอยู่"
   exit 1
@@ -22,18 +22,18 @@ echo "📋 Task: $(head -1 "$TASK_FILE")"
 ### 2.1 ตรวจ Subtasks
 ```bash
 echo "=== SUBTASKS ==="
-grep -E "\[ \]|\[~\]|\[x\]|\[!\]" "$TASK_FILE"
-DONE=$(grep -c "\[x\]" "$TASK_FILE")
-TOTAL=$(grep -cE "\[ \]|\[~\]|\[x\]|\[!\]" "$TASK_FILE")
+grep -E "\\[ \\]|\\[~\\]|\\[x\\]|\\[!\\]" "$TASK_FILE"
+DONE=$(grep -c "\\[x\\]" "$TASK_FILE")
+TOTAL=$(grep -cE "\\[ \\]|\\[~\\]|\\[x\\]|\\[!\\]" "$TASK_FILE")
 echo "เสร็จ: $DONE/$TOTAL"
 ```
 
 ### 2.2 ตรวจไฟล์ที่เกี่ยวข้อง
 ```bash
 echo "=== ไฟล์ที่แก้ไข ==="
-grep -i "file\|ไฟล์\|path" "$TASK_FILE" | head -5
+grep -i "file\\|ไฟล์\\|path" "$TASK_FILE" | head -5
 # ตรวจว่าไฟล์เหล่านั้นมีอยู่จริง
-for f in $(grep -oP '(?:file|ไฟล์|path):\s*\K\S+' "$TASK_FILE" 2>/dev/null); do
+for f in $(grep -oP '(?:file|ไฟล์|path):\\s*\\K\\S+' "$TASK_FILE" 2>/dev/null); do
   if [ -f "$f" ]; then
     echo "✅ $f — exists ($(wc -c < "$f") bytes)"
   else
@@ -46,7 +46,7 @@ done
 ```bash
 echo "=== ตรวจ Code ==="
 # ถ้ามี test command ใน task
-TEST_CMD=$(grep -i "test\|เทส" "$TASK_FILE" | head -1)
+TEST_CMD=$(grep -i "test\\|เทส" "$TASK_FILE" | head -1)
 if [ -n "$TEST_CMD" ]; then
   echo "รัน test: $TEST_CMD"
   # eval "$TEST_CMD" 2>&1 | tail -10
@@ -78,8 +78,8 @@ fi
 
 ```bash
 if [ "$REVIEW_PASS" = "true" ]; then
-  sed -i 's/สถานะ.*\[~\]/สถานะ: [x] เสร็จ/' "$TASK_FILE"
-  sed -i "/สถานะ.*\[x\]/a\\- เสร็จเมื่อ: $(date +%Y-%m-%d\ %H:%M)" "$TASK_FILE"
+  sed -i 's/สถานะ.*\\[~\\]/สถานะ: [x] เสร็จ/' "$TASK_FILE"
+  sed -i "/สถานะ.*\\[x\\]/a\\\\- เสร็จเมื่อ: $(date +%Y-%m-%d\\ %H:%M)" "$TASK_FILE"
   echo "✅ Task เสร็จแล้ว"
 else
   echo "⚠️ ยังมีปัญหา — คงสถานะ [~]"

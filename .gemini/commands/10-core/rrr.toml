@@ -13,7 +13,7 @@ cat ψ/memory/notes.md | grep "$(date +%Y-%m-%d)" 2>/dev/null
 ls ψ/inbox/ 2>/dev/null
 
 # อ่าน tasks ที่เสร็จวันนี้
-grep -r "\[x\]" ψ/inbox/ 2>/dev/null
+grep -r "\\[x\\]" ψ/inbox/ 2>/dev/null
 
 # อ่าน learnings วันนี้
 grep -A5 "$(date +%Y-%m-%d)" ψ/memory/learnings.md 2>/dev/null

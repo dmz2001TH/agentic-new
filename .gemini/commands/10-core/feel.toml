@@ -6,7 +6,7 @@ prompt = """
 ## ขั้นตอนที่ 1: บันทึกจริง
 
 ```bash
-ENTRY="- [$(date +%Y-%m-%d\ %H:%M)] สถานะ: $ARGUMENTS"
+ENTRY="- [$(date +%Y-%m-%d\\ %H:%M)] สถานะ: $ARGUMENTS"
 echo "$ENTRY" >> ψ/memory/notes.md
 
 # Verify
@@ -23,7 +23,7 @@ fi
 ```bash
 cat >> ψ/memory/user-preferences.md << EOF
 
-## Energy State — $(date +%Y-%m-%d\ %H:%M)
+## Energy State — $(date +%Y-%m-%d\\ %H:%M)
 - State: $ARGUMENTS
 - Adjustment: [การปรับตามสถานะด้านล่าง]
 EOF
@@ -48,6 +48,4 @@ tail -3 ψ/memory/user-preferences.md
 ## ⛔ ห้าม:
 - บอก "ปรับการทำงานแล้ว" โดยไม่ได้เขียนไฟล์
 - ปรับ behavior แบบลอยๆ ไม่มีบันทึก
-
-ตอบเป็นภาษาไทย
 """

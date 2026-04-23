@@ -1,9 +1,0 @@
-{
-  "session_id": "2026-04-23_01-15_Agent-Resilience",
-  "topic": "Agent Resilience",
-  "sources_fetched": 1,
-  "sources_total": 1,
-  "elapsed_seconds": 2,
-  "completed_at": "2026-04-23T01:15:13+07:00",
-  "next_step": "Extract evidence → Run quiz → Generate report → Verify"
-}

@@ -14,7 +14,7 @@ show() {
     # Memory
     echo -e "${CYAN}║${NC} ${YELLOW}📚 Memory${NC}"
     local mem_dir="${GIT_ROOT}/ψ"
-    local mem_files=$(find "$mem_dir" -name "*.md" 2>/dev/null | wc -l || echo "0")
+    local mem_files=$(find -L "$mem_dir" -name "*.md" 2>/dev/null | wc -l || echo "0")
     echo -e "${CYAN}║${NC}   Memory files: ${GREEN}${mem_files}${NC}"
     
     # Agents

@@ -11,7 +11,7 @@ prompt = """
 # ถ้าไม่ได้ระบุงาน หา priority สูงสุด
 if [ -z "$ARGUMENTS" ]; then
   echo "=== Tasks ที่พร้อมทำ ==="
-  grep -l "สถานะ.*\[ \]" ψ/inbox/*.md 2>/dev/null | head -5
+  grep -l "สถานะ.*\\[ \\]" ψ/inbox/*.md 2>/dev/null | head -5
   echo "เลือก task ที่ priority สูงสุด"
 else
   echo "=== ค้นหา: $ARGUMENTS ==="
@@ -25,13 +25,13 @@ fi
 TASK_FILE="[ไฟล์ task ที่เจอ]"
 
 # เปลี่ยน [ ] → [~]
-sed -i 's/สถานะ.*\[ \]/สถานะ: [~] กำลังทำ/' "$TASK_FILE"
+sed -i 's/สถานะ.*\\[ \\]/สถานะ: [~] กำลังทำ/' "$TASK_FILE"
 
 # เพิ่ม timestamp เริ่ม
-sed -i "/สถานะ.*\[~\]/a\\- เริ่มเมื่อ: $(date +%Y-%m-%d\ %H:%M)" "$TASK_FILE"
+sed -i "/สถานะ.*\\[~\\]/a\\\\- เริ่มเมื่อ: $(date +%Y-%m-%d\\ %H:%M)" "$TASK_FILE"
 
 # Verify
-if grep -q "\[~\]" "$TASK_FILE"; then
+if grep -q "\\[~\\]" "$TASK_FILE"; then
   echo "✅ เปลี่ยนสถานะเป็น [~] แล้ว"
   echo "ไฟล์: $TASK_FILE"
 else
