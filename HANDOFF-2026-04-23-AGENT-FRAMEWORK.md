@@ -108,10 +108,10 @@ lessons/
 
 | # | Task | สถานะ | หมายเหตุ |
 |---|------|--------|---------|
-| 1 | สร้าง SOUL.md สำหรับ Oracle agent | ⏳ ยังไม่ทำ | agents/oracle/SOUL.md |
-| 2 | สร้าง SOUL.md สำหรับ JARVIS agent | ⏳ ยังไม่ทำ | agents/jarvis/SOUL.md |
-| 3 | สร้าง SOUL.md สำหรับ Researcher agent | ⏳ ยังไม่ทำ | agents/researcher/SOUL.md |
-| 4 | สร้าง SOUL.md สำหรับ Reviewer agent | ⏳ ยังไม่ทำ | agents/reviewer/SOUL.md |
+| 1 | สร้าง SOUL.md สำหรับ Oracle agent | ✅ เสร็จแล้ว | agents/oracle/SOUL.md |
+| 2 | สร้าง SOUL.md สำหรับ JARVIS agent | ✅ เสร็จแล้ว | agents/jarvis/SOUL.md |
+| 3 | สร้าง SOUL.md สำหรับ Researcher agent | ✅ เสร็จแล้ว | agents/researcher/SOUL.md |
+| 4 | สร้าง SOUL.md สำหรับ Reviewer agent | ✅ เสร็จแล้ว | agents/reviewer/SOUL.md |
 | 5 | สร้าง prompt_builder.py | ⏳ ยังไม่ทำ | ใช้ template จาก 06-QUICK-START.md |
 | 6 | สร้าง lesson_logger.py | ⏳ ยังไม่ทำ | ใช้ template จาก 06-QUICK-START.md |
 
