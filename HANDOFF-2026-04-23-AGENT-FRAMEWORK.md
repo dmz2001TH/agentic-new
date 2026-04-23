@@ -119,7 +119,7 @@ lessons/
 
 | # | Task | สถานะ | หมายเหตุ |
 |---|------|--------|---------|
-| 7 | เชื่อม prompt_builder กับ GOD-HANDOFF-PROMPT.md | ⏳ ยังไม่ทำ | inject SOUL + CONSTITUTION + LESSONS เข้า prompt |
+| 7 | เชื่อม prompt_builder กับ GOD-HANDOFF-PROMPT.md | ✅ เสร็จแล้ว | inject SOUL + CONSTITUTION + LESSONS เข้า prompt |
 | 8 | เชื่อม lessons กับ brain-bridge.sh | ⏳ ยังไม่ทำ | sync lessons ระหว่าง Google Drive ↔ Local |
 | 9 | สร้าง MAW plugin สำหรับ lessons | ⏳ ยังไม่ทำ | maw-plugins/lesson-plugin.py |
 | 10 | เพิ่ม lessons จากความผิดพลาดที่ผ่านมา | ⏳ ยังไม่ทำ | ดู HANDOFF เก่า + error logs |
