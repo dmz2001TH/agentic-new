@@ -112,8 +112,8 @@ lessons/
 | 2 | สร้าง SOUL.md สำหรับ JARVIS agent | ✅ เสร็จแล้ว | agents/jarvis/SOUL.md |
 | 3 | สร้าง SOUL.md สำหรับ Researcher agent | ✅ เสร็จแล้ว | agents/researcher/SOUL.md |
 | 4 | สร้าง SOUL.md สำหรับ Reviewer agent | ✅ เสร็จแล้ว | agents/reviewer/SOUL.md |
-| 5 | สร้าง prompt_builder.py | ⏳ ยังไม่ทำ | ใช้ template จาก 06-QUICK-START.md |
-| 6 | สร้าง lesson_logger.py | ⏳ ยังไม่ทำ | ใช้ template จาก 06-QUICK-START.md |
+| 5 | สร้าง prompt_builder.py | ✅ เสร็จแล้ว | ใช้ template จาก 06-QUICK-START.md |
+| 6 | สร้าง lesson_logger.py | ✅ เสร็จแล้ว | ใช้ template จาก 06-QUICK-START.md |
 
 ### Priority 2 — ทำสัปดาห์หน้า
 
